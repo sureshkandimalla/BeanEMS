@@ -1,0 +1,7 @@
+.ant-list.currentEmpList {
+    margin-top: 15px;
+}
+
+.ant-list.currentEmpList h4.ant-list-item-meta-title {
+    margin-bottom: 0px !important;
+}
