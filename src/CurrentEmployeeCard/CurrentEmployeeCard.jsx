@@ -66,6 +66,7 @@ const CurrentEmployeeCard = () => {
     <Radio.Group onChange={onChange} defaultValue="onboard" size="large">
       <Radio.Button value="onBoarding">On Boarding</Radio.Button>
       <Radio.Button value="Bench">Bench</Radio.Button>
+      <Radio.Button value="Active">Active</Radio.Button>
       <Radio.Button value="detailedView"><Link to="/workforce">Detailed View</Link></Radio.Button>
     </Radio.Group>
     </Row>
@@ -85,9 +86,9 @@ const CurrentEmployeeCard = () => {
           avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
          // avatar={<Avatar src={avatarUrl} />}
           title={item.firstName +" "+ item.lastName}
-          description={item.designation}
+          description={item.designation +" / "+ item.primarySkills}
         />
-        {item.primarySkills}
+        
       </List.Item>
     )}
     }

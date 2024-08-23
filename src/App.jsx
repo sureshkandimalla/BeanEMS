@@ -8,6 +8,8 @@ import WorkForce from './WorkForce/WorkForce';
 import EmployeeOnboard from './EmployeeOnboard/EmployeeOnboard';
 import VendorDetails from './Vendor/VendorDetails';
 import InvoiceDetails from './Invoice/InvoiceDetails';
+import EmployeeFullDetailsComponent from './EmployeeDetailsComponent/EmployeeFullDetailsComponent';
+
 
 const {Content } = Layout;
 
@@ -40,6 +42,7 @@ const App = () => {
               <Route path="/employeeonboard" element={<EmployeeOnboard />} />
               <Route path="/vendordetails" element={<VendorDetails />} />
               <Route path="/invoicedetails" element={<InvoiceDetails />} />
+              <Route path="/employeeFullDetails" element={<EmployeeFullDetailsComponent />} />
               {/* Add more routes here */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

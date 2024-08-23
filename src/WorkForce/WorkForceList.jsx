@@ -29,7 +29,7 @@ const WorkForceList = () => {
         });
         return updatedData || [];
     }
-
+    
     const getColumnsDefList = (columnsList, isSortable, isEditable, hasFilter) => {
         let columns = columnsList.map((column) => {
             let fieldValue = column.split(' ').join('')
