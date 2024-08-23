@@ -39,11 +39,11 @@ const fetchData = () => {
   //default status =viewAll
   const today = new Date();
   const formattedDate = today.toISOString().split('T')[0];
-  axios.get('http://localhost:8080/api/v1/invoice/invoicesForMonthAndYear', {
-    params: {
-      selectedDate:'2023-11-01',//formattedDate,
-      status: invoiceStatus
-    }
+  axios.get('http://localhost:8080/api/v1/invoice/getAllInvoices', {
+    //params: {
+      //selectedDate:'2023-11-01',//formattedDate,
+      //status: invoiceStatus
+   // }
   })
     .then(response => {
       console.log(response.data);

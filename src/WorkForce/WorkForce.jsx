@@ -4,6 +4,8 @@ import {PlusOutlined, RiseOutlined} from '@ant-design/icons';
 import Newemployee from "../Newemployee/Newemployee";
 import Active from "./Active";
 import WorkForceList from "./WorkForceList";
+import ProjectGrid from "../Project/ProjectGrid";
+
 import PieCharts from '../PieCharts/PieCharts';
 
 const WorkForce=()=>{
@@ -14,9 +16,20 @@ const WorkForce=()=>{
   const [invoicesChartData, setInvoicesChartData] = useState([]);
   const [invoicesChartLabels, setInvoicesChartLabels] = useState([]);
   const isInitialRender = useRef(true);
+  const [rowData, setRowData] = useState();
+  console.log(rowData);
+  console.log(setRowData);
+  console.log("Suresh");
+
+
 
   const toggleTabs = (e) => {
   }
+
+  
+    const rowStyle = {
+      height: 70 + 'px', // Set the height of the row dynamically
+    };
 
   const items = [
     {
@@ -26,6 +39,11 @@ const WorkForce=()=>{
     },
     {
         key: 2,
+        label: 'Projects',
+        children: <ProjectGrid/>
+    },
+    {
+        key: 3,
         label: 'Invoices'
     },
 ]
@@ -89,17 +107,34 @@ const WorkForce=()=>{
             >
                 <Newemployee />
             </Drawer>
-            <Row gutter={19}>
-                <Col span={17}>
-                    <Row>
-                        <Col span={10}>
-                            <Card className='invoiceStatusCard'>
-                                <span className='invoiceCardTitle'>Invoice Status</span>
+            <Row >
+                <Col span={24}>
+                    <Row >
+                        <Col span={8}>
+                            <Card className='billingCard'>
+                                <span className='invoiceCardTitle'>Billing </span>
                                 <PieCharts chartData={invoicesChartData} chartLabels={invoicesChartLabels} />
                             </Card>
+                            
                         </Col>
-                        <Col span={14}>
-                            <Card className='totalworkForceCard'>
+                        <Col span={8}>
+                            <Card className='totalworkForceCard1'>
+                            <Row>
+                            <div className="pie-chart-container">
+                                    <Col ><PieCharts chartData={workForceChartData} chartLabels={workForceChartLabels} /></Col>
+                                    </div>
+                                </Row>
+                            </Card>
+                            
+                        </Col>
+                        <Col span={8}>
+                            <Card className='invoiceStatusCard1'>
+                                <span className='invoiceCardTitle'>Invoice Status</span>
+                                <PieCharts  chartData={invoicesChartData} chartLabels={invoicesChartLabels} />
+                            </Card>
+                        </Col>
+                        {/* <Col span={14}>
+                            <Card className='totalworkForceCard1'>
                                 <Row>
                                     <Col span={18}><PieCharts chartData={workForceChartData} chartLabels={workForceChartLabels} /></Col>
                                     <Col span={3}>
@@ -115,16 +150,15 @@ const WorkForce=()=>{
                             </Card>
                         </Col>
                         
-                        <Col span={10}>
+                       <Col span={10}>
                             <Card className='invoiceStatusCard'>
                                 <span className='invoiceCardTitle'>Invoice Status</span>
                                 <PieCharts chartData={invoicesChartData} chartLabels={invoicesChartLabels} />
                             </Card>
-                        </Col>
+    </Col> */}
                     </Row>
                 </Col>
             </Row>
-
 
             <Card>
                 <Tabs className='bean-home-tabs' defaultActiveKey="1" onChange={toggleTabs} items={items}

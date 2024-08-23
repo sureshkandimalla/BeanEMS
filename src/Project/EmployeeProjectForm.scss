@@ -1,0 +1,80 @@
+.employee-List-grid {
+    width: 100%;
+    font-family: -webkit-body;
+    // padding: 20px;
+  }
+
+  .ag-theme-alpine .ag-layout-auto-height .ag-center-cols-clipper, 
+  .ag-theme-alpine .ag-layout-auto-height .ag-center-cols-container,
+    .ag-theme-alpine .ag-layout-print .ag-center-cols-clipper, .ag-theme-alpine 
+    .ag-layout-print .ag-center-cols-container, .ag-theme-alpine-dark .ag-layout-auto-height
+    .ag-center-cols-clipper, .ag-theme-alpine-dark .ag-layout-auto-height .ag-center-cols-container, 
+    .ag-theme-alpine-dark .ag-layout-print .ag-center-cols-clipper, .ag-theme-alpine-dark 
+    .ag-layout-print .ag-center-cols-container {
+    min-height: auto;
+  }
+
+.card {
+  width: 300px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+  margin: 20px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card-content {
+  padding: 20px;
+}
+
+h2 {
+  margin: 0;
+}
+
+p {
+  margin: 10px 0;
+}
+
+
+
+.two-parts-container {
+  display: flex;
+  height: 90vh;
+}
+
+.part {
+  flex: 1;
+  padding: 20px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  overflow-y: auto; /* Add scroll if content overflows vertically */
+}
+
+.left-part {
+  flex: 3; /* 30% of the width */
+  padding: 20px;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  overflow-y: auto; /* Add scroll if content overflows vertically */
+  background-color: #ffffff; /* Background color for the left part */
+}
+
+.right-part {
+  flex: 7; /* 70% of the width */
+  padding: 20px;
+  box-sizing: border-box;
+  border: 1px solid #dfdbdb;
+  overflow-y: auto; /* Add scroll if content overflows vertically */
+  background-color: #ffffff; /* Background color for the right part */
+}
+
+.gap {
+  width: 10px; /* Adjust the gap width as needed */
+  background-color: #d1caca;
+}

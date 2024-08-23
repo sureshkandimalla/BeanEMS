@@ -4,17 +4,18 @@ import { Link } from 'react-router-dom';
 import 'ag-grid-enterprise';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
-import './WorkForce.css';
+import './ProjectGrid.css';
 
-const WorkForceList = () => {
+const ProjectGrid = () => {
     
     const [searchText, setSearchText] = useState('');
     const [rowData, setRowData] = useState();
-    const columnsList = ['Employee Id','First Name', 'Last Name', 'Email Id', 'Phone', 'DOB', 'Designation', 'status','startDate','endDate'
-        ,'Employment Type', 'SSN', 'Gender','Primary Skills'];
+    const columnsList = ['Employee Name', 'Vendor Name', 'Client Name', 'Bill Rate', 'Net','Employee Pay', 
+        'status','startDate','endDate','Project Id','Project Name', 
+        'Expense Internal','Expense External','Invoice Term','Payment Term','Hours'];
 
     useEffect(() => {
-        fetch('http://localhost:8080/api/v1/employees/getAllEmployees')
+        fetch('http://localhost:8080/api/v1/getProjects')
             .then(response => response.json())
             .then(data => {
                 setRowData(getFlattenedData(data));
@@ -50,10 +51,11 @@ const WorkForceList = () => {
                     field: fieldValue,
                     sortable: isSortable,
                     editable: true,
+                    cellStyle: { 'text-align': 'left' },
                     filter: 'agTextColumnFilter',
                     tooltipValueGetter: (params) => params.value, 
                     cellRenderer: (params) => {
-                        if (column === 'First Name' || column === 'Last Name') {
+                        if (column === 'Employee Name' || column === 'Last Name') {
                             return (
                                 <Link to="/employeeFullDetails" state={{ rowData: params.data }}>
                                     {params.value}
@@ -63,6 +65,9 @@ const WorkForceList = () => {
                             return params.value;
                         }
                     },
+                    valueFormatter: (params) => {
+                        return typeof params.value === 'float' ?  params.value.toLocaleString():'';
+                      },
                     //tooltipComponent: 'customTooltip',
                     tooltipShowDelay: 0,
                 };
@@ -89,6 +94,16 @@ const WorkForceList = () => {
             const CustomTooltip = (props) => {
                 return <div style={{ color: 'red', background: 'yellow', padding: '5px' }}>{props.value}</div>;
             };
+            const gridOptions = {
+                onGridReady: (params) => {
+                  // Automatically size all columns to fit content on grid load
+                  const allColumnIds = [];
+                  params.columnApi.getAllColumns().forEach((column) => {
+                    allColumnIds.push(column.getColId());
+                  });
+                  params.columnApi.autoSizeColumns(allColumnIds); // Auto-size columns to content
+                }
+              };
     return (
         <div className="ag-theme-alpine employee-List-grid" >
             <div class="container">
@@ -101,6 +116,7 @@ const WorkForceList = () => {
                     <button type="primary" className='search-button' onClick={filterData}>Search</button>
                 </div>
             <AgGridReact rowData={filterData()} frameworkComponents={{ customTooltip: CustomTooltip }} columnDefs={getColumnsDefList(columnsList, true, false)}
+                
                 domLayout="autoHeight"
                 defaultColDef={{
                     flex: 1,
@@ -112,14 +128,14 @@ const WorkForceList = () => {
                 hiddenByDefault={false}
                 rowGroupPanelShow='always'
                 pivotPanelShow='always'
-               
-                
                 sortable={true}
                 defaultToolPanel='columns'
                 pagination={true}
-                paginationPageSize={100} />
+                paginationPageSize={100} 
+                gridOptions />
+                
         </div>
     )
 }
 
-export default WorkForceList;
+export default ProjectGrid;

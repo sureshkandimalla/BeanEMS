@@ -8,6 +8,13 @@ import WorkForce from './WorkForce/WorkForce';
 import EmployeeOnboard from './EmployeeOnboard/EmployeeOnboard';
 import VendorDetails from './Vendor/VendorDetails';
 import InvoiceDetails from './Invoice/InvoiceDetails';
+import EmployeeFullDetailsComponent from './EmployeeDetailsComponent/EmployeeFullDetailsComponent';
+import EmployeeDetailDashboard from './EmployeeDetailDashboard/EmployeeDetailDashboard';
+import ProjectDashboard from './Project/ProjectDashboard';
+import ProjectOnBoardingForm from './OnBoardingComponent/ProjectOnBoarding';
+
+
+
 
 const {Content } = Layout;
 
@@ -40,6 +47,9 @@ const App = () => {
               <Route path="/employeeonboard" element={<EmployeeOnboard />} />
               <Route path="/vendordetails" element={<VendorDetails />} />
               <Route path="/invoicedetails" element={<InvoiceDetails />} />
+              <Route path="/employeeFullDetails" element={<EmployeeFullDetailsComponent />} />
+              <Route path="/employeeDetailDashboard" element={<EmployeeDetailDashboard />} />
+              <Route path="/ProjectOnBoardingForm" element={<ProjectOnBoardingForm />} />
               {/* Add more routes here */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

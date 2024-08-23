@@ -29,10 +29,10 @@ const InvoiceDetails = () => {
     //default status =viewAll
     const today = new Date();
     const formattedDate = today.toISOString().split('T')[0];
-    axios.get('http://localhost:8080/api/v1/invoice/invoicesForMonthAndYear', {
+    axios.get('http://localhost:8080/api/v1/invoice/getAllInvoices', {
       params: {
-        selectedDate: '2023-11-01',//formattedDate,
-        status: 'viewAll'
+       // selectedDate: '2023-11-01',//formattedDate,
+        //status: 'viewAll'
       }
     })
       .then(response => {
