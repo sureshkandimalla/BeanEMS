@@ -3,6 +3,7 @@ import 'ag-grid-enterprise';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import './EmployeeFullDetailsComponent.css';
+import ProjectGrid from "../Project/ProjectGrid";
 // import '../WorkForce/WorkForce.css'
 import { Col, Row ,Card, Tabs  } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined  } from '@ant-design/icons';
@@ -48,7 +49,8 @@ const EmployeeFullDetails = () => {
             {
                 key: 2,
                 label: 'PROJECTS',
-                title: 'EmployeeAddProject '
+                title: 'Emplyee Projects',
+                children: <ProjectGrid />
             },
             {
                 key: 3,
@@ -167,7 +169,7 @@ const EmployeeFullDetails = () => {
            </div>
           <div className="gap"></div> {/* Gap between the two parts */}
           <div className="part right-part">
-              <Tabs className='bean-home-tabs' defaultActiveKey="1" onChange={toggleTabs} items={items}>
+              <Tabs className='bean-home-tabs' defaultActiveKey="2" onChange={toggleTabs} items={items}>
               </Tabs>
           </div>
       </div>
