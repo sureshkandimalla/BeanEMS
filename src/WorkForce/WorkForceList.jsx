@@ -6,52 +6,18 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import './WorkForce.css';
 
-const WorkForceList = () => {
-    
+const WorkForceList = ({employees}) => {
+    console.log(employees)
     const [searchText, setSearchText] = useState('');
     const [rowData, setRowData] = useState();
     const columnsList = ['Employee Id','First Name', 'Last Name', 'Email Id', 'Phone', 'DOB', 'Designation', 'status','startDate','endDate'
         ,'Employment Type', 'SSN', 'Gender','Primary Skills'];
 
     useEffect(() => {
-        const storedData = localStorage.getItem('employeeData');
-
-        if (storedData) {
-            // Use data from localStorage if available
-            setRowData(JSON.parse(storedData));
-        } else {
-        fetch('http://localhost:8080/api/v1/employees/getAllEmployees')
-            .then(response => response.json())
-            .then(data => {
-                const flattenedData = getFlattenedData(data);
-                
-                // Save flattened data to localStorage
-                localStorage.setItem('employeeData', JSON.stringify(flattenedData));
-                
-                // Update state with flattened data
-                setRowData(flattenedData);               
-            })
-            .catch(error => console.error('Error fetching data:', error));
-        }const handleBeforeUnload = () => {
-            localStorage.removeItem('employeeData');
-        };
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-        // Clean up the event listener when the component unmounts
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
+        setRowData(employees)
     }, []);
 
-    const getFlattenedData = (data) => {
-        let updatedData = data.map((dataObj) => {
-            //return { ...dataObj, ...dataObj.employeeAddress[0], ...dataObj.employeeAssignments[0] }
-            return { ...dataObj }
-        });
-        return updatedData || [];
-    }
-    
-    const getColumnsDefList = (columnsList, isSortable, isEditable, hasFilter) => {
+    const getColumnsDefList = (columnsList, isSortable) => {
         let columns = columnsList.map((column) => {
             let fieldValue = column.split(' ').join('')
             fieldValue = fieldValue[0].toLowerCase() + fieldValue.slice(1);

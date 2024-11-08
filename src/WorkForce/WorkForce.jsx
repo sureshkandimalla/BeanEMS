@@ -1,5 +1,5 @@
 import React,{useState,useEffect,useRef} from "react";
-import { Tabs,Card, Row, Col, Button, Flex, Drawer, Menu } from 'antd';
+import { Tabs,Card, Row, Col, Button, Flex, Drawer, Menu ,Spin} from 'antd';
 import {PlusOutlined, RiseOutlined} from '@ant-design/icons';
 import Newemployee from "../Newemployee/Newemployee";
 import Active from "./Active";
@@ -15,13 +15,34 @@ const WorkForce=()=>{
   const [workForceChartLabels, setWorkForceChartLabels] = useState([]);
   const [invoicesChartData, setInvoicesChartData] = useState([]);
   const [invoicesChartLabels, setInvoicesChartLabels] = useState([]);
+  const [rowData, setRowData] = useState([]);
+  const [activeRowData, setActiveRowData] = useState([]);
+  const [terminatedRowData, setTerminatedRowData] = useState([]);
+  const [onBoardingRowData, setOnBoardingRowData] = useState([]);
+  const [fullTimeRowData, setfullTimeRowData] = useState([]);
+  const [corpRowData, setcorpRowData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const isInitialRender = useRef(true);
-  const [rowData, setRowData] = useState();
-  console.log(rowData);
-  console.log(setRowData);
-  console.log("Suresh");
 
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+        localStorage.removeItem('employeeData');
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
+    // Clean up the event listener when the component unmounts
+    return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+}, []);
+
+const getFlattenedData = (data) => {
+    let updatedData = data.map((dataObj) => {
+        //return { ...dataObj, ...dataObj.employeeAddress[0], ...dataObj.employeeAssignments[0] }
+        return { ...dataObj }
+    });
+    return updatedData || [];
+}
 
   const toggleTabs = (e) => {
   }
@@ -31,22 +52,33 @@ const WorkForce=()=>{
       height: 70 + 'px', // Set the height of the row dynamically
     };
 
-  const items = [
-    {
-        key: 1,
-        label: 'Employee List',
-        children: <WorkForceList />
-    },
-    {
-        key: 2,
-        label: 'Projects',
-        children: <ProjectGrid/>
-    },
-    {
-        key: 3,
-        label: 'Invoices'
-    },
-]
+    const items = [
+        {
+            key: 1,
+            label: 'Active Employees',
+            children: <WorkForceList employees={activeRowData}/>
+        },
+        {
+            key: 2,
+            label: 'Terminated',
+            children: <WorkForceList employees={terminatedRowData}/>
+        },
+        {
+            key: 3,
+            label: 'Onboarding',
+            children: <WorkForceList employees={onBoardingRowData}/>
+        },
+        {
+            key: 4,
+            label: 'Corp to Corp',
+            children: <WorkForceList employees={corpRowData}/>
+        },
+        {
+            key: 5,
+            label: 'Fulltime',
+            children: <WorkForceList employees={fullTimeRowData}/>
+        },
+    ]
 
 
     const [current, setCurrent] = useState('Active');
@@ -89,6 +121,37 @@ const WorkForce=()=>{
             } else {
                 isInitialRender.current = false;
             }
+
+            const storedData = localStorage.getItem('employeeData');
+
+    if (storedData) {
+        // Use data from localStorage if available
+        setRowData(JSON.parse(storedData));
+    } else {
+    fetch('http://localhost:8080/api/v1/employees/getAllEmployees')
+        .then(response => response.json())
+        .then(data => {
+            const flattenedData = getFlattenedData(data);
+            
+            // Save flattened data to localStorage
+            localStorage.setItem('employeeData', JSON.stringify(flattenedData));
+            
+            // Update state with flattened data
+            setRowData(flattenedData);              
+            setActiveRowData(flattenedData?.filter(x=>x.status === 'Active'))
+            setTerminatedRowData(flattenedData?.filter(x=>x.status === null))
+            setOnBoardingRowData(flattenedData?.filter(x=>x.status === null)) 
+            setcorpRowData(flattenedData?.filter(x=>x.taxTerm === ''))  
+            setfullTimeRowData(flattenedData?.filter(x=>x.taxTerm === 'W2')) 
+            console.log(activeRowData)
+            console.log(onBoardingRowData)
+            console.log(terminatedRowData)
+
+        })
+        .catch(error => console.error('Error fetching data:', error))
+        .finally(() => setLoading(false)); // Hide loader when data is fetched
+
+    }
         };
 
         fetchData();
@@ -99,7 +162,7 @@ const WorkForce=()=>{
     return (
         <>
             <Drawer
-                title={`Employee Onboarding`}
+                title="Employee Onboarding"
                 placement="right"
                 size="large"
                 onClose={onClose}
@@ -107,65 +170,47 @@ const WorkForce=()=>{
             >
                 <Newemployee />
             </Drawer>
-            <Row >
-                <Col span={24}>
-                    <Row >
-                        <Col span={8}>
-                            <Card className='billingCard'>
-                                <span className='invoiceCardTitle'>Billing </span>
-                                <PieCharts chartData={invoicesChartData} chartLabels={invoicesChartLabels} />
-                            </Card>
-                            
-                        </Col>
-                        <Col span={8}>
-                            <Card className='totalworkForceCard1'>
+                <>
+                    <Row>
+                        <Col span={24}>
                             <Row>
-                            <div className="pie-chart-container">
-                                    <Col ><PieCharts chartData={workForceChartData} chartLabels={workForceChartLabels} /></Col>
-                                    </div>
-                                </Row>
-                            </Card>
-                            
+                                <Col span={8}>
+                                    <Card className='billingCard'>
+                                        <span className='invoiceCardTitle'>Billing</span>
+                                        <PieCharts chartData={invoicesChartData} chartLabels={invoicesChartLabels} />
+                                    </Card>
+                                </Col>
+                                <Col span={8}>
+                                    <Card className='totalworkForceCard1'>
+                                        <PieCharts chartData={workForceChartData} chartLabels={workForceChartLabels} />
+                                    </Card>
+                                </Col>
+                                <Col span={8}>
+                                    <Card className='invoiceStatusCard1'>
+                                        <span className='invoiceCardTitle'>Invoice Status</span>
+                                        <PieCharts chartData={invoicesChartData} chartLabels={invoicesChartLabels} />
+                                    </Card>
+                                </Col>
+                            </Row>
                         </Col>
-                        <Col span={8}>
-                            <Card className='invoiceStatusCard1'>
-                                <span className='invoiceCardTitle'>Invoice Status</span>
-                                <PieCharts  chartData={invoicesChartData} chartLabels={invoicesChartLabels} />
-                            </Card>
-                        </Col>
-                        {/* <Col span={14}>
-                            <Card className='totalworkForceCard1'>
-                                <Row>
-                                    <Col span={18}><PieCharts chartData={workForceChartData} chartLabels={workForceChartLabels} /></Col>
-                                    <Col span={3}>
-                                        <div className="totalWorkFrcDiv">
-                                            <span className='totalWorkTitle' style={{ marginTop: "10px" }}>Total Work Force</span>
-                                            <Row justify="space-between">
-                                                <span className='totalWorkForceCount'>{totalParamCount}</span>
-                                                <span className='mrgTop15'><RiseOutlined className='riseIcon' /> <span> 3.5%</span></span>
-                                            </Row>
-                                        </div>
-                                    </Col>
-                                </Row>
-                            </Card>
-                        </Col>
-                        
-                       <Col span={10}>
-                            <Card className='invoiceStatusCard'>
-                                <span className='invoiceCardTitle'>Invoice Status</span>
-                                <PieCharts chartData={invoicesChartData} chartLabels={invoicesChartLabels} />
-                            </Card>
-    </Col> */}
                     </Row>
-                </Col>
-            </Row>
-
-            <Card>
-                <Tabs className='bean-home-tabs' defaultActiveKey="1" onChange={toggleTabs} items={items}
-                    tabBarExtraContent={<Button type='primary' onClick={addNewEmployee}><PlusOutlined /> Add New Employee</Button>}>
-                </Tabs>
-            </Card>
+                    {loading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'top', height: '100vh' }}>
+                    <Spin size="large" />
+                </div>
+            ) : (
+                    <Card>
+                        <Tabs
+                            className='bean-home-tabs'
+                            defaultActiveKey="1"
+                            onChange={toggleTabs}
+                            items={items}
+                            tabBarExtraContent={<Button type='primary' onClick={addNewEmployee}><PlusOutlined /> Add New Employee</Button>}
+                        />
+                    </Card>
+            )}
+                </>
         </>
     );
-}
+};
 export default WorkForce
