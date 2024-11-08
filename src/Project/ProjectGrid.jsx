@@ -1,79 +1,117 @@
-import React, { useState, useEffect } from "react";
-import { AgGridReact } from "ag-grid-react";
-import { Link } from 'react-router-dom';
-import 'ag-grid-enterprise';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
+import React, { useState,useMemo, useEffect } from "react";
+import { createRoot } from "react-dom/client";
+import { AgGridReact } from "@ag-grid-community/react";
+import "@ag-grid-community/styles/ag-grid.css";
 import './ProjectGrid.css';
 
-const ProjectGrid = () => {
+const ProjectGrid = ({employeeId}) => {
     
     const [searchText, setSearchText] = useState('');
     const [rowData, setRowData] = useState();
-    const columnsList = ['Employee Name', 'Vendor Name', 'Client Name', 'Bill Rate', 'Net','Employee Pay', 
-        'status','startDate','endDate','Project Id','Project Name', 
-        'Expense Internal','Expense External','Invoice Term','Payment Term','Hours'];
+    const columnDefs = [
+        {
+            headerName: 'Employee Name',
+            field: 'employee.firstName',
+            valueGetter: (params) =>           
+                `${params.data.firstName || ''} ${params.data.lastName || ''}`
+        },
+        { headerName: 'Client Name', 
+            field: 'client',
+             cellRenderer: (params) => params.data?.customerCompanyName },
+        {
+            headerName: 'Bill Rate',
+            field: 'billRates',
+            cellRenderer: (params) => params.data?.wage || 'N/A'
+        },
+        { headerName: 'Status', field: 'status' },
+        { headerName: 'EmailId', field: 'emailId'},
+        { headerName: 'phone',  field:'phone'},   
+        {headerName: 'SSN', field: 'ssn'},
+        {headerName: 'ReferredBy', field: 'referredBy'},     
+        { headerName: 'Start Date', field: 'startDate' },
+        { headerName: 'End Date', field: 'endDate' },
+        { headerName: 'Project Id', field: 'projectId' },
+        { headerName: 'Project Name', field: 'projectName' },
+        { headerName: 'Invoice Term', field: 'invoiceTerm' },
+        { headerName: 'Payment Term', field: 'paymentTerm' },
+        {headerName: 'VisaType', field:'visa'},
+    ];
 
     useEffect(() => {
-        fetch('http://localhost:8080/api/v1/getProjects')
+        fetch(`http://localhost:8080/api/v1/projects?employeeId=${employeeId}`)
             .then(response => response.json())
             .then(data => {
-                setRowData(getFlattenedData(data));
+                const transformedData = Array.isArray(data)
+                ? data?.map(item => flattenObject(item)) // Each flattened object wrapped in an array
+                : [];
+            setRowData(transformedData);
+            console.log(transformedData)
             })
             .catch(error => console.error('Error fetching data:', error));
-    }, []);
+    }, []);    
 
-    const getFlattenedData = (data) => {
-        let updatedData = data.map((dataObj) => {
-            //return { ...dataObj, ...dataObj.employeeAddress[0], ...dataObj.employeeAssignments[0] }
-            return { ...dataObj }
-        });
-        return updatedData || [];
-    }
+    const flattenObject = (obj, prefix = '') => {
+        return Object.keys(obj).reduce((acc, key) => {            
     
-    const getColumnsDefList = (columnsList, isSortable, isEditable, hasFilter) => {
-        let columns = columnsList.map((column) => {
-            let fieldValue = column.split(' ').join('')
-            fieldValue = fieldValue[0].toLowerCase() + fieldValue.slice(1);
-            if (fieldValue.toLowerCase() === 'ssn' || fieldValue.toLowerCase() === 'dob') {
-                fieldValue = fieldValue.toLowerCase();
+            if (typeof obj[key] === 'object' && obj[key] !== null) {
+                if (Array.isArray(obj[key])) {
+                    // Flatten only the first item in the array and skip the index prefix
+                    acc = { ...acc, ...flattenObject(obj[key][0] || {}) };
+                } else {
+                    // Recurse into nested objects
+                    acc = { ...acc, ...flattenObject(obj[key]) };
+                }
+            } else {
+                // Directly assign values if not an object or array
+                acc[key] = obj[key];
             }
+            return acc;
+        }, {});
+    };
+    
+    // const getColumnsDefList = (columnsList, isSortable, isEditable, hasFilter) => {
+    //     let columns = columnsList.map((column) => {
+    //         let fieldValue = column.split(' ').join('')
+    //         fieldValue = fieldValue[0].toLowerCase() + fieldValue.slice(1);
+    //         if (fieldValue.toLowerCase() === 'ssn' || fieldValue.toLowerCase() === 'dob') {
+    //             fieldValue = fieldValue.toLowerCase();
+    //         }
 
-            let updatedColumn = column === 'DOB' ? 'Date of Birth' : column
-            updatedColumn = column
-           /* if(column == 'startDate' )
-                updatedColumn='Employment Start Date';
-            else if(column == 'endDate')
-                updatedColumn='Employment End Date';*/
+    //         let updatedColumn = column === 'DOB' ? 'Date of Birth' : column
+    //         updatedColumn = column
+    //        /* if(column == 'startDate' )
+    //             updatedColumn='Employment Start Date';
+    //         else if(column == 'endDate')
+    //             updatedColumn='Employment End Date';*/
    
-                return {
-                    headerName: updatedColumn,
-                    field: fieldValue,
-                    sortable: isSortable,
-                    editable: true,
-                    cellStyle: { 'text-align': 'left' },
-                    filter: 'agTextColumnFilter',
-                    tooltipValueGetter: (params) => params.value, 
-                    cellRenderer: (params) => {
-                        if (column === 'Employee Name' || column === 'Last Name') {
-                            return (
-                                <Link to="/employeeFullDetails" state={{ rowData: params.data }}>
-                                    {params.value}
-                                </Link>
-                            );
-                        } else {
-                            return params.value;
-                        }
-                    },
-                    valueFormatter: (params) => {
-                        return typeof params.value === 'float' ?  params.value.toLocaleString():'';
-                      },
-                    //tooltipComponent: 'customTooltip',
-                    tooltipShowDelay: 0,
-                };
-            });
-            return columns;
-        };
+    //             return {
+    //                 headerName: updatedColumn,
+    //                 field: fieldValue,
+    //                 sortable: isSortable,
+    //                 editable: true,
+    //                 cellStyle: { 'text-align': 'left' },
+    //                 filter: 'agTextColumnFilter',
+    //                 tooltipValueGetter: (params) => params.value, 
+    //                 cellRenderer: (params) => {
+    //                     if (column === 'Employee Name' || column === 'Last Name') {
+    //                         return (
+    //                             <Link to="/employeeFullDetails" state={{ rowData: params.data }}>
+    //                                 {params.value}
+    //                             </Link>
+    //                         );
+    //                     } else {
+    //                         return params.value;
+    //                     }
+    //                 },
+    //                 valueFormatter: (params) => {
+    //                     return typeof params.value === 'float' ?  params.value.toLocaleString():'';
+    //                   },
+    //                 //tooltipComponent: 'customTooltip',
+    //                 tooltipShowDelay: 0,
+    //             };
+    //         });
+    //         return columns;
+    //     };
 
         const handleSearchInputChange = (event) => {
             setSearchText(event.target.value);
@@ -94,16 +132,16 @@ const ProjectGrid = () => {
             const CustomTooltip = (props) => {
                 return <div style={{ color: 'red', background: 'yellow', padding: '5px' }}>{props.value}</div>;
             };
-            const gridOptions = {
-                onGridReady: (params) => {
-                  // Automatically size all columns to fit content on grid load
-                  const allColumnIds = [];
-                  params.columnApi.getAllColumns().forEach((column) => {
-                    allColumnIds.push(column.getColId());
-                  });
-                  params.columnApi.autoSizeColumns(allColumnIds); // Auto-size columns to content
-                }
-              };
+            // const gridOptions = {
+            //     onGridReady: (params) => {
+            //       // Automatically size all columns to fit content on grid load
+            //       const allColumnIds = [];
+            //       params.columnApi.getAllColumns().forEach((column) => {
+            //         allColumnIds.push(column.getColId());
+            //       });
+            //       params.columnApi.autoSizeColumns(allColumnIds); // Auto-size columns to content
+            //     }
+            //   };
     return (
         <div className="ag-theme-alpine employee-List-grid" >
             <div class="container">
@@ -115,7 +153,7 @@ const ProjectGrid = () => {
                     />
                     <button type="primary" className='search-button' onClick={filterData}>Search</button>
                 </div>
-            <AgGridReact rowData={filterData()} frameworkComponents={{ customTooltip: CustomTooltip }} columnDefs={getColumnsDefList(columnsList, true, false)}
+            <AgGridReact rowData={filterData()} frameworkComponents={{ customTooltip: CustomTooltip }} columnDefs={columnDefs}
                 
                 domLayout="autoHeight"
                 defaultColDef={{
@@ -131,6 +169,25 @@ const ProjectGrid = () => {
                 sortable={true}
                 defaultToolPanel='columns'
                 pagination={true}
+                sideBar={{
+                    toolPanels: [
+                        {
+                            id: 'columns',
+                            labelDefault: 'Columns',
+                            labelKey: 'columns',
+                            iconKey: 'columns',
+                            toolPanel: 'agColumnsToolPanel',
+                            toolPanelParams: {
+                                suppressRowGroups: true,
+                                suppressValues: true,
+                                suppressPivots: false, suppressPivotMode: true,
+                                suppressColumnFilter: true,
+                                suppressColumnSelectAll: true,
+                                suppressColumnExpandAll: true,
+                            }
+                        }
+                    ]
+                }}
                 paginationPageSize={100} 
                 gridOptions />
                 

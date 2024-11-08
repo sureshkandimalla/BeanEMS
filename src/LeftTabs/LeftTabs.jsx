@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import { ProfileOutlined, UserOutlined, UsergroupAddOutlined,BlockOutlined,BoxPlotOutlined,HistoryOutlined,FileTextOutlined,SettingOutlined , MenuFoldOutlined,
   MenuUnfoldOutlined,ProjectOutlined} from '@ant-design/icons';
   import {  Menu } from 'antd';
+import ProjectDashboard from '../Project/ProjectDashboard';
 function getItem(tabName, key, icon, children, type) {
   return {
     key,
@@ -22,7 +23,7 @@ const leftTabNames = [
   getItem('Employee Onboarding', 'employeeonboard', <UsergroupAddOutlined />),
   getItem('Vendor', 'vendordetails', <BlockOutlined />),
   getItem('Invoice', 'invoicedetails', <FileTextOutlined />),
-  getItem('Option 7', '7', <ProjectOutlined  />),
+  getItem('Projects', 'projects', <ProjectOutlined  />),
   getItem('Option 6', '6', <HistoryOutlined />),
   getItem('Option 8', '8', <SettingOutlined />),
   

@@ -1,34 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Modal ,Input, Form, Row, Col, Card, Radio, Button, DatePicker } from 'antd';
+import { Modal ,Input, Form, Row, Col, Card, Radio, Button, DatePicker, Select, Spin } from 'antd';
 import { validateEmail } from '../utils';
 //import Sidebar from '../../Commons/Sidebar/Sidebar';
 //import './EmployeeOnBoarding.scss';
 import moment from 'moment';
 //import React, { useState, useEffect } from "react";
-//import { useLocation, useHistory } from 'react-router-dom'
+//import { useLocation } from 'react-router-dom'
 
-const ProjectOnBoardingForm = () => {
-
+const ProjectOnBoardingForm = ({ onClose }) => {
+    const { Option } = Select;
     const [form] = Form.useForm();
     const [rowData, setRowData] = useState();
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState();
+    const [selectedVendorId, setSelectedVendorId] = useState();
+    const [employees, setEmployeesData] = useState()
+    const [vendors, setVendorsData] = useState();
+    const [loading, setLoading] = useState(true);
 
-   // const history = useHistory();
+
+    const fetchEmployeesAndVendors = async () => {
+        try {
+            const [employeesData, vendorsData] = await Promise.all([
+                fetch('http://localhost:8080/api/v1/employees/getAllEmployees').then(response => response.json()),
+                fetch('http://localhost:8080/api/v1/customers/getAllCustomers').then(response => response.json())
+            ]);
+            
+            setEmployeesData(getFlattenedData(employeesData));
+            setVendorsData(getFlattenedData(vendorsData));
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            Modal.error({
+                content: 'Error fetching employees or customers. Please try again later.'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    // Call fetchEmployeesAndCustomers when the component mounts
+    useEffect(() => {
+        fetchEmployeesAndVendors();
+    }, []);
+    console.log(employees);
+    console.log(vendors);
+    const handleEmployeeChange = (value) => {
+        setSelectedEmployeeId(value);
+      };
+    
+      const handleVendorChange = (value) => {
+        setSelectedVendorId(value);
+      };
+
+    //const history = useHistory();
     //const location = useLocation();
     //const { rowData } = location.state;
-    console.log(rowData.employeeId);
-    const [generalDetails, setGeneralDetails] = useState({ projectId: '', vendorId: '', employeeId: '', client: '', status: '', projectName: '', startDate: '', endDate: '', invoiceTerm: '', paymentTerm: '' });
+    const [generalDetails, setGeneralDetails] = useState({
+        projectId: null,
+        projectName: "",
+        employeeId: null,
+        employeeName: "",
+        vendorName: "",
+        vendorId: null,
+        clientName: "",
+        client: "",
+        clientId: null,
+        startDate: "", // ISO string format
+        endDate: "",   // ISO string format
+        billRate: 0,
+        employeePay: 0,
+        expenseInternal: 0,
+        expenseExternal: 0,
+        net: 0,
+        status: "",
+        invoiceTerm: "",
+        paymentTerm: "",
+        hours: 0,
+        invoiceId: 0,
+        Billing: 0,
+        total: 0
+    });
 
     const handleFormSubmit = (generalDetails) => {
         //api should be called here
 
-        axios.post('http://localhost:8080/api/v1/projects/saveOnBoardProject', generalDetails)
-            .then(response => {
+        axios.post('http://localhost:8080/api/v1/projects/saveOnBoardProject', generalDetails, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
                 if (response && response.status === 200) {
                     console.log("response.data: "+response.data);
                     Modal.success({
                         content: 'Data saved successfully',
-                        onOk: () => history.push('/projectDetails', { rowData: rowData })
+                        onOk: onClose
                     });
                 } else {
                     // Handle other cases
@@ -44,33 +109,75 @@ const ProjectOnBoardingForm = () => {
             });
     }
 
+    const getFlattenedData = (data) => {
+
+        let updatedData = data.map((dataObj) => {
+        return { ...dataObj}
+    
+           // return { ...dataObj,...dataObj.assignments[0],...dataObj.employee.firstName.value, ...dataObj.employee.employeeAssignments[0],...dataObj.customer,...dataObj.billRates[0] }
+        });
+        console.log(updatedData)
+        return updatedData || [];
+    }
+
     const handleClear= () => {
         form.resetFields();
         setGeneralDetails({
-            projectId: '', vendorId: '', employeeId: '', client: '', status: '', projectName: '', startDate: '', endDate: '', invoiceTerm: '', paymentTerm: ''
-          });
+            projectId: null,
+            projectName: "",
+            employeeId: null,
+            employeeName: "",
+            vendorName: "",
+            vendorId: null,
+            clientName: "",
+            client: "",
+            clientId: null,
+            startDate: "", // ISO string format
+            endDate: "",   // ISO string format
+            billRate: 0,
+            employeePay: 0,
+            expenseInternal: 0,
+            expenseExternal: 0,
+            net: 0,
+            status: "",
+            invoiceTerm: "",
+            paymentTerm: "",
+            hours: 0,
+            invoiceId: 0,
+            Billing: 0,
+            total: 0
+        });
     }
     const handleCancel = () => {
-        history.push('/project')
+        //history.push('/project')
+        Modal.warning({
+            content: 'Are you sure you want to cancel?',
+            onOk: onClose
+        });
 
     }
 
     const handleSubmit = () => {
+
+        if(selectedEmployeeId && selectedVendorId){
+            generalDetails.employeeId = selectedEmployeeId;
+            generalDetails.vendorId = selectedVendorId;
+        }
         // Validate the form data
-        if (!generalDetails.vendorId || !generalDetails.client || !generalDetails.projectName || !generalDetails.status ) {
+        if ( !generalDetails.vendorId || !generalDetails.vendorId || !generalDetails.client || !generalDetails.projectName || !generalDetails.status || !generalDetails.billRate ) {
           alert('Please fill in all mandatory fields');
           return;
         }
-        alert(rowData.employeeId);
-        alert(generalDetails.employeeId);
-        if(rowData.employeeId !== undefined){
-        if( rowData.employeeId != generalDetails.employeeId ){
-            alert("Please enter correct EmployeeId");
-            return;
-        }
-    }
+    //     alert(rowData.employeeId);
+    //     alert(generalDetails.employeeId);
+    //     if(rowData.employeeId !== undefined){
+    //     if( rowData.employeeId != generalDetails.employeeId ){
+    //         alert("Please enter correct EmployeeId");
+    //         return;
+    //     }
+    // }
         
-    console.log("generalDetails: "+generalDetails);
+    //console.log("generalDetails: "+generalDetails);
         // Make API call with formData
         handleFormSubmit(generalDetails);
     
@@ -84,6 +191,19 @@ const ProjectOnBoardingForm = () => {
             [field]: value
         }));
     }
+console.log(loading);
+if (loading) {
+    return (
+        <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100vh' // Full viewport height
+        }}>
+            <Spin size="large" />
+        </div>
+    );
+}
 
     return (
         
@@ -101,19 +221,30 @@ const ProjectOnBoardingForm = () => {
                         </Row>
                         <Row gutter={30}>
                             <Col span={8} className='form-row'>
-                                <Form.Item label="Project Id" name="Project Id" rules={[{ required: true }]}>
-                                    <Input onChange={(e) => handleGeneralData(e.target.value, 'projectId')} value={generalDetails.projectId} />
-                                </Form.Item>
+                            <Form.Item label="Employee" name="employeeId" rules={[{ required: true, message: 'Please select an employee' }]}>
+        <Select value={selectedEmployeeId} onChange={handleEmployeeChange}>
+          {employees.map((employee) => (
+            <Option key={employee.employeeId} value={employee.employeeId}>
+              {employee.firstName+' '+employee.lastName}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
                             </Col>
                             <Col span={8} className='form-row'>
-                                <Form.Item label="Employee Id" name="Employee Id" rules={[{ required: true }]}>
-                                    {/* <Input onChange={(e) => handleGeneralData(e.target.value, 'employeeId')} value={rowData && rowData.employeeId !== undefined ? rowData.employeeId : generalDetails.employeeId} disabled={rowData && rowData.employeeId !== undefined} /> */}                               
-                                   < Input onChange={(e) => handleGeneralData(e.target.value, 'employeeId')} value={generalDetails.employeeId} /> 
-                                </Form.Item>
+                            <Form.Item label="Vendor" name="vendorId" rules={[{ required: true, message: 'Please select a vendor' }]}>
+        <Select value={selectedVendorId} onChange={handleVendorChange}>
+          {vendors.map((vendor) => (
+            <Option key={vendor.customerId} value={vendor.customerId}>
+              {vendor.customerCompanyName}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
                             </Col>
                             <Col span={8} className='form-row'>
-                                <Form.Item label="Vendor Id" name="Vendor Id" rules={[{ required: true }]}>
-                                    <Input onChange={(e) => handleGeneralData(e.target.value, 'vendorId')} value={generalDetails.vendorId} />
+                                <Form.Item label="Bill Rate" name="Bill Rate" rules={[{ required: true }]}>
+                                    <Input  type="number" onChange={(e) => handleGeneralData(Number(e.target.value), 'billRate')}  value={generalDetails.billRate} />
                                 </Form.Item>
                             </Col>
                         </Row>

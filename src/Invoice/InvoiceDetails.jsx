@@ -1,6 +1,6 @@
 import React, { useState, useEffect,useRef } from "react";
-import { AgGridReact } from "ag-grid-react";
-import { Card, Row, Col, Button, Flex, Drawer, Space, Tag } from 'antd';
+import { AgGridReact } from "@ag-grid-community/react";
+import { Button, Drawer } from 'antd';
 import {PlusOutlined} from '@ant-design/icons';
 import axios from 'axios';
 import 'ag-grid-enterprise';
@@ -132,7 +132,31 @@ const InvoiceDetails = () => {
                   resizable: true,
                   filter: false,
                   floatingFilter: false
-              }}/>
+              }}
+              sideBar={{
+                toolPanels: [
+                    {
+                        id: 'columns',
+                        labelDefault: 'Columns',
+                        labelKey: 'columns',
+                        iconKey: 'columns',
+                        toolPanel: 'agColumnsToolPanel',
+                        toolPanelParams: {
+                            suppressRowGroups: false,
+                            suppressValues: true,
+                            suppressPivots: false, suppressPivotMode: true,
+                            suppressColumnFilter: true,
+                            suppressColumnSelectAll: true,
+                            suppressColumnExpandAll: true,
+                        }
+                    }
+                ]
+            }}
+            sortable={true}
+            defaultToolPanel='columns'
+            pagination={true}
+            paginationPageSize={15}
+              />
       </div>
   )
 }

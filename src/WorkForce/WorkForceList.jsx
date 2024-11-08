@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "@ag-grid-community/react";
 import { Link } from 'react-router-dom';
 import 'ag-grid-enterprise';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -14,12 +14,33 @@ const WorkForceList = () => {
         ,'Employment Type', 'SSN', 'Gender','Primary Skills'];
 
     useEffect(() => {
+        const storedData = localStorage.getItem('employeeData');
+
+        if (storedData) {
+            // Use data from localStorage if available
+            setRowData(JSON.parse(storedData));
+        } else {
         fetch('http://localhost:8080/api/v1/employees/getAllEmployees')
             .then(response => response.json())
             .then(data => {
-                setRowData(getFlattenedData(data));
+                const flattenedData = getFlattenedData(data);
+                
+                // Save flattened data to localStorage
+                localStorage.setItem('employeeData', JSON.stringify(flattenedData));
+                
+                // Update state with flattened data
+                setRowData(flattenedData);               
             })
             .catch(error => console.error('Error fetching data:', error));
+        }const handleBeforeUnload = () => {
+            localStorage.removeItem('employeeData');
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        // Clean up the event listener when the component unmounts
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
     }, []);
 
     const getFlattenedData = (data) => {
@@ -112,12 +133,29 @@ const WorkForceList = () => {
                 hiddenByDefault={false}
                 rowGroupPanelShow='always'
                 pivotPanelShow='always'
-               
-                
+                sideBar={{
+                    toolPanels: [
+                        {
+                            id: 'columns',
+                            labelDefault: 'Columns',
+                            labelKey: 'columns',
+                            iconKey: 'columns',
+                            toolPanel: 'agColumnsToolPanel',
+                            toolPanelParams: {
+                                suppressRowGroups: true,
+                                suppressValues: true,
+                                suppressPivots: false, suppressPivotMode: true,
+                                suppressColumnFilter: true,
+                                suppressColumnSelectAll: true,
+                                suppressColumnExpandAll: true,
+                            }
+                        }
+                    ]
+                }}
                 sortable={true}
                 defaultToolPanel='columns'
                 pagination={true}
-                paginationPageSize={100} />
+                paginationPageSize={20} />
         </div>
     )
 }

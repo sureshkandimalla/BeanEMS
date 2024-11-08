@@ -50,6 +50,7 @@ const App = () => {
               <Route path="/employeeFullDetails" element={<EmployeeFullDetailsComponent />} />
               <Route path="/employeeDetailDashboard" element={<EmployeeDetailDashboard />} />
               <Route path="/ProjectOnBoardingForm" element={<ProjectOnBoardingForm />} />
+              <Route path="/projects" element={<ProjectDashboard />} />
               {/* Add more routes here */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

@@ -9,6 +9,7 @@ import RevenueCharts from '../RevenueCharts/RevenueCharts';
 import InvoiceCard from '../InvoiceCard/InvoiceCard';
 import CurrentEmployeeCard from '../CurrentEmployeeCard/CurrentEmployeeCard';
 import "./Dashboard.css";
+import ProjectOnBoardingForm from '../OnBoardingComponent/ProjectOnBoarding';
 const Dashboard = () => {
 
 //addedchangesstart
@@ -94,6 +95,7 @@ const Dashboard = () => {
 
     const [employeeDrawerVisible, setEmployeeDrawerVisible] = useState(false);
     const [vendorDrawerVisible, setVendorDrawerVisible] = useState(false);
+    const [projectDrawerVisible, setProjectDrawerVisible] = useState(false);
 
     const showEmployeeDrawer = () => {
         setEmployeeDrawerVisible(true);
@@ -103,9 +105,14 @@ const Dashboard = () => {
         setVendorDrawerVisible(true);
     };
 
+    const showProjectDrawer = () => {
+        setProjectDrawerVisible(true);
+    }
+
     const onClose = () => {
         setEmployeeDrawerVisible(false);
         setVendorDrawerVisible(false);
+        setProjectDrawerVisible(false);
     };
 
 //added changes end
@@ -131,6 +138,9 @@ const Dashboard = () => {
     const addNewVendor = () => {
         setOpen(true);
     };
+    const addNewProject = () => {
+        setOpen(true);
+    };
 
     const employeeData = [
         { id: 1, name: 'John Doe', position: 'Software Engineer', department: 'Engineering' },
@@ -146,16 +156,17 @@ const Dashboard = () => {
     return (
         <>
             <Row justify={'end'}>
-                <Col span={12} className='welCCol'>
+                <Col span={8} className='welCCol'>
                     <h1 className='mrgBtm10 WelcomeHeading' data-text="Welcome Back">Welcome Back</h1>
                     <p>Suresh.K(suresh@beeninfosystems.com)</p>
                 </Col>
-                <Col span={12} className='buttonsBar'>
-                    <Flex gap="small" vertical align='end'>
+                <Col span={16} className='buttonsBar'>
+                    <Flex gap="small" wrap={false} justify="end" align="center">
                         <Flex gap="small" wrap="wrap">
                             <Button>Generate Invoice</Button>
                             <Button type='primary' onClick={showVendorDrawer}><PlusOutlined /> Add New Vendor</Button>
                             <Button type='primary' onClick={showEmployeeDrawer}><PlusOutlined /> Add New Employee</Button>
+                            <Button type='primary' onClick={showProjectDrawer}><PlusOutlined /> Add New Project</Button>
                         </Flex>
                     </Flex>
                 </Col>
@@ -179,6 +190,16 @@ const Dashboard = () => {
             >
                 {/* Use the NewVendor component */}
                 <Newvendor />
+            </Drawer>
+            <Drawer
+                title={`Project Onboarding`}
+                placement="right"
+                size="large"
+                onClose={onClose}
+                visible={projectDrawerVisible}
+            >
+                {/* Use the NewVendor component */}
+                <ProjectOnBoardingForm />
             </Drawer>
             <>
                 <Row gutter={16}>

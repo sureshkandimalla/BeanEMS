@@ -10,6 +10,7 @@ import { UserOutlined, MailOutlined, PhoneOutlined  } from '@ant-design/icons';
 import { useLocation } from 'react-router-dom';
 import EmployeePersonnelFilePage from '../EmployeeDetailsComponent/EmployeePersonnelFilePage';
 import RevenueCharts from '../RevenueCharts/RevenueCharts';
+import InvoiceDetails from '../Invoice/InvoiceDetails'
 //const style: React.CSSProperties = { background: '#A9A9A9', padding: '8px 0' ,paddingLeft: '8px 0'};
 
 const EmployeeFullDetails = () => {
@@ -28,6 +29,7 @@ const EmployeeFullDetails = () => {
           const lastMonthData = [25000, 28000, 20000, 15000, 50000];
           const location = useLocation();
           const { rowData } = location.state;
+          console.log(location.state)
           const [responseData, setResponseData] = useState(null);
           const [isLoading, setIsLoading] = useState(true);
           const [error, setError] = useState();
@@ -50,7 +52,7 @@ const EmployeeFullDetails = () => {
                 key: 2,
                 label: 'PROJECTS',
                 title: 'Emplyee Projects',
-                children: <ProjectGrid />
+                children: <ProjectGrid employeeId={rowData.employeeId}/>
             },
             {
                 key: 3,
@@ -79,7 +81,8 @@ const EmployeeFullDetails = () => {
             },
             {
               key: 9,
-              label: 'INVOICES'
+              label: 'INVOICES',
+              children: <InvoiceDetails />
             },
         ]
         
