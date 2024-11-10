@@ -6,37 +6,21 @@ import './ProjectGrid.css';
 import {DesktopOutlined,RiseOutlined,PlusOutlined} from '@ant-design/icons';
 import RevenueCharts from '../RevenueCharts/RevenueCharts';
 import { Col, Row ,Card, Button, Flex, Drawer  } from 'antd';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import ProjectOnBoardingForm from '../OnBoardingComponent/ProjectOnBoarding';
 import './ProjectGrid.css';
 import "@ag-grid-community/styles/ag-theme-quartz.css";
-//import "@ag-grid-community/styles/ag-theme-quartz.css";
-
-//const style: React.CSSProperties = { background: '#A9A9A9', padding: '8px 0' ,paddingLeft: '8px 0'};
 
 const ProjectDashboard = () => {
 
   //  const [rowData, setRowData] = useState();
   const [rowData, setRowData] = useState();
   const [searchText, setSearchText] = useState('');
-  const [employees, setEmployees] = useState([]);
-  const [vendors, setVendors] = useState([]);
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
-  const [selectedVendorId, setSelectedVendorId] = useState(null);
-  const [projectDrawerVisible, setProjectDrawerVisible] = useState(false);
-
   const projectsSize = rowData ? rowData.length : 0
   const thisMonthData = [50000, 43000, 60000, 70000, 55000];
   const lastMonthData = [25000, 28000, 20000, 15000, 50000];
 
-
-  const navigate = useNavigate();
   const isInitialRender = useRef(true);
-
-  const showProjectDrawer = () => {
-    setProjectDrawerVisible(true);
-  };
 
   const addNewProject = () => {
     setOpen(true);
@@ -100,9 +84,9 @@ const getFlattenedData = (data) => {
 const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
 /// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Vendor','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
    var columns = [
-                   { headerName: 'Project Name', field: 'projectName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Project Id', field: 'projectId', cellRenderer: (params) => {const rowData = params.data;
-                          return ( <Link to={{ pathname: '/projectDetails',state: { rowData }, }} > {rowData.projectId}</Link>); }, sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
+                   { headerName: 'Project Name', field: 'projectName',cellRenderer: (params) => {const rowData = params.data;
+                    return ( <Link to='/projectFullDetais'state= {{ rowData }} > {rowData.projectName}</Link>)}, sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                   { headerName: 'Project Id', field: 'projectId', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
                   //  { headerName: 'Employee Id', field: 'employeeId', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                   { headerName: 'Employee Name', field: 'employeeName', cellRenderer: (params) => { const rowData = params.data;
                         return (<Link to={{  pathname: '/employeeProjectDetails', state: { rowData }, }} > {rowData.employeeName} </Link> );}, sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
@@ -115,12 +99,7 @@ const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
                     { headerName: 'Status', field: 'status', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                     { headerName: 'Invoice Terms', field: 'invoiceTerm', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                     { headerName: 'Invoice Terms', field: 'invoiceTerm', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    //{ headerName: 'Employee Pay', field: 'projectName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    //{ headerName: 'Expenses', field: 'client', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    //{ headerName: 'Bean Expenses', field: 'customerCompanyName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   // { headerName: 'Bean Net', field: 'customerCompanyName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   // { headerName: 'Total Hours', field: 'projectId', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' }
-                   ]
+                  ]
     return columns;
 }
 
