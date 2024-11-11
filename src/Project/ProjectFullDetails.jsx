@@ -45,20 +45,21 @@ const ProjectFullDetails = () => {
           const items = [
             {
               key: 1,
-              label: 'Project Info',
-              title: 'EmployeePersonnelFilePage /',
+              label: 'PROJECT SUMMARY',
+              title: 'Project Summary Page /',
               children: < ProjectPersonalFile rowData={rowData}/>
             },
             {
-                key: 2,
+              key: 2,
+              label: 'WorkOrders'
+          },
+            {
+                key: 3,
                 label: 'Assignments',
                 title: 'Assignments',
                 children: <AssignmentDetails/>
-            },
-            {
-                key: 3,
-                label: 'WorkOrders'
             }
+            
         ]
         const toggleTabs = (e) => {
           //TODO
@@ -80,10 +81,10 @@ const ProjectFullDetails = () => {
                       <p>
                           <div>
                               <span className='name-span' style={{ color: 'blue', padding: '5px', fontSize: '20px' }}>
-                                  <UserOutlined style={{ marginRight: '14px' }} /> {responseData.projectName} </span>
+                                  Project : {responseData.projectName} </span>
                               <button style={{ float: 'right', top: '4', right: '0', background: '#ffffff', border: 'none', cursor: 'pointer' }} onClick={handleClick}>...</button><br />
-                              <span className="designation-style">{responseData.vendorName}</span>
-                              <span style={{ float: 'right', right: '0', color: 'black', padding: '5px', fontSize: '10px' }}> {responseData.employeeName}</span>
+                              <span className="designation-style">Client : {responseData.vendorName}</span>
+                              <span style={{ float: 'right', right: '0', color: 'black', padding: '5px', fontSize: '10px' }}>  {responseData.employeeName}</span>
                           </div>
                       </p>
                   </Card>
@@ -105,8 +106,6 @@ const ProjectFullDetails = () => {
                  </div>
                </div>              
                <hr className="dotted-line" />
-               <div class="labelArrow" onclick="toggleContent()">Document Alerts <span class="arrow">&#9660;</span></div>
-              <div class="content" id="content">Content here</div>
              </section>
                             
                         </Col>

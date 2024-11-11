@@ -73,17 +73,17 @@ const getFlattenedData = (data) => {
 const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
 /// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Vendor','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
    var columns = [
-                   { headerName: 'Assignment Id', field: 'assignmentId'},
-                   { headerName: 'Assignment Type', field: 'assignmentType', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
-                   { headerName: 'Employee Id', field: 'employeeId'},
-                   { headerName: 'Client', field: 'clientName',sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Vendor', field: 'vendorName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Bill Rate', field: 'billRate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Project Start Date', field: 'startDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Project End Date', field: 'endDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Wage', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Status', field: 'status', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                ]
+                  //  { headerName: 'Assignment Id', field: 'assignmentId'},
+                    { headerName: 'Employee Id', field: 'employeeId'},
+                  //  { headerName: 'Client', field: 'clientName',sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                  //  { headerName: 'Vendor', field: 'vendorName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                  // { headerName: 'Bill Rate', field: 'billRate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                  { headerName: 'Wage', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                  { headerName: 'Assignment Type', field: 'assignmentType', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
+                  { headerName: 'Status', field: 'status', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' }, 
+                   { headerName: 'Start Date', field: 'startDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                   { headerName: 'End Date', field: 'endDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                   ]
     return columns;
 }
 
