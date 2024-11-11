@@ -4,75 +4,26 @@ import moment from 'moment';
 import axios from 'axios';
 
 
-const AssignmentForm = ({ onClose }) => {
+const WorkOrderForm = ({ onClose }) => {
   const { Option } = Select;
   const [form] = Form.useForm();
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState();
-  const [selectedVendorId, setSelectedVendorId] = useState();
-  const [employees, setEmployeesData] = useState([]);
-  const [vendors, setVendorsData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const assignmentTypes = ["Employee", "Referral", "Commission"];
-  
+  const [projectName, setProjectName] = useState(localStorage.getItem('projectName') || '');
   const projectId = localStorage.getItem('projectId');
-  const projectName = localStorage.getItem('projectName');
+ // const projectName = localStorage.getItem('projectName');
   console.log(projectId);
   console.log(projectName)
   const [generalDetails, setGeneralDetails] = useState({
-    employeeId: null,
-    projectId: projectId,
-    projectName: projectName || "",
+    wageId: null,    
+    wageType: "", 
+    projectId: projectId,       
     // vendorName: "",
     // vendorId: null,
     // clientName: "",   
     // clientId: null,
     startDate: "", 
-    status:"",
     endDate: "",  
     wage: 0,
-    assignmentType: "",
-    assignmentTaxType:"",
-    assignmentNotes: [],
-    lastUpdated:""
   });
-
-  useEffect(() => {
-    const fetchEmployeesAndVendors = async () => {
-      try {
-        const [employeesData, vendorsData] = await Promise.all([
-          fetch('http://localhost:8080/api/v1/employees/getAllEmployees').then(response => response.json()),
-          fetch('http://localhost:8080/api/v1/customers/getAllCustomers').then(response => response.json())
-        ]);
-        
-        setEmployeesData(employeesData);
-        setVendorsData(vendorsData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        Modal.error({
-          content: 'Error fetching employees or customers. Please try again later.'
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchEmployeesAndVendors();
-  }, []);
-
-  const handleEmployeeChange = (value) => {
-    setSelectedEmployeeId(value);
-  };
-
-  const handleVendorChange = (value) => {
-    setSelectedVendorId(value);
-  };
-
-  const handleAssignmentChange = (value) => {
-    setGeneralDetails((prevDetails) => ({
-      ...prevDetails,
-      assignmentType: value,
-    }));
-  };
 
   const handleGeneralData = (value, field) => {
     setGeneralDetails(prevState => ({
@@ -84,15 +35,14 @@ const AssignmentForm = ({ onClose }) => {
   const handleSubmit = () => {
     // Add selected employee and vendor IDs to generalDetails
     const updatedDetails = {
-      ...generalDetails,
-      employeeId: selectedEmployeeId
+      ...generalDetails
     };
 
     console.log("Submitted Details:", updatedDetails);
     
     // Validate the form data
     // !updatedDetails.clientName ||
-    if ( !updatedDetails.assignmentType || !updatedDetails.wage) {
+    if (  !updatedDetails.wage) {
       alert('Please fill in all mandatory fields');
       return;
     }
@@ -101,7 +51,8 @@ const AssignmentForm = ({ onClose }) => {
   };
 
   const handleFormSubmit = (data) => {
-    axios.post('http://localhost:8080/api/v1/assignments', data, {
+    console.log(data)
+    axios.post('http://localhost:8080/api/v1/wages/wage', data, {
         headers: {
             'Content-Type': 'application/json'
         }
@@ -112,14 +63,12 @@ const AssignmentForm = ({ onClose }) => {
                     content: 'Data saved successfully',
                     onOk: onClose
                 });
-            } else {
-                // Handle other cases
+            } else {                
                 console.log('Response data does not have expected value');
             }
         })
         .catch(error => {
-            console.error('Error posting data:', error);
-            // Display error message
+            console.error('Error posting data:', error);           
             Modal.error({
                 content: 'Error posting data. Please try again later.'
             });
@@ -128,39 +77,33 @@ const AssignmentForm = ({ onClose }) => {
 
   const handleClear = () => {
     form.resetFields(); // Resets the Ant Design form fields
-    setSelectedEmployeeId(null); // Clear selected employee
-    setSelectedVendorId(null); // Clear selected vendor
     setGeneralDetails({
-      employeeId: null,
-      projectId: null,
-      projectName: projectName || "", // Retain the project name from localStorage
-      assignmentType: "",
-      status:"",
-    //   vendorName: "",
-    //   vendorId: null,
-    //   clientName: "",     
-    //   clientId: null,
-      startDate: "",
-      assignmentNotes: [],
-      endDate: "",
-      wage: 0,
-      assignmentTaxType:""
+        wageId: null,
+        projectId: projectId,
+        wageType: "",              
+        // vendorName: "",
+        // vendorId: null,
+        // clientName: "",   
+        // clientId: null,
+        startDate: "", 
+        endDate: "",  
+        wage: 0,
     });
   };
   
 
-  if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh'
-      }}>
-        <Spin size="large" />
-      </div>
-    );
-  }
+//   if (loading) {
+//     return (
+//       <div style={{
+//         display: 'flex',
+//         justifyContent: 'center',
+//         alignItems: 'center',
+//         height: '100vh'
+//       }}>
+//         <Spin size="large" />
+//       </div>
+//     );
+//   }
 
   return (
     <div className='employee-onboarding-form'>
@@ -169,6 +112,11 @@ const AssignmentForm = ({ onClose }) => {
         <Form form={form}>
           <Row gutter={30}>
             <Col span={8} className='form-row'>
+            <Form.Item label="Project Name" name="projectName">
+            <span>{projectName || 'N/A'}</span>
+            </Form.Item>
+            </Col> 
+            {/* <Col span={8} className='form-row'>
               <Form.Item label="Employee" name="employeeId" rules={[{ required: true, message: 'Please select an employee' }]}>
                 <Select value={selectedEmployeeId} onChange={handleEmployeeChange}>
                   {employees.map((employee) => (
@@ -178,10 +126,7 @@ const AssignmentForm = ({ onClose }) => {
                   ))}
                 </Select>
               </Form.Item>
-              <Form.Item label="Project Name" name="projectName">
-            <span>{projectName || 'N/A'}</span>
-            </Form.Item>
-            </Col>
+            </Col> */}
             
             {/* <Col span={8} className='form-row'>
               <Form.Item label="Vendor" name="vendorId">
@@ -207,19 +152,7 @@ const AssignmentForm = ({ onClose }) => {
               <Form.Item label="Client" name="clientName" rules={[{ required: true }]}>
                 <Input onChange={(e) => handleGeneralData(e.target.value, 'clientName')} value={generalDetails.clientName} />
               </Form.Item>
-            </Col> */}
-            
-            <Col span={8} className="form-row">
-              <Form.Item label="AssignmentType" name="assignmentType">
-                <Select value={generalDetails.assignmentType} onChange={handleAssignmentChange}>
-                  {assignmentTypes.map((assign) => (
-                    <Option key={assign} value={assign}>
-                      {assign}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
+            </Col> */}            
             
             {/* <Col span={8} className='form-row'>
               <Form.Item label="Project Name" name="projectName">
@@ -267,4 +200,4 @@ const AssignmentForm = ({ onClose }) => {
   );
 };
 
-export default AssignmentForm;
+export default WorkOrderForm;

@@ -26,19 +26,19 @@ const ProjectPersonalFile = ({rowData}) => {
             <div className="details-row">
               <div className="field">
                 <label htmlFor="firstName">Project Name</label>
-                <span className="field-value">{rowData.projectName}</span>
+                <span className="field-value">{rowData?.projectName}</span>
               </div>
               <div className="field">
                 <label htmlFor="middleName">Vendor Name</label>
-                <span className="field-value">{rowData.vendorName}</span>
+                <span className="field-value">{rowData?.vendorName}</span>
               </div>
               <div className="field">
                 <label htmlFor="lastName">Client Name</label>
-                <span className="field-value">{rowData.clientName}</span>
+                <span className="field-value">{rowData?.clientName}</span>
               </div>
               <div className="field">
                 <label htmlFor="designation">BillRate</label>
-                <span className="field-value">{rowData.billRate}</span>
+                <span className="field-value">{rowData?.billRate}</span>
               </div>
             </div>
           </div>
@@ -84,15 +84,15 @@ const ProjectPersonalFile = ({rowData}) => {
               </div>
               <div className="field">
                 <label htmlFor="startDate">Project Start Date</label>
-                <span className="field-value">{rowData.startDate}</span>
+                <span className="field-value">{rowData?.startDate}</span>
               </div>
               <div className="field">
                 <label htmlFor="period">Project End Date</label>
-                <span className="field-value">{rowData.endDate}</span>
+                <span className="field-value">{rowData?.endDate}</span>
               </div>
               <div className="field">
                 <label htmlFor="employeeId">Project Id</label>
-                <span className="field-value">{rowData.projectId}</span>
+                <span className="field-value">{rowData?.projectId}</span>
               </div>
             </div>
             <div className="header">
@@ -100,19 +100,19 @@ const ProjectPersonalFile = ({rowData}) => {
             <div className="details-row">
               <div className="field">
                 <label htmlFor="emailAddress">Expense Internal</label>
-                <span className="field-value">{rowData.expenseInternal}</span> {/*TODO change status */}
+                <span className="field-value">{rowData?.expenseInternal}</span> {/*TODO change status */}
               </div>
               <div className="field">
                 <label htmlFor="wage">Expense External</label>
-                <span className="field-value">{rowData.expenseExternal}</span>
+                <span className="field-value">{rowData?.expenseExternal}</span>
               </div>
               <div className="field">
                 <label htmlFor="department">Hours</label>
-                <span className="field-value">{rowData.hours}</span>
+                <span className="field-value">{rowData?.hours}</span>
               </div>
               <div className="field">
                 <label htmlFor="status">Net</label>
-                <span className="field-value">{rowData.net}</span>
+                <span className="field-value">{rowData?.net}</span>
               </div>
             </div>
             </div>
@@ -123,19 +123,19 @@ const ProjectPersonalFile = ({rowData}) => {
             <div className="details-row">
               <div className="field">
                 <label htmlFor="addressLine1">Address Line1</label>
-                <span className="field-value">{rowData.address ? rowData.address.address : 'NA'}</span>
+                <span className="field-value">{rowData?.address ? rowData.address.address : 'NA'}</span>
               </div>
               <div className="field">
                 <label htmlFor="addressLine2">Address Line2</label>
-                <span className="field-value">{rowData.address ? rowData.address.addressLine2 : 'NA'}</span>
+                <span className="field-value">{rowData?.address ? rowData.address.addressLine2 : 'NA'}</span>
               </div>
               <div className="field">
                 <label htmlFor="City">City,State</label>
-                <span className="field-value">{rowData.address ? rowData.address.city : 'NA'},{rowData.address ? rowData.address.state : 'NA'}</span>
+                <span className="field-value">{rowData?.address ? rowData.address.city : 'NA'},{rowData?.address ? rowData.address.state : 'NA'}</span>
               </div>
               <div className="field">
                 <label htmlFor="zipCode">Zip Code</label>
-                <span className="field-value">{rowData.address ? rowData.address.zipCode : 'NA'}</span>
+                <span className="field-value">{rowData?.address ? rowData.address.zipCode : 'NA'}</span>
               </div>
             </div>
           

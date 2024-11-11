@@ -4,15 +4,12 @@ import "@ag-grid-community/styles/ag-grid.css";
 import './ProjectGrid.css';
 import { PlusOutlined} from '@ant-design/icons';
 import { Button, Drawer  } from 'antd';
-import { Link } from 'react-router-dom';
-import './ProjectGrid.css';
 import "@ag-grid-community/styles/ag-theme-quartz.css";
-import AssignmentForm from "./AssignmentForm";
-
-const AssignmentDetails = ({projectId}) => {
- console.log(projectId)
+import WorkOrderForm from "./WorkOrderForm";
+const WorkOrderDetails = ({rowData}) => {
+ console.log(rowData)
   //  const [rowData, setRowData] = useState();
-  const [rowData, setRowData] = useState();
+  const [responseData, setResponseData] = useState();
   const [searchText, setSearchText] = useState('');
 
   const addNewProject = () => {
@@ -26,20 +23,9 @@ const onClose = () => {
 const [open, setOpen] = useState(false);
 
 useEffect(() => {
-  const fetchData = async () => {     
-          try {
-            const response = await fetch(`http://localhost:8080/api/v1/assignmentsForProject?projectId=${projectId}`);
-              const data = await response.json();
-              const flattendData = getFlattenedData(data)
-              setRowData(flattendData); 
-              console.log(flattendData)                     
-          } catch (error) {
-              console.error('Error fetching data:', error);
-          }
-      }
-
-  fetchData();
-}, []);
+    console.log('rowData:', rowData);
+    setResponseData(rowData);
+}, [rowData]);
 
 const getFlattenedData = (data) => {
 
@@ -73,16 +59,12 @@ const getFlattenedData = (data) => {
 const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
 /// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Vendor','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
    var columns = [
-                   { headerName: 'Assignment Id', field: 'assignmentId'},
-                   { headerName: 'Assignment Type', field: 'assignmentType', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
-                   { headerName: 'Employee Name', field: 'employeeName', cellRenderer: (params) => params.data?.firstName +" "+ params.data?.lastName},
-                   { headerName: 'Client', field: 'clientName',sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Vendor', field: 'vendorName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Bill Rate', field: 'billRate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                   { headerName: 'Wage Id', field: 'wageId'},
+                   { headerName: 'Wage Type', field: 'wageType', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
+                   { headerName: 'Bill Rate', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                    { headerName: 'Project Start Date', field: 'startDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                    { headerName: 'Project End Date', field: 'endDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                    { headerName: 'Wage', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Status', field: 'status', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                 ]
     return columns;
 }
@@ -100,17 +82,17 @@ return (
           onChange={handleSearchInputChange}
         />
         <Drawer
-              title={`Create New Assignment`}
+              title={`Create New WorkOrder`}
               placement="right"
               size="large"
               onClose={onClose}
               open={open}
           >
-              <AssignmentForm onClose={onClose} />
+              <WorkOrderForm onClose={onClose} />
 
           </Drawer>
             <button type="primary" className='search-button' onClick={filterData}>Search</button>
-            <Button type='primary' className='button-vendor' onClick={addNewProject}><PlusOutlined /> Add New Assignment</Button>
+            <Button type='primary' className='button-vendor' onClick={addNewProject}><PlusOutlined /> Add New WorkOrder</Button>
             </div>
             <AgGridReact rowData={filterData()} columnDefs={getColumnsDefList( true, false)} 
             domLayout="autoHeight"
@@ -153,5 +135,5 @@ return (
 )
 }
 
-export default AssignmentDetails;
+export default WorkOrderDetails;
 
