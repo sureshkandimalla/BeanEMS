@@ -64,7 +64,7 @@ const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
                    { headerName: 'Bill Rate', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                    { headerName: 'Project Start Date', field: 'startDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                    { headerName: 'Project End Date', field: 'endDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Wage', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                  // { headerName: 'Wage', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                 ]
     return columns;
 }

@@ -86,18 +86,24 @@ const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
    var columns = [
                    { headerName: 'Project Name', field: 'projectName',cellRenderer: (params) => {const rowData = params.data;
                     return ( <Link to='/projectFullDetais'state= {{ rowData }} > {rowData.projectName}</Link>)}, sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                   { headerName: 'Project Id', field: 'projectId', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
-                  //  { headerName: 'Employee Id', field: 'employeeId', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                  { headerName: 'Employee Name', field: 'employeeName', cellRenderer: (params) => { const rowData = params.data;
+                    { headerName: 'Employee Name', field: 'employeeName', cellRenderer: (params) => { const rowData = params.data;
                         return (<Link to={{  pathname: '/employeeProjectDetails', state: { rowData }, }} > {rowData.employeeName} </Link> );}, sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
-                    //{ headerName: 'Employee Name', field: 'employeeName', valueGetter(params) { return  params.data.firstName + ' ' + params.data.lastName ;},sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
+                    { headerName: 'Bill Rate', field: 'billRate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                    { headerName: 'Bean Net Internal', field: 'net', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                    { headerName: 'Employee pay Rate', field: 'employeePay', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                    { headerName: 'External', field: 'expenseExternal', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                    { headerName: 'Internal', field: 'expenseInternal', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                    { headerName: 'Bean Net', field: 'net', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                   
+                    { headerName: 'Status', field: 'status', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                    { headerName: 'Project Id', field: 'projectId', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
+                  //  { headerName: 'Employee Id', field: 'employeeId', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                     //{ headerName: 'Employee Name', field: 'employeeName', valueGetter(params) { return  params.data.firstName + ' ' + params.data.lastName ;},sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
                     { headerName: 'Client', field: 'clientName',sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                     { headerName: 'Vendor', field: 'vendorName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Bill Rate', field: 'billRate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Project Start Date', field: 'startDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                     { headerName: 'Project Start Date', field: 'startDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                     { headerName: 'Project End Date', field: 'endDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Status', field: 'status', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Invoice Terms', field: 'invoiceTerm', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                     { headerName: 'Invoice Terms', field: 'invoiceTerm', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                     { headerName: 'Invoice Terms', field: 'invoiceTerm', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                   ]
     return columns;
