@@ -1,0 +1,51 @@
+.dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .dialog-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+  }
+  
+  .timesheet {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+  }
+  
+  .cell {
+    text-align: center;
+    padding: 10px;
+  }
+  
+  .header {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  .hours-input {
+    width: 100%;
+    padding: 5px;
+  }
+  
+  .dialog-actions {
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .dialog-actions button {
+    margin-left: 10px;
+  }
+  

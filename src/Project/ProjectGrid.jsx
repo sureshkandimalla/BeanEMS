@@ -48,7 +48,15 @@ const ProjectGrid = ({employeeId}) => {
             console.log(transformedData)
             })
             .catch(error => console.error('Error fetching data:', error));
-    }, []);    
+    }, []);  
+
+    const pinnedBottomRowData = [
+        {
+          name: "Total",  // Placeholder text for 'name' column
+          billRate: rowData.reduce((sum, row) => sum + row.billRate, 0),  // Sum of salaries
+        },
+      ];
+
 
     const flattenObject = (obj, prefix = '') => {
         return Object.keys(obj).reduce((acc, key) => {            
@@ -169,6 +177,7 @@ const ProjectGrid = ({employeeId}) => {
                 sortable={true}
                 defaultToolPanel='columns'
                 pagination={true}
+                
                 sideBar={{
                     toolPanels: [
                         {
@@ -189,7 +198,10 @@ const ProjectGrid = ({employeeId}) => {
                     ]
                 }}
                 paginationPageSize={100} 
-                gridOptions />
+                gridOptions
+                pinnedBottomRowData={pinnedBottomRowData}  // Set pinned bottom row data here                
+
+                 />
                 
         </div>
     )
