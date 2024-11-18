@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useRef } from "react";
+import React, { useMemo,useState, useEffect,useRef } from "react";
 //import TextField from '@material-ui/core/TextField';
 import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
@@ -62,6 +62,7 @@ const getFlattenedData = (data) => {
     console.log(updatedData)
     return updatedData || [];
 }
+const pinnedBottomRowData =[{ name: 'Total', wage: 100, hours: 100 }]
 
 
 
@@ -84,10 +85,13 @@ const getFlattenedData = (data) => {
 const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
 /// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Vendor','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
    var columns = [
-                   { headerName: 'Project Name', field: 'projectName',cellRenderer: (params) => {const rowData = params.data;
-                    return ( <Link to='/projectFullDetais'state= {{ rowData }} > {rowData.projectName}</Link>)}, sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                    
+    
+                    { headerName: 'Project Name', field: 'projectName',cellRenderer: (params) => {const rowData = params.data;
+                          return ( <Link to='/projectFullDetais'state= {{ rowData }} > {rowData && rowData?.projectName}</Link>)}, sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },    
                     { headerName: 'Employee Name', field: 'employeeName', cellRenderer: (params) => { const rowData = params.data;
-                        return (<Link to={{  pathname: '/employeeProjectDetails', state: { rowData }, }} > {rowData.employeeName} </Link> );}, sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
+                        return (<Link to={{  pathname: '/employeeProjectDetails', state: { rowData }, }} > {rowData && rowData?.employeeName} </Link> );}, sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
+                    { headerName: 'Vendor', field: 'vendorName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },                        { headerName: 'Status', field: 'status', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                     { headerName: 'Bill Rate', field: 'billRate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                     { headerName: 'Bean Net Internal', field: 'net', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                     { headerName: 'Employee pay Rate', field: 'employeePay', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
@@ -95,12 +99,10 @@ const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
                     { headerName: 'Internal', field: 'expenseInternal', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                     { headerName: 'Bean Net', field: 'net', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                    
-                    { headerName: 'Status', field: 'status', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Project Id', field: 'projectId', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
+                       { headerName: 'Project Id', field: 'projectId', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
                   //  { headerName: 'Employee Id', field: 'employeeId', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                      //{ headerName: 'Employee Name', field: 'employeeName', valueGetter(params) { return  params.data.firstName + ' ' + params.data.lastName ;},sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
                     { headerName: 'Client', field: 'clientName',sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Vendor', field: 'vendorName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                      { headerName: 'Project Start Date', field: 'startDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                     { headerName: 'Project End Date', field: 'endDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                      { headerName: 'Invoice Terms', field: 'invoiceTerm', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
@@ -174,7 +176,6 @@ return (
             hiddenByDefault={false}
             rowGroupPanelShow='never'
             pivotPanelShow='always'
-
             sideBar={{
                 toolPanels: [
                     {
@@ -197,7 +198,12 @@ return (
             sortable={true}
             defaultToolPanel='columns'
             pagination={true}
-            paginationPageSize={15} />
+            paginationPageSize={15}
+            pinnedBottomRowData={pinnedBottomRowData}  // Add pinned bottom row
+            rowSelection="multiple"  // Updated selection setting
+            enableRangeSelection={true}  // No longer deprecated in latest version
+            animateRows={true}
+            />
     </div>
     </>
 )

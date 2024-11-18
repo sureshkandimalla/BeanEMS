@@ -17,12 +17,18 @@ const WorkForce=()=>{
   const [invoicesChartLabels, setInvoicesChartLabels] = useState([]);
   const [rowData, setRowData] = useState([]);
   const [activeRowData, setActiveRowData] = useState([]);
+  const [usaRowData, setUSARowData] = useState([]);
+  const [indRowData, setIndRowData] = useState([]);
+  const [rTypeData, setTypeRowData] = useState([]);
   const [terminatedRowData, setTerminatedRowData] = useState([]);
   const [onBoardingRowData, setOnBoardingRowData] = useState([]);
+  const [onApprovedRowData, setApprovedRowData] = useState([]);
   const [fullTimeRowData, setfullTimeRowData] = useState([]);
   const [corpRowData, setcorpRowData] = useState([]);
   const [loading, setLoading] = useState(true);
   const isInitialRender = useRef(true);
+  const [totalWage, setTotalWage] = useState([]);
+
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -55,28 +61,49 @@ const getFlattenedData = (data) => {
     const items = [
         {
             key: 1,
-            label: 'Active Employees',
-            children: <WorkForceList employees={activeRowData}/>
+            label: 'USA',
+            children: <WorkForceList employees={usaRowData}/>
         },
         {
             key: 2,
-            label: 'Terminated',
-            children: <WorkForceList employees={terminatedRowData}/>
+            label: 'India',
+            children: <WorkForceList employees={indRowData}/>
         },
         {
             key: 3,
+            label: 'Workforce',
+            children: <WorkForceList employees={rowData}/>
+        },
+        {
+            key: 4,
+            label: 'Billable Employees',
+            children: <WorkForceList employees={rTypeData}/>
+        },
+        {
+            key: 5,
+            label: 'Active Employees',
+            children: <WorkForceList employees={activeRowData}/>
+        },
+        
+        {
+            key: 6,
             label: 'Onboarding',
             children: <WorkForceList employees={onBoardingRowData}/>
         },
         {
-            key: 4,
+            key: 7,
             label: 'Corp to Corp',
             children: <WorkForceList employees={corpRowData}/>
         },
         {
-            key: 5,
+            key: 8,
             label: 'Fulltime',
             children: <WorkForceList employees={fullTimeRowData}/>
+        },
+        {
+            key: 9,
+            label: 'Terminated',
+            children: <WorkForceList employees={terminatedRowData}/>
         },
     ]
 
@@ -137,15 +164,25 @@ const getFlattenedData = (data) => {
             localStorage.setItem('employeeData', JSON.stringify(flattenedData));
             
             // Update state with flattened data
-            setRowData(flattenedData);              
+            setRowData(flattenedData);   
+            setIndRowData(flattenedData?.filter(x=>x.workCountry === 'India'))
+            setUSARowData(flattenedData?.filter(x=>x.workCountry === 'USA'))
+            setTypeRowData(flattenedData?.filter(x=>x.resourceType === 'Billable'))           
             setActiveRowData(flattenedData?.filter(x=>x.status === 'Active'))
-            setTerminatedRowData(flattenedData?.filter(x=>x.status === null))
-            setOnBoardingRowData(flattenedData?.filter(x=>x.status === null)) 
+            setTerminatedRowData(flattenedData?.filter(x=>(x.status === 'Terminated' || x.status === 'Inactive')))
+            setOnBoardingRowData(flattenedData?.filter(x=>x.status === 'Onboarding')) 
+            onApprovedRowData(flattenedData?.filter(x=>x.status === 'Approved')) 
+
+            const totalWage= rTypeData.reduce((total, item) => total + item.billRate, 0);
+            alert(totalWage);
+            setTotalWage(totalWage);
+            
             setcorpRowData(flattenedData?.filter(x=>(x.employmentType === '1099' || x.employmentType === 'C2C')) ) 
             setfullTimeRowData(flattenedData?.filter(x=>(x.employmentType === 'W2' || x.employmentType === 'Full-Time'))) 
             console.log(activeRowData)
             console.log(onBoardingRowData)
             console.log(terminatedRowData)
+            console.log("Total Wage"+totalWage)
 
         })
         .catch(error => console.error('Error fetching data:', error))
@@ -157,7 +194,7 @@ const getFlattenedData = (data) => {
         fetchData();
     }, []);
 
-    const totalParamCount = workForceChartData[0] + workForceChartData[1] + workForceChartData[2] + workForceChartData[3];
+   // const totalParamCount = workForceChartData[0] + workForceChartData[1] + workForceChartData[2] + workForceChartData[3]+ workForceChartData[4];
 
     return (
         <>

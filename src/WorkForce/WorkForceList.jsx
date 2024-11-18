@@ -10,8 +10,8 @@ const WorkForceList = ({employees}) => {
     console.log(employees)
     const [searchText, setSearchText] = useState('');
     const [rowData, setRowData] = useState();
-    const columnsList = ['Employee Id','First Name', 'Last Name', 'Email Id', 'Phone', 'DOB', 'Designation', 'status','startDate','endDate'
-        ,'Employment Type', 'SSN', 'Gender','Primary Skills'];
+    const columnsList = ['First Name', 'Last Name', 'Visa','status','Annual Pay','Designation', 'startDate','Primary Skills','Work City','Work Country','Email Id', 'Phone', 'DOB','endDate'
+        ,'Employment Type', 'SSN', 'Gender','Employee Id'];
 
     useEffect(() => {
         setRowData(employees)

@@ -4,8 +4,8 @@ import ReactApexChart from 'react-apexcharts';
 
 const PieCharts = ({ chartData, chartLabels }) => {
 
-  let labels = chartLabels.slice(0, 3); // Take the first 3 labels
-  let series = chartData.slice(0, 3); 
+  let labels = chartLabels; // Take the first 3 labels
+  let series = chartData; 
   let colors = ['#f8aa4e', '#6bcbe2', '#78a0ed']; 
 
   if (chartData.length === 4) {
