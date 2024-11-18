@@ -1,0 +1,3 @@
+.invalid-row {
+    background-color: #ffcccc !important; /* Highlight invalid rows in red */
+  }

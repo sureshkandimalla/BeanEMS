@@ -19,6 +19,8 @@ const ProjectDashboard = () => {
   const projectsSize = rowData ? rowData.length : 0
   const thisMonthData = [50000, 43000, 60000, 70000, 55000];
   const lastMonthData = [25000, 28000, 20000, 15000, 50000];
+  const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
+
 
   const isInitialRender = useRef(true);
 
@@ -62,9 +64,23 @@ const getFlattenedData = (data) => {
     console.log(updatedData)
     return updatedData || [];
 }
-const pinnedBottomRowData =[{ name: 'Total', wage: 100, hours: 100 }]
 
-
+useEffect(() => {
+  if (rowData && rowData.length > 0) {
+    console.log(rowData)
+    setPinnedBottomRowData([
+      {
+        projectName: "Total",
+        billRate: rowData.reduce((sum, row) => sum + (row.billRate || 0), 0),
+        net: rowData.reduce((sum, row) => sum + (row.net || 0), 0),
+        employeePay: rowData.reduce((sum, row) => sum + (row.employeePay || 0), 0),
+        expenseExternal: rowData.reduce((sum, row) => sum + (row.expenseExternal || 0), 0), // Summing billRate values
+        expenseInternal: rowData.reduce((sum, row) => sum + (row.expenseInternal || 0), 0),
+      },
+    ]);
+    console.log(pinnedBottomRowData)
+  }
+}, [rowData]);
 
  const handleSearchInputChange = (event) => {
     setSearchText(event.target.value);
@@ -85,19 +101,16 @@ const pinnedBottomRowData =[{ name: 'Total', wage: 100, hours: 100 }]
 const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
 /// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Vendor','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
    var columns = [
-                    
-    
-                    { headerName: 'Project Name', field: 'projectName',cellRenderer: (params) => {const rowData = params.data;
-                          return ( <Link to='/projectFullDetais'state= {{ rowData }} > {rowData && rowData?.projectName}</Link>)}, sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },    
+                   { headerName: 'Project Name', field: 'projectName',cellRenderer: (params) => {const rowData = params.data;
+                    return ( <Link to='/projectFullDetais'state= {{ rowData }} > {rowData.projectName}</Link>)}, sortable: isSortable, editable: true, filter: 'agTextColumnFilter', },
                     { headerName: 'Employee Name', field: 'employeeName', cellRenderer: (params) => { const rowData = params.data;
-                        return (<Link to={{  pathname: '/employeeProjectDetails', state: { rowData }, }} > {rowData && rowData?.employeeName} </Link> );}, sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
-                    { headerName: 'Vendor', field: 'vendorName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },                        { headerName: 'Status', field: 'status', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Bill Rate', field: 'billRate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Bean Net Internal', field: 'net', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Employee pay Rate', field: 'employeePay', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'External', field: 'expenseExternal', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Internal', field: 'expenseInternal', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Bean Net', field: 'net', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                        return (<Link to={{  pathname: '/employeeProjectDetails', state: { rowData }, }} > {rowData.employeeName} </Link> );}, sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
+                    { headerName: 'Bill Rate', field: 'billRate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter',valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` },
+                    { headerName: 'Bean Net Internal', field: 'net', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' ,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
+                    { headerName: 'Employee pay Rate', field: 'employeePay', sortable: isSortable, editable: true, filter: 'agTextColumnFilter',valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` },
+                    { headerName: 'External', field: 'expenseExternal', sortable: isSortable, editable: true, filter: 'agTextColumnFilter',valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` },
+                    { headerName: 'Internal', field: 'expenseInternal', sortable: isSortable, editable: true, filter: 'agTextColumnFilter',valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` },
+                    { headerName: 'Bean Net', field: 'net', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' ,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
                    
                        { headerName: 'Project Id', field: 'projectId', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
                   //  { headerName: 'Employee Id', field: 'employeeId', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
@@ -199,11 +212,7 @@ return (
             defaultToolPanel='columns'
             pagination={true}
             paginationPageSize={15}
-            pinnedBottomRowData={pinnedBottomRowData}  // Add pinned bottom row
-            rowSelection="multiple"  // Updated selection setting
-            enableRangeSelection={true}  // No longer deprecated in latest version
-            animateRows={true}
-            />
+            pinnedBottomRowData={pinnedBottomRowData} />
     </div>
     </>
 )

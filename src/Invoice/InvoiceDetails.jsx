@@ -2,18 +2,29 @@ import React, { useState, useEffect,useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Drawer } from 'antd';
 import {PlusOutlined} from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'ag-grid-enterprise';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import "./Invoice.css";
 import NewInvoice from './NewInvoice';
+import MonthlyTimesheetDialog from "../Project/TimeSheet/MonthlyTimeSheetModal";
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
 
 
 const InvoiceDetails = () => {
     
   const [searchText, setSearchText] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [rowData, setRowData] = useState();
+  const navigate = useNavigate();
+  const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
+
+
 //  const columnsList = ['Customer Id', 'Company Name', 'Email Id', 'Phone', 'Status', 'ein', 'Website','startDate','endDate' ];
   const isInitialRender = useRef(true);
 
@@ -44,6 +55,13 @@ const InvoiceDetails = () => {
       });
   };
 
+  const handleDateChange = date => {
+    setSelectedDate(date);
+    //alert(date.toISOString().split('T')[0]);
+    const formttedDate = date.toISOString().split('T')[0]; //yyyy-mm-dd
+    fetchData(formttedDate);
+  };
+
   const getFlattenedData = (data) => {
       let updatedData = data.map((dataObj) => {
           //return { ...dataObj, ...dataObj.employeeAddress[0], ...dataObj.employeeAssignments[0] }
@@ -52,19 +70,56 @@ const InvoiceDetails = () => {
       return updatedData || [];
   }
 
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [isTimesheetOpen, setIsTimesheetOpen] = useState(false);
+
+  const handleOpenTimesheet = (employee) => {
+    setSelectedEmployee(employee);
+    setIsTimesheetOpen(true);
+  };
+
+  const handleSaveTimesheet = (totalHours) => {
+    setRowData((prevData) =>
+      prevData.map((emp) =>
+        emp.id === selectedEmployee.id ? { ...emp, hours: totalHours } : emp
+      )
+    );
+    setIsTimesheetOpen(false);
+  };
+
   const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
       var columns = [
-                       { headerName: 'Invoice Id', field: 'invoiceId', sortable: isSortable },
+                       { headerName: 'Invoice Id', field: 'invoiceId', sortable: isSortable,valueFormatter: (params) => {
+                        // Check if this row is the pinned bottom row and show "Total"
+                        return params.node.rowPinned === 'bottom' ? "Total" : params.value;
+                      } },
                        { headerName: 'Project Id', field: 'projectId',sortable: isSortable},
                        { headerName: 'InvoiceMonth', field: 'invoiceMonth', sortable: isSortable},
-                       { headerName: 'Billing', field: 'billing', sortable: isSortable},
+                       { headerName: 'Billing', field: 'billing', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                      },
                        { headerName: 'Hours', field: 'hours', sortable: isSortable},
-                       { headerName: 'Total', field: 'total', sortable: isSortable},
-                       { headerName: 'Invoice PaidAmount', field: 'invoicePaidAmount', sortable: isSortable},
+                       { headerName: 'Total', field: 'total', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                      },
+                       { headerName: 'Invoice PaidAmount', field: 'invoicePaidAmount', sortable: isSortable,   valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                      },
                        { headerName: 'Start Date', field: 'startDate', sortable: isSortable},
                        { headerName: 'End Date', field: 'endDate', sortable: isSortable},
                        //{ headerName: 'Invoice Date', field: 'invoiceDate', sortable: isSortable},
                        { headerName: 'status', field: 'status', sortable: isSortable},
+                      //  {
+                      //   headerName: 'Timesheet',
+                      //   field: 'timesheet',
+                      //   cellRenderer: (params) => (
+                      //     <Button
+                      //       variant="contained"
+                      //       color="primary"
+                      //       startIcon={<AccessTimeIcon />}
+                      //       onClick={() => handleOpenTimesheet(params.data)}
+                      //     >
+                      //       Timesheet
+                      //     </Button>
+                      //   ),
+                      // },
                        
                    ]
        return columns;
@@ -101,6 +156,35 @@ const InvoiceDetails = () => {
       setOpen(false);
   };
 
+  useEffect(() => {
+    if (rowData && rowData.length > 0) {
+      console.log(rowData)
+      setPinnedBottomRowData([
+        {
+          invoiceId: "Total",
+          billing: rowData.reduce((sum, row) => sum + (row.billing || 0), 0),
+          hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
+          total: rowData.reduce((sum, row) => sum + (row.total || 0), 0),
+          invoicePaidAmount: rowData.reduce((sum, row) => sum + (row.invoicePaidAmount || 0), 0), // Summing billRate values
+        },
+      ]);
+      console.log(pinnedBottomRowData)
+    }
+  }, [rowData]);
+
+
+  const generateInvoice = () => {
+    // Any additional logic can go here
+    navigate('/generateInvoice', { state: { selectedDate: selectedDate.toString() } });
+  };
+
+  const getRowStyle = (params) => {
+    if (params.node.rowPinned) {
+      return { backgroundColor: "#d3f4ff", fontWeight: "bold" }; // Custom inline style for pinned rows
+    }
+    return null;
+  };
+
   return (
 
       
@@ -115,16 +199,28 @@ const InvoiceDetails = () => {
               <NewInvoice />
 
           </Drawer>
-          <div class="container">
-                  <input
-                      type="text"
-                      placeholder="Search..."
-                      value={searchText}
-                      onChange={handleSearchInputChange}
-                  />
-                  <button type="primary" className='search-button' onClick={filterData}>Search</button>
-                  <Button type='primary' className='button-vendor' onClick={addNewInvoice}><PlusOutlined /> Add New Invoice</Button>
-              </div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+        <input
+            type="text"
+            placeholder="Search..."
+            value={searchText}
+            onChange={handleSearchInputChange}
+        />
+        <button type="primary" className="search-button" onClick={filterData}>
+            Search
+        </button>
+    </div>
+    <Button type="primary" className="button-vendor" onClick={addNewInvoice}>
+        <PlusOutlined /> Add New Invoice
+    </Button>
+</div>
+                  <div style={{ marginTop: "0px" }}>
+                    <label style={{ marginTop: "5px" }}> Select Date: &nbsp;</label>
+                    <DatePicker class ="left-panel"  selected={selectedDate} onChange={handleDateChange} dateFormat="MM/yyyy" placeholderText="Select"  showMonthYearPicker/>
+                    <Button type='primary'style={{ marginLeft: "10px" }} className='button-vendor' disabled={!selectedDate} onClick={generateInvoice}><PlusOutlined /> Generate Invoice</Button>
+                  </div>
+
           <AgGridReact rowData={filterData()} columnDefs={getColumnsDefList(true)} gridOptions={gridOptions}
               defaultColDef={{
                   flex: 1,
@@ -156,7 +252,17 @@ const InvoiceDetails = () => {
             defaultToolPanel='columns'
             pagination={true}
             paginationPageSize={15}
+            pinnedTopRowData={pinnedBottomRowData}  // Set pinned bottom row data here                
+            getRowStyle={getRowStyle}
               />
+              {isTimesheetOpen && (
+  <MonthlyTimesheetDialog
+    open={isTimesheetOpen}
+    onClose={() => setIsTimesheetOpen(false)}
+    onSave={handleSaveTimesheet}
+    initialData={Array(30).fill(0)}
+  />
+)}
       </div>
   )
 }

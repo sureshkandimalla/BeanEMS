@@ -13,6 +13,7 @@ import EmployeeDetailDashboard from './EmployeeDetailDashboard/EmployeeDetailDas
 import ProjectDashboard from './Project/ProjectDashboard';
 import ProjectOnBoardingForm from './OnBoardingComponent/ProjectOnBoarding';
 import ProjectFullDetails from './Project/ProjectFullDetails';
+import GenerateInvoiceDetails from './Invoice/GenerateInvoiceDetails';
 
 
 
@@ -53,6 +54,7 @@ const App = () => {
               <Route path="/ProjectOnBoardingForm" element={<ProjectOnBoardingForm />} />
               <Route path="/projects" element={<ProjectDashboard />} />
               <Route path="/projectFullDetais" element={<ProjectFullDetails/>}/>
+              <Route path='/generateInvoice' element ={<GenerateInvoiceDetails/>}/>
               {/* Add more routes here */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
