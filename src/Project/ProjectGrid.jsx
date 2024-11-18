@@ -68,51 +68,6 @@ const ProjectGrid = ({employeeId}) => {
             return acc;
         }, {});
     };
-    
-    // const getColumnsDefList = (columnsList, isSortable, isEditable, hasFilter) => {
-    //     let columns = columnsList.map((column) => {
-    //         let fieldValue = column.split(' ').join('')
-    //         fieldValue = fieldValue[0].toLowerCase() + fieldValue.slice(1);
-    //         if (fieldValue.toLowerCase() === 'ssn' || fieldValue.toLowerCase() === 'dob') {
-    //             fieldValue = fieldValue.toLowerCase();
-    //         }
-
-    //         let updatedColumn = column === 'DOB' ? 'Date of Birth' : column
-    //         updatedColumn = column
-    //        /* if(column == 'startDate' )
-    //             updatedColumn='Employment Start Date';
-    //         else if(column == 'endDate')
-    //             updatedColumn='Employment End Date';*/
-   
-    //             return {
-    //                 headerName: updatedColumn,
-    //                 field: fieldValue,
-    //                 sortable: isSortable,
-    //                 editable: true,
-    //                 cellStyle: { 'text-align': 'left' },
-    //                 filter: 'agTextColumnFilter',
-    //                 tooltipValueGetter: (params) => params.value, 
-    //                 cellRenderer: (params) => {
-    //                     if (column === 'Employee Name' || column === 'Last Name') {
-    //                         return (
-    //                             <Link to="/employeeFullDetails" state={{ rowData: params.data }}>
-    //                                 {params.value}
-    //                             </Link>
-    //                         );
-    //                     } else {
-    //                         return params.value;
-    //                     }
-    //                 },
-    //                 valueFormatter: (params) => {
-    //                     return typeof params.value === 'float' ?  params.value.toLocaleString():'';
-    //                   },
-    //                 //tooltipComponent: 'customTooltip',
-    //                 tooltipShowDelay: 0,
-    //             };
-    //         });
-    //         return columns;
-    //     };
-
         const handleSearchInputChange = (event) => {
             setSearchText(event.target.value);
           };
