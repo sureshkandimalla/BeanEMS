@@ -48,14 +48,7 @@ const ProjectGrid = ({employeeId}) => {
             console.log(transformedData)
             })
             .catch(error => console.error('Error fetching data:', error));
-    }, []);  
-
-    const pinnedBottomRowData = [
-        {
-          name: "Total",  // Placeholder text for 'name' column
-          billRate: rowData.reduce((sum, row) => sum + row.billRate, 0),  // Sum of salaries
-        },
-      ];
+    }, []);      
 
 
     const flattenObject = (obj, prefix = '') => {
@@ -114,7 +107,6 @@ const ProjectGrid = ({employeeId}) => {
                         value={searchText}
                         onChange={handleSearchInputChange}
                     />
-                    <button type="primary" className='search-button' onClick={filterData}>Search</button>
                 </div>
             <AgGridReact rowData={filterData()} frameworkComponents={{ customTooltip: CustomTooltip }} columnDefs={columnDefs}
                 
@@ -154,7 +146,7 @@ const ProjectGrid = ({employeeId}) => {
                 }}
                 paginationPageSize={100} 
                 gridOptions
-                pinnedBottomRowData={pinnedBottomRowData}  // Set pinned bottom row data here                
+                 // Set pinned bottom row data here                
 
                  />
                 

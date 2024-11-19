@@ -1,6 +1,11 @@
 import React, { useState, useEffect,useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Drawer } from 'antd';
+import IconButton from "@mui/material/IconButton";
+import EditIcon from "@mui/icons-material/Edit";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
+
 import {PlusOutlined} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -19,7 +24,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 const InvoiceDetails = () => {
     
   const [searchText, setSearchText] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
   const [rowData, setRowData] = useState();
   const navigate = useNavigate();
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
@@ -55,11 +60,50 @@ const InvoiceDetails = () => {
       });
   };
 
+  const [editRowId, setEditRowId] = useState(null);
+  const [originalStatus, setOriginalStatus] = useState(null);
+
+  const handleEdit = (params) => {
+    setEditRowId(params.data.invoiceId);
+    setOriginalStatus(params.data.status); // Store the original status
+  };
+
+  const handleSave = (params) => {
+    const updatedRow = params.data;
+
+    // Call the PUT API to update the row
+    axios
+      .put(`http://localhost:8080/api/v1/invoices/${updatedRow.invoiceId}`, updatedRow)
+      .then((response) => {
+        console.log("Invoice updated successfully:", response.data);
+        setEditRowId(null); // Exit edit mode
+      })
+      .catch((error) => {
+        console.error("Error updating invoice:", error);
+      });
+  };
+
+  const handleCancel = (params) => {
+    setRowData((prevData) =>
+      prevData.map((row) =>
+        row.invoiceId === editRowId ? { ...row, status: originalStatus } : row
+      )
+    );
+    setEditRowId(null); // Exit edit mode
+  };
+
+  const handleStatusChange = (params, newValue) => {
+    setRowData((prevData) =>
+      prevData.map((row) =>
+        row.invoiceId === params.data.invoiceId ? { ...row, status: newValue } : row
+      )
+    );
+  };
   const handleDateChange = date => {
     setSelectedDate(date);
-    //alert(date.toISOString().split('T')[0]);
-    const formttedDate = date.toISOString().split('T')[0]; //yyyy-mm-dd
-    fetchData(formttedDate);
+    // //alert(date.toISOString().split('T')[0]);
+    // const formttedDate = date.toISOString().split('T')[0]; //yyyy-mm-dd
+    // fetchData(formttedDate);
   };
 
   const getFlattenedData = (data) => {
@@ -105,21 +149,47 @@ const InvoiceDetails = () => {
                        { headerName: 'Start Date', field: 'startDate', sortable: isSortable},
                        { headerName: 'End Date', field: 'endDate', sortable: isSortable},
                        //{ headerName: 'Invoice Date', field: 'invoiceDate', sortable: isSortable},
-                       { headerName: 'status', field: 'status', sortable: isSortable},
-                      //  {
-                      //   headerName: 'Timesheet',
-                      //   field: 'timesheet',
-                      //   cellRenderer: (params) => (
-                      //     <Button
-                      //       variant="contained"
-                      //       color="primary"
-                      //       startIcon={<AccessTimeIcon />}
-                      //       onClick={() => handleOpenTimesheet(params.data)}
-                      //     >
-                      //       Timesheet
-                      //     </Button>
-                      //   ),
-                      // },
+                       {
+                        headerName: "Status",
+                        field: "status",
+                        cellRenderer: (params) => {
+                          if (params.data.invoiceId === editRowId) {
+                            return (
+                              <select
+                                value={params.data.status}
+                                onChange={(e) => handleStatusChange(params, e.target.value)}
+                              >
+                                <option value="Paid">Paid</option>
+                                <option value="Unpaid">Unpaid</option>
+                              </select>
+                            );
+                          }
+                          return params.value;
+                        },
+                      },
+                      {
+                        headerName: "Actions",
+                        field: "actions",
+                        cellRenderer: (params) => {
+                          if (params.data.invoiceId === editRowId) {
+                            return (
+                              <>
+                                <IconButton color="primary" onClick={() => handleSave(params)}>
+                                  <SaveIcon />
+                                </IconButton>
+                                <IconButton color="secondary" onClick={() => handleCancel(params)}>
+                                  <CancelIcon />
+                                </IconButton>
+                              </>
+                            );
+                          }
+                          return (
+                            <IconButton color="primary" onClick={() => handleEdit(params)}>
+                              <EditIcon />
+                            </IconButton>
+                          );
+                        },
+                      }
                        
                    ]
        return columns;
@@ -206,20 +276,35 @@ const InvoiceDetails = () => {
             placeholder="Search..."
             value={searchText}
             onChange={handleSearchInputChange}
-        />
-        <button type="primary" className="search-button" onClick={filterData}>
-            Search
-        </button>
-    </div>
-    <Button type="primary" className="button-vendor" onClick={addNewInvoice}>
+        />  
+         <Button  style={{marginLeft:"20px"}}type="primary" className="button-vendor" onClick={addNewInvoice}>
         <PlusOutlined /> Add New Invoice
-    </Button>
+    </Button>      
+    </div>
+    <div style={{ display: "flex", alignItems: "center", marginTop: "0px" }}>
+  <label style={{ marginTop: "5px" }}>Select Date: &nbsp;</label>
+  <DatePicker
+    className="left-panel"
+    selected={selectedDate}
+    onChange={handleDateChange}
+    dateFormat="MM/yyyy"
+    placeholderText="Select the date"
+    showMonthYearPicker
+    style={{ width: "150px" }} // Add a fixed width
+  />
+  <Button
+    type="primary"
+    style={{ marginLeft: "10px" }}
+    className="button-vendor"
+    disabled={!selectedDate}
+    onClick={generateInvoice}
+  >
+    <PlusOutlined /> Generate Invoice
+  </Button>
 </div>
-                  <div style={{ marginTop: "0px" }}>
-                    <label style={{ marginTop: "5px" }}> Select Date: &nbsp;</label>
-                    <DatePicker class ="left-panel"  selected={selectedDate} onChange={handleDateChange} dateFormat="MM/yyyy" placeholderText="Select"  showMonthYearPicker/>
-                    <Button type='primary'style={{ marginLeft: "10px" }} className='button-vendor' disabled={!selectedDate} onClick={generateInvoice}><PlusOutlined /> Generate Invoice</Button>
-                  </div>
+   
+</div>
+                  
 
           <AgGridReact rowData={filterData()} columnDefs={getColumnsDefList(true)} gridOptions={gridOptions}
               defaultColDef={{

@@ -7,7 +7,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import './WorkForce.css';
 
 const WorkForceList = ({employees}) => {
-    console.log(employees)
+    //console.log(employees)
     const [searchText, setSearchText] = useState('');
     const [rowData, setRowData] = useState();
     const columnsList = ['First Name', 'Last Name', 'Visa','status','Annual Pay','Designation', 'startDate','Primary Skills','Work City','Work Country','Email Id', 'Phone', 'DOB','endDate'
@@ -85,7 +85,6 @@ const WorkForceList = ({employees}) => {
                         value={searchText}
                         onChange={handleSearchInputChange}
                     />
-                    <button type="primary" className='search-button' onClick={filterData}>Search</button>
                 </div>
             <AgGridReact rowData={filterData()} frameworkComponents={{ customTooltip: CustomTooltip }} columnDefs={getColumnsDefList(columnsList, true, false)}
                 domLayout="autoHeight"

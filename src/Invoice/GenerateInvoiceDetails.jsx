@@ -339,10 +339,7 @@ const handleEdit = (params) => {
               value={searchText}
               onChange={handleSearchInputChange}
               style={{ marginRight: '10px' }} // Add space between input and Search button
-            />
-            <button type="primary" className="search-button" onClick={filterData}>
-              Search
-            </button>
+            />           
           </div>
           <Button key="save" type="primary" onClick={handleSave}>
             Save

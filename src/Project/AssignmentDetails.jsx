@@ -109,8 +109,7 @@ return (
           >
               <AssignmentForm onClose={onClose} />
 
-          </Drawer>
-            <button type="primary" className='search-button' onClick={filterData}>Search</button>
+          </Drawer>            
             <Button type='primary' className='button-vendor' onClick={addNewProject}><PlusOutlined /> Add New Assignment</Button>
             </div>
             <AgGridReact rowData={filterData()} columnDefs={getColumnsDefList( true, false)} 

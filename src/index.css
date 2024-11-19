@@ -47,9 +47,9 @@
   margin-left: 15px;
 }
 .mrgTop15{margin-top: 15px;}
-button.ant-btn.ant-btn-primary,button.ant-btn.ant-btn-primary:focus,button.ant-btn.ant-btn-primary:active,button.ant-btn.ant-btn-primary:active:focus,button.ant-btn.ant-btn-primary:hover {
+/* button.ant-btn.ant-btn-primary,button.ant-btn.ant-btn-primary:focus,button.ant-btn.ant-btn-primary:active,button.ant-btn.ant-btn-primary:active:focus,button.ant-btn.ant-btn-primary:hover {
   background-color: #552612 !important;
-}
+} */
 button.ant-btn.ant-btn-default,button.ant-btn.ant-btn-default:hover,button.ant-btn.ant-btn-default:active,button.ant-btn.ant-btn-default:focus {color: #552612 !important;border-color: #552612 !important;}
 .ant-drawer-header-title {
   flex-direction: row-reverse;

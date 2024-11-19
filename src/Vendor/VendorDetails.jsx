@@ -99,7 +99,6 @@ const VendorDetails = () => {
                         value={searchText}
                         onChange={handleSearchInputChange}
                     />
-                    <button type="primary" className='search-button' onClick={filterData}>Search</button>
                     <Button type='primary' className='button-vendor' onClick={addNewVendor}><PlusOutlined /> Add New Vendor</Button>
                 </div>
             <AgGridReact rowData={filterData()} columnDefs={getColumnsDefList(true)} gridOptions={gridOptions}

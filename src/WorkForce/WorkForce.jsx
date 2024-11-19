@@ -159,26 +159,36 @@ const getFlattenedData = (data) => {
         .then(response => response.json())
         .then(data => {
             const flattenedData = getFlattenedData(data);
+            setLoading(false);
+            console.log(flattenedData);
             
             // Save flattened data to localStorage
-            localStorage.setItem('employeeData', JSON.stringify(flattenedData));
-            
-            // Update state with flattened data
-            setRowData(flattenedData);   
-            setIndRowData(flattenedData?.filter(x=>x.workCountry === 'India'))
-            setUSARowData(flattenedData?.filter(x=>x.workCountry === 'USA'))
-            setTypeRowData(flattenedData?.filter(x=>x.resourceType === 'Billable'))           
-            setActiveRowData(flattenedData?.filter(x=>x.status === 'Active'))
-            setTerminatedRowData(flattenedData?.filter(x=>(x.status === 'Terminated' || x.status === 'Inactive')))
-            setOnBoardingRowData(flattenedData?.filter(x=>x.status === 'Onboarding')) 
-            onApprovedRowData(flattenedData?.filter(x=>x.status === 'Approved')) 
+            localStorage.setItem('employeeData', JSON.stringify(flattenedData));           
+            setRowData(() => flattenedData);  
+            setIndRowData(() => flattenedData?.filter(({ workCountry }) => workCountry === 'India'));
+            setUSARowData(() => flattenedData?.filter(({ workCountry }) => workCountry === 'USA'));                    
+            setTypeRowData(() => flattenedData?.filter(({resourceType}) => resourceType === 'Billable'))                     
+            setActiveRowData(() => flattenedData?.filter(({status}) => status === 'Active'))           
+            setTerminatedRowData(() =>
+                flattenedData?.filter(({ status }) => status !== 'Active')
+              );            
+            setOnBoardingRowData(() => flattenedData?.filter(({status}) => status === 'Onboarding')) 
+            setApprovedRowData(() => flattenedData?.filter(({status}) => status === 'Approved')) 
 
-            const totalWage= rTypeData.reduce((total, item) => total + item.billRate, 0);
-            alert(totalWage);
+            const totalWage= rTypeData.reduce((total, item) => total + item.billRate, 0);           
             setTotalWage(totalWage);
             
-            setcorpRowData(flattenedData?.filter(x=>(x.employmentType === '1099' || x.employmentType === 'C2C')) ) 
-            setfullTimeRowData(flattenedData?.filter(x=>(x.employmentType === 'W2' || x.employmentType === 'Full-Time'))) 
+            setcorpRowData(() =>
+                flattenedData?.filter(({ employmentType }) =>
+                  ['1099', 'C2C'].includes(employmentType)
+                )
+              );
+              
+              setfullTimeRowData(() =>
+                flattenedData?.filter(({ employmentType }) =>
+                  ['W2', 'Full-Time'].includes(employmentType)
+                )
+              ); 
             console.log(activeRowData)
             console.log(onBoardingRowData)
             console.log(terminatedRowData)
