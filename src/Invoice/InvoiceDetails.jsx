@@ -70,10 +70,10 @@ const InvoiceDetails = () => {
 
   const handleSave = (params) => {
     const updatedRow = params.data;
-
+    console.log(updatedRow);
     // Call the PUT API to update the row
     axios
-      .put(`http://localhost:8080/api/v1/invoices/${updatedRow.invoiceId}`, updatedRow)
+      .put(`http://localhost:8080/api/v1/invoice/invoices/${updatedRow.invoiceId}`, updatedRow)
       .then((response) => {
         console.log("Invoice updated successfully:", response.data);
         setEditRowId(null); // Exit edit mode
