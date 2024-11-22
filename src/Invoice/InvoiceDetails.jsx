@@ -282,7 +282,7 @@ const InvoiceDetails = () => {
     </Button>      
     </div>
     <div style={{ display: "flex", alignItems: "center", marginTop: "0px" }}>
-  <label style={{ marginTop: "5px" }}>Select Date: &nbsp;</label>
+  <label style={{ marginTop: "5px" }}>Invoice Date: &nbsp;</label>
   <DatePicker
     className="left-panel"
     selected={selectedDate}

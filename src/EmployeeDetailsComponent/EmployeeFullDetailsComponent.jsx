@@ -11,18 +11,15 @@ import { useLocation } from 'react-router-dom';
 import EmployeePersonnelFilePage from '../EmployeeDetailsComponent/EmployeePersonnelFilePage';
 import RevenueCharts from '../RevenueCharts/RevenueCharts';
 import InvoiceDetails from '../Invoice/InvoiceDetails'
-//const style: React.CSSProperties = { background: '#A9A9A9', padding: '8px 0' ,paddingLeft: '8px 0'};
+import PayrollDetails from "../Payroll/PayrollDetails";
 
 const EmployeeFullDetails = () => {
     const divStyle = {
-    //     height: '95%', // Set the desired height in pixels or any other valid CSS unit
         border: '1px solid #ccc',
         padding: '20px',
-        background: '#ffffff',
-        //border: '0px solid #ccc',
+        background: '#ffffff',        
       };
-    const handleClick = () => {
-        // Your logic or actions when the button is clicked
+    const handleClick = () => {       
         console.log('Button clicked!');
       };
           const thisMonthData = [50000, 43000, 60000, 70000, 55000];
@@ -84,6 +81,11 @@ const EmployeeFullDetails = () => {
               label: 'INVOICES',
               children: <InvoiceDetails />
             },
+            {
+              key: 10,
+              label: 'PAYROLLS',
+              children: <PayrollDetails employeeId={rowData.employeeId} />
+            }
         ]
         
         const toggleTabs = (e) => {
