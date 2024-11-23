@@ -28,19 +28,7 @@ const WorkForce=()=>{
   const [loading, setLoading] = useState(true);
   const isInitialRender = useRef(true);
   const [totalWage, setTotalWage] = useState([]);
-
-
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-        localStorage.removeItem('employeeData');
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // Clean up the event listener when the component unmounts
-    return () => {
-        window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-}, []);
+ 
 
 const getFlattenedData = (data) => {
     let updatedData = data.map((dataObj) => {
@@ -130,8 +118,10 @@ const getFlattenedData = (data) => {
                     const data1 = await response1.json();
 
                     // Assuming the response from your API is an array of objects with 'label' and 'value' properties
-                    const labels = data1.map(item => item.status);
-                    const chartData = data1.map(item => item.count);
+                    const labels = data1.filter(item => item.status !== null)
+                                   .map(item => item.status);
+                    const chartData = data1.filter(item => item.status !== null)
+                                       .map(item => item.count);                    
                     setWorkForceChartLabels(labels);
                     setWorkForceChartData(chartData);
 
@@ -139,6 +129,8 @@ const getFlattenedData = (data) => {
                     const data2 = await response2.json();
                     const labels2 = data2.map(item => item.status);
                     const chartData2 = data2.map(item => item.count);
+                    console.log(labels2);
+                    console.log(chartData2);
                     setInvoicesChartLabels(labels2);
                     setInvoicesChartData(chartData2);
 
@@ -149,11 +141,12 @@ const getFlattenedData = (data) => {
                 isInitialRender.current = false;
             }
 
-            const storedData = localStorage.getItem('employeeData');
+    const storedData = localStorage.getItem('employeeData');
 
-    if (storedData) {
+    if (storedData && !isInitialRender) {
         // Use data from localStorage if available
         setRowData(JSON.parse(storedData));
+        setLoading(false);
     } else {
     fetch('http://localhost:8080/api/v1/employees/getAllEmployees')
         .then(response => response.json())

@@ -40,7 +40,7 @@ const RevenueCharts = ({ thisMonthData, lastMonthData }) => {
   };
 
   return (
-    <ReactApexChart options={chartOptions.options} series={chartOptions.series} type="bar" height={150} />
+    <ReactApexChart options={chartOptions?.options} series={chartOptions?.series} type="bar" height={150} />
   );
 };
 

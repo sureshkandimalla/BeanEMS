@@ -12,6 +12,7 @@ import EmployeePersonnelFilePage from '../EmployeeDetailsComponent/EmployeePerso
 import RevenueCharts from '../RevenueCharts/RevenueCharts';
 import InvoiceDetails from '../Invoice/InvoiceDetails'
 import PayrollDetails from "../Payroll/PayrollDetails";
+import AdjustementDetails from "../Adjustments/AdjustmentDetails";
 
 const EmployeeFullDetails = () => {
     const divStyle = {
@@ -85,6 +86,11 @@ const EmployeeFullDetails = () => {
               key: 10,
               label: 'PAYROLLS',
               children: <PayrollDetails employeeId={rowData.employeeId} />
+            },
+            {
+              key: 11,
+              label: 'ADJUSTMENTS',
+              children: <AdjustementDetails employeeId={rowData.employeeId} />
             }
         ]
         

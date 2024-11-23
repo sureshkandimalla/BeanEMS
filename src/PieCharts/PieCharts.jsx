@@ -8,7 +8,7 @@ const PieCharts = ({ chartData, chartLabels }) => {
   let series = chartData; 
   let colors = ['#f8aa4e', '#6bcbe2', '#78a0ed']; 
 
-  if (chartData.length === 4) {
+  if (chartData?.length === 4) {
       labels = chartLabels.slice(0, 4); // Take all 4 labels
       series = chartData.slice(0, 4); 
       colors.push('#596b4e'); 
@@ -39,7 +39,7 @@ const PieCharts = ({ chartData, chartLabels }) => {
   };
 
   return (
-    <ReactApexChart options={chartOptions.options} series={chartOptions.series} type="donut" width="100%" />
+    <ReactApexChart options={chartOptions?.options} series={chartOptions?.series} type="donut" width="100%" />
   );
 };
 

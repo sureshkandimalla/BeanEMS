@@ -41,6 +41,8 @@ const Dashboard = () => {
                     const data2 = await response2.json();
                     const labels2 = data2.map(item => item.status);
                     const chartData2 = data2.map(item => item.count);
+                    console.log(labels2);
+                    console.log(chartData2)
                     setInvoicesChartLabels(labels2);
                     setInvoicesChartData(chartData2);
 
