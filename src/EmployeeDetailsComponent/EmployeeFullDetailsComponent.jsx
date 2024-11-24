@@ -13,6 +13,7 @@ import RevenueCharts from '../RevenueCharts/RevenueCharts';
 import InvoiceDetails from '../Invoice/InvoiceDetails'
 import PayrollDetails from "../Payroll/PayrollDetails";
 import AdjustementDetails from "../Adjustments/AdjustmentDetails";
+import ReconciliationDetails from "../Reconciliation/ReconciliationDetails"
 
 const EmployeeFullDetails = () => {
     const divStyle = {
@@ -91,6 +92,11 @@ const EmployeeFullDetails = () => {
               key: 11,
               label: 'ADJUSTMENTS',
               children: <AdjustementDetails employeeId={rowData.employeeId} />
+            },
+            {
+              key: 12,
+              label: 'RECONCILIATION',
+              children: <ReconciliationDetails employeeId={rowData.employeeId} />
             }
         ]
         

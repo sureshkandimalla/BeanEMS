@@ -27,7 +27,7 @@ const InvoiceDetails = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [rowData, setRowData] = useState();
   const navigate = useNavigate();
-  const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
+  const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
 
 
 //  const columnsList = ['Customer Id', 'Company Name', 'Email Id', 'Phone', 'Status', 'ein', 'Website','startDate','endDate' ];
@@ -43,8 +43,7 @@ const InvoiceDetails = () => {
 
   const fetchData = () => {
     //default status =viewAll
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0];
+    setRowData([])    
     axios.get('http://localhost:8080/api/v1/invoice/getAllInvoices', {
       params: {
        // selectedDate: '2023-11-01',//formattedDate,
@@ -76,6 +75,7 @@ const InvoiceDetails = () => {
       .put(`http://localhost:8080/api/v1/invoice/invoices/${updatedRow.invoiceId}`, updatedRow)
       .then((response) => {
         console.log("Invoice updated successfully:", response.data);
+        fetchData();
         setEditRowId(null); // Exit edit mode
       })
       .catch((error) => {
@@ -171,6 +171,11 @@ const InvoiceDetails = () => {
                         headerName: "Actions",
                         field: "actions",
                         cellRenderer: (params) => {
+                          if (params.node.rowPinned) {
+                            // Return null or custom content for pinned rows
+                            return null;
+                          }
+
                           if (params.data.invoiceId === editRowId) {
                             return (
                               <>
@@ -229,16 +234,17 @@ const InvoiceDetails = () => {
   useEffect(() => {
     if (rowData && rowData.length > 0) {
       console.log(rowData)
-      setPinnedBottomRowData([
+      setPinnedTopRowData([
         {
           invoiceId: "Total",
           billing: rowData.reduce((sum, row) => sum + (row.billing || 0), 0),
           hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
           total: rowData.reduce((sum, row) => sum + (row.total || 0), 0),
           invoicePaidAmount: rowData.reduce((sum, row) => sum + (row.invoicePaidAmount || 0), 0), // Summing billRate values
+          actions:null
         },
       ]);
-      console.log(pinnedBottomRowData)
+      console.log(pinnedTopRowData)
     }
   }, [rowData]);
 
@@ -337,7 +343,7 @@ const InvoiceDetails = () => {
             defaultToolPanel='columns'
             pagination={true}
             paginationPageSize={15}
-            pinnedTopRowData={pinnedBottomRowData}  // Set pinned bottom row data here                
+            pinnedTopRowData={pinnedTopRowData}  // Set pinned bottom row data here                
             getRowStyle={getRowStyle}
               />
               {isTimesheetOpen && (

@@ -22,7 +22,7 @@ const Header = () => {
         <>
            <div className="headerDiv">
         <Row justify="end">
-        <Col flex="400px"><div className='headerLogo'><img src={logo}/><b>Bean</b> Info Systems</div></Col>
+        <Col flex="400px"><div className='headerLogo'><img src={logo}/><b>Bean</b> Infosystems</div></Col>
         <Col flex="auto">
       <Flex gap="small" vertical align='end'>
       <Flex gap="small"  wrap="wrap">

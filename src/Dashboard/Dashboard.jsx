@@ -44,8 +44,10 @@ const Dashboard = () => {
                     const data1 = await response1.json();
 
                     // Assuming the response from your API is an array of objects with 'label' and 'value' properties
-                    const labels = data1.map(item => item.status);
-                    const chartData = data1.map(item => item.count);
+                    const labels = data1.filter(item => item.status !== null)
+                                   .map(item => item.status);
+                    const chartData = data1.filter(item => item.status !== null)
+                                       .map(item => item.count); 
                     setWorkForceChartLabels(labels);
                     setWorkForceChartData(chartData);
 

@@ -1,256 +1,169 @@
-import React,{useState,useEffect,useRef} from "react";
-import { Tabs,Card, Row, Col, Button, Flex, Drawer, Menu ,Spin} from 'antd';
-import {PlusOutlined, RiseOutlined} from '@ant-design/icons';
-import Newemployee from "../Newemployee/Newemployee";
-import Active from "./Active";
-import WorkForceList from "./WorkForceList";
-import ProjectGrid from "../Project/ProjectGrid";
-
+import React, { useState, useMemo } from 'react';
+import { Tabs, Card, Row, Col, Button, Drawer, Spin, message } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { QueryClient, useQuery } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+import Newemployee from '../Newemployee/Newemployee';
+import WorkForceList from './WorkForceList';
 import PieCharts from '../PieCharts/PieCharts';
 
-const WorkForce=()=>{
+// Utility functions for API calls
+const fetchEmployees = async () => {
+  const response = await fetch('http://localhost:8080/api/v1/employees/getAllEmployees');
+  return response.json();
+};
 
-  const { TabPane } = Tabs;
-  const [workForceChartData, setWorkForceChartData] = useState([]);
-  const [workForceChartLabels, setWorkForceChartLabels] = useState([]);
-  const [invoicesChartData, setInvoicesChartData] = useState([]);
-  const [invoicesChartLabels, setInvoicesChartLabels] = useState([]);
-  const [rowData, setRowData] = useState([]);
-  const [activeRowData, setActiveRowData] = useState([]);
-  const [usaRowData, setUSARowData] = useState([]);
-  const [indRowData, setIndRowData] = useState([]);
-  const [rTypeData, setTypeRowData] = useState([]);
-  const [terminatedRowData, setTerminatedRowData] = useState([]);
-  const [onBoardingRowData, setOnBoardingRowData] = useState([]);
-  const [onApprovedRowData, setApprovedRowData] = useState([]);
-  const [fullTimeRowData, setfullTimeRowData] = useState([]);
-  const [corpRowData, setcorpRowData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const isInitialRender = useRef(true);
-  const [totalWage, setTotalWage] = useState([]);
- 
+const fetchWorkforceChartData = async () => {
+  const response = await fetch('http://localhost:8080/api/v1/employees/employeesCountByStatus');
+  return response.json();
+};
 
-const getFlattenedData = (data) => {
-    let updatedData = data.map((dataObj) => {
-        //return { ...dataObj, ...dataObj.employeeAddress[0], ...dataObj.employeeAssignments[0] }
-        return { ...dataObj }
-    });
-    return updatedData || [];
-}
+const fetchInvoicesChartData = async () => {
+  const response = await fetch('http://localhost:8080/api/v1/invoice/invoicesCountByStatus');
+  return response.json();
+};
 
-  const toggleTabs = (e) => {
+const WorkForceContent = () => {
+  const [open, setOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
+  const { data: employeeData, isLoading: isEmployeesLoading, error: employeesError } = useQuery({
+    queryKey: ['employees'],
+    queryFn: fetchEmployees,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: workforceChartData, isLoading: isWorkforceLoading, error: workforceError } = useQuery({
+    queryKey: ['workforceChartData'],
+    queryFn: fetchWorkforceChartData,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: invoicesChartData, isLoading: isInvoicesLoading, error: invoicesError } = useQuery({
+    queryKey: ['invoicesChartData'],
+    queryFn: fetchInvoicesChartData,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  const processedData = useMemo(() => {
+    if (!employeeData) return {};
+    return {
+      all: employeeData,
+      usa: employeeData.filter(({ workCountry }) => workCountry === 'USA'),
+      india: employeeData.filter(({ workCountry }) => workCountry === 'India'),
+      active: employeeData.filter(({ status }) => status === 'Active'),
+      onboarding: employeeData.filter(({ status }) => status === 'Onboarding'),
+      approved: employeeData.filter(({ status }) => status === 'Approved'),
+      terminated: employeeData.filter(({ status }) => status !== 'Active'),
+      billable: employeeData.filter(({ resourceType }) => resourceType === 'Billable'),
+      fulltime: employeeData.filter(({employmentType}) => ['W2', 'Full-Time'].includes(employmentType)),
+      corpData: employeeData.filter(({employmentType}) => ['1099', 'C2C'].includes(employmentType)),
+    };
+  }, [employeeData]);
+
+  const paginatedData = processedData.all
+    ? processedData.all.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    : [];
+
+  const workforceChartLabels = workforceChartData?.map((item) => item.status) || [];
+  const workforceChartValues = workforceChartData?.map((item) => item.count) || [];
+  const invoicesChartLabels = invoicesChartData?.map((item) => item.status) || [];
+  const invoicesChartValues = invoicesChartData?.map((item) => item.count) || [];
+
+  const items = [
+    { key: '1', label: 'USA', children: <WorkForceList employees={processedData.usa} /> },
+    { key: '2', label: 'India', children: <WorkForceList employees={processedData.india} /> },
+    { key: '3', label: 'Billable Employees', children: <WorkForceList employees={processedData.billable} /> },
+    { key: '4', label: 'Workforce', children: <WorkForceList employees={paginatedData} /> },
+    { key: '5', label: 'Active Employees', children: <WorkForceList employees={processedData.active} /> },
+    { key: '6', label: 'Onboarding', children: <WorkForceList employees={processedData.onboarding} /> },
+    { key: '7', label: 'Fulltime', children: <WorkForceList employees={processedData.terminated} /> },
+    { key: '8', label: 'Corp to Corp', children: <WorkForceList employees={processedData.terminated} /> },
+    { key: '9', label: 'Terminated', children: <WorkForceList employees={processedData.terminated} /> },
+
+  ];
+
+  const handleAddNewEmployee = () => setOpen(true);
+  const handleDrawerClose = () => setOpen(false);
+
+  if (employeesError || workforceError || invoicesError) {
+    message.error('Error fetching data. Please try again later.');
   }
 
-  
-    const rowStyle = {
-      height: 70 + 'px', // Set the height of the row dynamically
-    };
+  return (
+    <>
+      <Drawer title="Employee Onboarding" placement="right" size="large" onClose={handleDrawerClose} open={open}>
+        <Newemployee />
+      </Drawer>
 
-    const items = [
-        {
-            key: 1,
-            label: 'USA',
-            children: <WorkForceList employees={usaRowData}/>
-        },
-        {
-            key: 2,
-            label: 'India',
-            children: <WorkForceList employees={indRowData}/>
-        },
-        {
-            key: 3,
-            label: 'Workforce',
-            children: <WorkForceList employees={rowData}/>
-        },
-        {
-            key: 4,
-            label: 'Billable Employees',
-            children: <WorkForceList employees={rTypeData}/>
-        },
-        {
-            key: 5,
-            label: 'Active Employees',
-            children: <WorkForceList employees={activeRowData}/>
-        },
-        
-        {
-            key: 6,
-            label: 'Onboarding',
-            children: <WorkForceList employees={onBoardingRowData}/>
-        },
-        {
-            key: 7,
-            label: 'Corp to Corp',
-            children: <WorkForceList employees={corpRowData}/>
-        },
-        {
-            key: 8,
-            label: 'Fulltime',
-            children: <WorkForceList employees={fullTimeRowData}/>
-        },
-        {
-            key: 9,
-            label: 'Terminated',
-            children: <WorkForceList employees={terminatedRowData}/>
-        },
-    ]
+      <Row>
+        <Col span={24}>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Card className="billingCard">
+                <span className="invoiceCardTitle">Billing</span>
+                {isInvoicesLoading ? <Spin /> : <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />}
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card className="totalworkForceCard1">
+                {isWorkforceLoading ? <Spin /> : <PieCharts chartData={workforceChartValues} chartLabels={workforceChartLabels} />}
+              </Card>
+            </Col>
+            <Col span={8}>
+              <Card className="invoiceStatusCard1">
+                <span className="invoiceCardTitle">Invoice Status</span>
+                {isInvoicesLoading ? <Spin /> : <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />}
+              </Card>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
 
-
-    const [current, setCurrent] = useState('Active');
-    const [open, setOpen] = useState(false);
-
-    const addNewEmployee = () => {
-        setOpen(true);
-    };
-    const onClose = () => {
-        setOpen(false);
-    };
-    const onClick = (e) => {
-      console.log('click ', e);
-      setCurrent(e.key);
-    };
-
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!isInitialRender.current) {
-                try {
-                    const response1 = await fetch('http://localhost:8080/api/v1/employees/employeesCountByStatus');
-                    const data1 = await response1.json();
-
-                    // Assuming the response from your API is an array of objects with 'label' and 'value' properties
-                    const labels = data1.filter(item => item.status !== null)
-                                   .map(item => item.status);
-                    const chartData = data1.filter(item => item.status !== null)
-                                       .map(item => item.count);                    
-                    setWorkForceChartLabels(labels);
-                    setWorkForceChartData(chartData);
-
-                    const response2 = await fetch('http://localhost:8080/api/v1/invoice/invoicesCountByStatus');
-                    const data2 = await response2.json();
-                    const labels2 = data2.map(item => item.status);
-                    const chartData2 = data2.map(item => item.count);
-                    console.log(labels2);
-                    console.log(chartData2);
-                    setInvoicesChartLabels(labels2);
-                    setInvoicesChartData(chartData2);
-
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                }
-            } else {
-                isInitialRender.current = false;
-            }
-
-    const storedData = localStorage.getItem('employeeData');
-
-    if (storedData && !isInitialRender) {
-        // Use data from localStorage if available
-        setRowData(JSON.parse(storedData));
-        setLoading(false);
-    } else {
-    fetch('http://localhost:8080/api/v1/employees/getAllEmployees')
-        .then(response => response.json())
-        .then(data => {
-            const flattenedData = getFlattenedData(data);
-            setLoading(false);
-            console.log(flattenedData);
-            
-            // Save flattened data to localStorage
-            localStorage.setItem('employeeData', JSON.stringify(flattenedData));           
-            setRowData(() => flattenedData);  
-            setIndRowData(() => flattenedData?.filter(({ workCountry }) => workCountry === 'India'));
-            setUSARowData(() => flattenedData?.filter(({ workCountry }) => workCountry === 'USA'));                    
-            setTypeRowData(() => flattenedData?.filter(({resourceType}) => resourceType === 'Billable'))                     
-            setActiveRowData(() => flattenedData?.filter(({status}) => status === 'Active'))           
-            setTerminatedRowData(() =>
-                flattenedData?.filter(({ status }) => status !== 'Active')
-              );            
-            setOnBoardingRowData(() => flattenedData?.filter(({status}) => status === 'Onboarding')) 
-            setApprovedRowData(() => flattenedData?.filter(({status}) => status === 'Approved')) 
-
-            const totalWage= rTypeData.reduce((total, item) => total + item.billRate, 0);           
-            setTotalWage(totalWage);
-            
-            setcorpRowData(() =>
-                flattenedData?.filter(({ employmentType }) =>
-                  ['1099', 'C2C'].includes(employmentType)
-                )
-              );
-              
-              setfullTimeRowData(() =>
-                flattenedData?.filter(({ employmentType }) =>
-                  ['W2', 'Full-Time'].includes(employmentType)
-                )
-              ); 
-            console.log(activeRowData)
-            console.log(onBoardingRowData)
-            console.log(terminatedRowData)
-            console.log("Total Wage"+totalWage)
-
-        })
-        .catch(error => console.error('Error fetching data:', error))
-        .finally(() => setLoading(false)); // Hide loader when data is fetched
-
-    }
-        };
-
-        fetchData();
-    }, []);
-
-   // const totalParamCount = workForceChartData[0] + workForceChartData[1] + workForceChartData[2] + workForceChartData[3]+ workForceChartData[4];
-
-    return (
-        <>
-            <Drawer
-                title="Employee Onboarding"
-                placement="right"
-                size="large"
-                onClose={onClose}
-                open={open}
-            >
-                <Newemployee />
-            </Drawer>
-                <>
-                    <Row>
-                        <Col span={24}>
-                            <Row>
-                                <Col span={8}>
-                                    <Card className='billingCard'>
-                                        <span className='invoiceCardTitle'>Billing</span>
-                                        <PieCharts chartData={invoicesChartData} chartLabels={invoicesChartLabels} />
-                                    </Card>
-                                </Col>
-                                <Col span={8}>
-                                    <Card className='totalworkForceCard1'>
-                                        <PieCharts chartData={workForceChartData} chartLabels={workForceChartLabels} />
-                                    </Card>
-                                </Col>
-                                <Col span={8}>
-                                    <Card className='invoiceStatusCard1'>
-                                        <span className='invoiceCardTitle'>Invoice Status</span>
-                                        <PieCharts chartData={invoicesChartData} chartLabels={invoicesChartLabels} />
-                                    </Card>
-                                </Col>
-                            </Row>
-                        </Col>
-                    </Row>
-                    {loading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'top', height: '100vh' }}>
-                    <Spin size="large" />
-                </div>
-            ) : (
-                    <Card>
-                        <Tabs
-                            className='bean-home-tabs'
-                            defaultActiveKey="1"
-                            onChange={toggleTabs}
-                            items={items}
-                            tabBarExtraContent={<Button type='primary' onClick={addNewEmployee}><PlusOutlined /> Add New Employee</Button>}
-                        />
-                    </Card>
-            )}
-                </>
-        </>
-    );
+      {isEmployeesLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'top', height: '100vh' }}>
+          <Spin size="large" />
+        </div>
+      ) : (
+        <Card>
+          <Tabs
+            className="bean-home-tabs"
+            defaultActiveKey="1"
+            items={items}
+            tabBarExtraContent={<Button type="primary" onClick={handleAddNewEmployee}><PlusOutlined /> Add New Employee</Button>}
+          />
+        </Card>
+      )}
+    </>
+  );
 };
-export default WorkForce
+
+const WorkForce = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
+  const persister = createSyncStoragePersister({
+    storage: window.localStorage,
+  });
+
+  return (
+    <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }} onSuccess={() => queryClient.resumePausedMutations()}>
+      <WorkForceContent />
+    </PersistQueryClientProvider>
+  );
+};
+
+export default WorkForce;

@@ -65,7 +65,7 @@ const PayrollDetails = ({employeeId}) => {
                       },
                        { headerName: 'Deductions', field: 'deductions', sortable: isSortable,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
                        { headerName: 'NetPay', field: 'netPay', sortable: isSortable, valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
-                       { headerName: 'EmployerLiability', field: 'employerLiability', sortable: isSortable}                                         
+                       { headerName: 'EmployerLiability', field: 'employerLiability', sortable: isSortable, valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`}                                         
                        
                    ]
        return columns;
@@ -104,6 +104,7 @@ const PayrollDetails = ({employeeId}) => {
           taxWithheld: rowData.reduce((sum, row) => sum + (row.taxWithheld || 0), 0),
           deductions: rowData.reduce((sum, row) => sum + (row.deductions || 0), 0), // Summing billRate values
           netPay: rowData.reduce((sum, row) => sum + (row.netPay || 0), 0),
+          employerLiability: rowData.reduce((sum, row) => sum + (row.employerLiability || 0), 0),
         },
       ]);
       console.log(pinnedBottomRowData)
