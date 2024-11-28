@@ -40,7 +40,7 @@ const AssignmentForm = ({ onClose }) => {
     const fetchEmployeesAndVendors = async () => {
       try {
         const [employeesData, vendorsData] = await Promise.all([
-          fetch('http://localhost:8080/api/v1/employees/getAllEmployees').then(response => response.json()),
+          fetch('http://localhost:8080/api/v1/employees/getEmployees').then(response => response.json()),
           fetch('http://localhost:8080/api/v1/customers/getAllCustomers').then(response => response.json())
         ]);
         
