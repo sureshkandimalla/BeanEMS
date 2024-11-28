@@ -1,235 +1,416 @@
-import React, { useState }from "react";
-import { Tag,Button, Form, Input, Radio,Row,Col,DatePicker,Select,Space,Modal } from 'antd';
+import React, { useState, useEffect } from "react";
+import { Tag, Button, Form, Input, Row, Col, Select, Modal, Spin } from "antd";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import "./Invoice.css";
-import axios from 'axios';
-import { useNavigate  } from 'react-router-dom';
 
-const onFinish = (values) => {
-    console.log('Success:', values);
-};
-const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-};
-const usCountryTelList=[
-  //TODO later get from db/api call
-  {
-    value: 'US',
-    label: 'US',
-  },
-  {
-    value: 'IN',
-    label: 'IN',
-  },
-]
-const NewInvoice =()=>{
-    const [form] = Form.useForm();
-    const navigate = useNavigate();
-    const [generalDetails, setGeneralDetails] = useState({ vendorName: '', vendorCompanyName: '', ein: '', phone: '', emailId: '', webSite: '', startDate: null, endDate: null, zipCode: ''});
+const NewInvoice = ({onClose}) => {
+  const { Option } = Select;
+  const [form] = Form.useForm();
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState();
+  const [selectedVendorId, setSelectedVendorId] = useState();
+  const [selectedProjectId, setSelectedProjectId] = useState();
+  const [employees, setEmployeesData] = useState([]);
+  const [vendors, setVendorsData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const[projects, setProjectsData] = useState([]);
 
-    const handleSubmit = () => {
-      console.log("generalDetails: "+generalDetails);
-      // Validate the form data
-      if (!generalDetails.vendorName || !generalDetails.vendorCompanyName || !generalDetails.ein || !generalDetails.zipCode || !generalDetails.phone || !generalDetails.emailId ) {
-        alert('Please fill in all mandatory fields');
-        return;
-      }
-      handleFormSubmit(generalDetails);
-    };
-    const handleFormSubmit = (generalDetails) => {
+  const initialGeneralDetails =  {
+    employeeId: null,
+    employeeName: "",
+    vendorName: "",
+    vendorId: null,
+    projectId: null,
+    projectName:"",
+    startDate: "",
+    endDate: "",
+    billRate: 0,
+    hours: 0,
+    invoiceId: 0,
+    invoiceMonth: "",
+    total: 0,
+  }
+  const [generalDetails, setGeneralDetails] = useState(initialGeneralDetails);
+  
+  const handleAddNew = () => {
+    form.resetFields(); // Reset Ant Design form fields
+    setGeneralDetails(initialGeneralDetails); // Reset state
+    setSelectedEmployeeId(null); // Clear dropdown selection
+    setSelectedVendorId(null);
+  };
 
-      axios.post('http://localhost:8080/api/v1/customers/saveOnBoardDetails', generalDetails)
-          .then(response => {
-              if (response && response.data) {
-                  // Display success message
-                  Modal.success({
-                      content: 'Data saved successfully',
-                      onOk: () => navigate('http://localhost:4000/')
-                  });
-              } else {
-                  // Handle other cases
-                  console.log('Response data does not have expected value');
+  // Fetch employees and vendors
+  const fetchEmployeesAndVendors = async () => {
+    try {
+      const [employeesData, vendorsData, projectsData] = await Promise.all([
+        fetch("http://localhost:8080/api/v1/employees/getAllEmployees").then(
+          (response) => response.json()
+        ),
+        fetch("http://localhost:8080/api/v1/customers/getAllCustomers").then(
+          (response) => response.json()
+        ),
+        fetch("http://localhost:8080/api/v1/getProjects").then(
+          (response) => response.json()
+        ),
+      ]);
+      setEmployeesData(getFlattenedData(employeesData));
+      setVendorsData(getFlattenedData(vendorsData));
+      setProjectsData(getFlattenedData(projectsData))
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      Modal.error({
+        content: "Error fetching employees or vendors. Please try again later.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getFlattenedData = (data) => {
+    return data.map((dataObj) => ({ ...dataObj })) || [];
+  };
+
+  useEffect(() => {
+    handleAddNew();
+    fetchEmployeesAndVendors();
+  }, []);
+
+  // Handle form submission
+  const handleSubmit = () => {
+    generalDetails.total = generalDetails.hours * generalDetails.billRate;
+    console.log("Submitted General Details:", generalDetails);
+
+    // Validate required fields
+    if (      
+      !generalDetails.vendorId ||
+      !generalDetails.invoiceId ||
+      !generalDetails.billRate ||
+      !generalDetails.invoiceMonth||
+      !generalDetails.hours
+    ) {
+      Modal.error({
+        content: "Please fill in all mandatory fields before submitting.",
+      });
+      return;
+    }
+    else{
+      const updatedDataToSave = [{
+        ...generalDetails, // Spread the existing properties
+        formatSelectedDate: generalDetails.invoiceMonth, // Add the new property
+      }];
+      fetch('http://localhost:8080/api/v1/invoice/addInvoices', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedDataToSave),
+      })
+        .then(response =>{
+          if (response && response.status === 201) {          
+          Modal.success({
+              content: 'Data saved successfully',
+              onOk : () =>{
+                onClose();
+                handleClear()
               }
-          })
-          .catch(error => {
-              console.error('Error posting data:', error);
-              // Display error message
-              Modal.error({
-                  content: 'Error posting data. Please try again later.'
-              });
           });
+      } else {
+          // Handle other cases
+          console.log('Response data does not have expected value');
+      }
+  })
+  .catch(error => {
+      console.error('Error posting data:', error);
+      // Display error message
+      Modal.error({
+          content: 'Error posting data. Please try again later.'
+      });
+  });
+    }
+  }  
+
+  const handleCancel = () => {
+    //history.push('/project')
+    Modal.warning({
+        content: 'Are you sure you want to cancel?',
+        onOk : () =>{
+          onClose();
+          handleClear()
+        }
+    });
+
+}
+
+const handleClear= () => {
+  form.resetFields();
+  setGeneralDetails({
+    employeeId: null,
+    employeeName: "",
+    vendorName: "",
+    vendorId: null,
+    startDate: "",
+    endDate: "",
+    billRate: 0,
+    hours: 0,
+    invoiceId: 0,
+    invoiceMonth: "",
+    total: 0,
+  });
+}
+
+  const handleGeneralData = (value, field) => {
+    setGeneralDetails((prevState) => ({
+      ...prevState,
+      [field]: value,
+    }));
+  };
+
+  const handleEmployeeChange = (value) => {
+    const selectedEmployee = employees.find((employee) => employee.employeeId === value);
+    setSelectedEmployeeId(value);    
+    handleGeneralData(value, "employeeId");
+    handleGeneralData((selectedEmployee?.firstName +" "+ selectedEmployee?.lastName) || "", "employeeName");
+
+  };
+
+  const handleProjectChange = (value) => {
+    console.log(projects)
+    const selectedProject = projects.find((project) => project.projectId === value);
+    console.log(selectedProject)
+    setSelectedProjectId(value);    
+    handleGeneralData(value, "projectId");
+    handleGeneralData((selectedProject?.projectName) || "", "projectName");
+
+  };
+
+  const handleVendorChange = (value) => {
+    const selectedVendor = vendors.find((vendor) => vendor.customerId === value);
+    setSelectedVendorId(value);
+    handleGeneralData(value, "vendorId");
+    handleGeneralData(selectedVendor?.customerCompanyName || "", "vendorName");
+  };
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <Spin size="large" />
+      </div>
+    );
   }
 
-    const handleGeneralData = (value, field) => {
-      setGeneralDetails(prevState => ({
-          ...prevState,
-          [field]: value
-      }));
-    }
-
-    return(
-        <>
-        <p>Mandatory fields are marked with <Tag color="error">*</Tag></p>
-          <h3>Personal Details </h3>
-          <Form
-      layout="vertical"
-      form={form}
-      onFinish={onFinish}
-      onFinishFailed={onFinishFailed}
-      autoComplete="off"
-      style={{
-        maxWidth:  600,
-      }}
-      initialValues={{
-        remember: true,
-      }}
-    >
-     <Row gutter={25}>
-      <Col span={12}>
-      <Form.Item label="Vendor Name" name="vendorName"  rules={[
-        {
-          required: true,
-          message: 'Please Enter Vendor Name',
-        },
-      ]}>
-        <Input placeholder="Vendor Name" onChange={(e) => handleGeneralData(e.target.value, 'vendorName')} value={generalDetails.vendorName}/>
-      </Form.Item>
-      </Col>
-      <Col span={12}>
-      <Form.Item label="Vendor Company Name" name="vendorCompanyName"  rules={[
-        {
-          required: true,
-          message: 'Please Enter vendor Company Name',
-        },
-      ]}>
-        <Input placeholder="Vendor Company Name" onChange={(e) => handleGeneralData(e.target.value, 'vendorCompanyName')} value={generalDetails.vendorCompanyName}/>
-      </Form.Item>
-      </Col>
-     </Row>
-     <Row gutter={25}>
-      <Col span={12}>
-      <Form.Item label="ein" name="ein"  rules={[
-        {
-          required: true,
-          message: 'Please Enter ein',
-        },
-      ]}>
-        <Input placeholder="ein" onChange={(e) => handleGeneralData(e.target.value, 'ein')} value={generalDetails.ein}/>
-      </Form.Item>
-      </Col>
-      <Col span={12}>
-      <Form.Item label="WebSite" name="webSite"  rules={[
-        {
-          required: true,
-          message: 'Please Enter webSite',
-        },
-      ]}>
-        <Input placeholder="webSite" onChange={(e) => handleGeneralData(e.target.value, 'webSite')} value={generalDetails.webSite}/>
-      </Form.Item>
-      </Col>
-     </Row>
-      
-      <Row gutter={16}>
-      <Col span={12}>
-      <Form.Item label="Email" name="emailId"  rules={[
-        {
-          required: true,
-          message: 'Please Enter Email',
-        },
-      ]}>
-        <Input placeholder="you@company.com" onChange={(e) => handleGeneralData(e.target.value, 'emailId')} value={generalDetails.emailId} type="email" />
-      </Form.Item>
-      </Col>
-      <Col span={12}>
-      <Form.Item label="Phone Number" name="phone"  rules={[
-        {
-          required: true,
-          message: 'Please Enter Phone number',
-        },
-      ]}>
-        <Space direction="vertical" size="middle">
-        <Space.Compact>
-      <Select defaultValue="" options={usCountryTelList} />
-      <Input  placeholder="+1 (555) 000-000" onChange={(e) => handleGeneralData(e.target.value, 'phone')} value={generalDetails.phone} />
-    </Space.Compact>
-    </Space>
-      </Form.Item>
-      </Col>
-      <Col span={12}>
-        <Form.Item label="Start Date" name="startDate"  rules={[
-        {
-          required: true,
-          message: 'Please Enter Start Date',
-        },
-      ]}>
-          <DatePicker  onChange={(date, dateString) => handleGeneralData(dateString, 'startDate')}/>
-        </Form.Item>
-      </Col>
-      <Col span={12}>
-        <Form.Item label="End Date" name="endDate">
-          <DatePicker  onChange={(date, dateString) => handleGeneralData(dateString, 'endDate')}/>
-        </Form.Item>
-      </Col>
-
-      </Row>
-      <h3>Address</h3>
-      <Col span={24}>
-      <Form.Item label="Street Address" name="streetAddress">
-        <Input placeholder="Add address" onChange={(e) => handleGeneralData(e.target.value, 'streetAddress')} value={generalDetails.streetAddress}/>
-      </Form.Item>
-      
-        </Col>
-    <Row gutter={25}>
-      <Col span={12}>
-      <Form.Item label="City" name="city"  rules={[
-        {
-          required: false,
-          message: 'Please Enter city',
-        },
-      ]}>
-        <Input placeholder="city" onChange={(e) => handleGeneralData(e.target.value, 'city')} value={generalDetails.city}/>
-      </Form.Item>
-      </Col>
-      <Col span={12}>
-      <Form.Item label="State" name="state"  rules={[
-        {
-          required: false,
-          message: 'Please Enter state',
-        },
-      ]}>
-        <Input placeholder="state" onChange={(e) => handleGeneralData(e.target.value, 'state')} value={generalDetails.state}/>
-      </Form.Item>
-      </Col>
-     </Row>
-
-    <Row gutter={16}>
+  return (
+    <>
+      <p>
+        Mandatory fields are marked with <Tag color="error">*</Tag>
+      </p>
+      <h3>Invoice Details</h3>
+      <Form
+        layout="vertical"
+        form={form}
+        autoComplete="off"
+        style={{ maxWidth: 600 }}
+      >
+        <Row gutter={25}>
           <Col span={12}>
-          <Form.Item label="Zip Code/Postal Code" name="zipCode"  rules={[
-        {
-          required: true,
-          message: 'Please Enter Zip code',
-        },
-      ]}>
-        <Input placeholder="Enter Zip Code"  onChange={(e) => handleGeneralData(e.target.value, 'zipCode')} value={generalDetails.zipCode}/>
-      </Form.Item>
-    
+            <Form.Item
+              label="Employee"
+              name="employeeId"
+              rules={[{ required: true, message: "Please select an employee" }]}
+            >
+              <Select
+                showSearch
+                value={selectedEmployeeId}
+                onChange={handleEmployeeChange}
+                filterOption={(input, option) =>
+                  option?.children
+                    ?.toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                {employees.map((employee) => (
+                  <Option key={employee.employeeId} value={employee.employeeId}>
+                    {employee.firstName + " " + employee.lastName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </Col>
+          
+          <Col span={12}>
+            <Form.Item
+              label="Vendor"
+              name="vendorId"
+              rules={[{ required: true, message: "Please select a vendor" }]}
+            >
+              <Select
+                showSearch
+                value={selectedVendorId}
+                onChange={handleVendorChange}
+                filterOption={(input, option) =>
+                  option?.children
+                    ?.toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                {vendors.map((vendor) => (
+                  <Option key={vendor.customerId} value={vendor.customerId}>
+                    {vendor.customerCompanyName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
           </Col>
           <Col span={12}>
-          <Form.Item label="Country" name="country"  rules={[
-        {
-          required: true,
-          message: 'Please select an option',
-        },
-      ]}>
-         <Select defaultValue="us" options={usCountryTelList} onChange={(value) => handleGeneralData(value, 'country')} value={generalDetails.country}/>
-      </Form.Item>
+            <Form.Item
+              label="Project"
+              name="projectId"
+              rules={[{ required: true, message: "Please select an Project" }]}
+            >
+              <Select
+                showSearch
+                value={selectedProjectId}
+                onChange={handleProjectChange}
+                filterOption={(input, option) =>
+                  option?.children
+                    ?.toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+              >
+                {projects.map((project) => (
+                  <Option key={project.projectId} value={project.projectId}>
+                    {project.projectName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
           </Col>
-    </Row>
+        </Row>
+        <Row gutter={25}>
+          <Col span={9}>
+            <Form.Item
+              label="Invoice Id"
+              name="invoiceId"
+              rules={[{ required: true, message: "Please enter invoice id" }]}
+            >
+              <Input
+                placeholder="Invoice Id"
+                onChange={(e) =>
+                  handleGeneralData(e.target.value, "invoiceId")
+                }
+                value={generalDetails.invoiceId}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={9}>
+            <Form.Item
+              label="Billing"
+              name="billRate"
+              rules={[{ required: true, message: "Please enter bill amount" }]}
+            >
+              <Input
+                type="number"
+                placeholder="Bill Amount"
+                onChange={(e) =>
+                  handleGeneralData(Number(e.target.value), "billRate")
+                }
+                value={generalDetails.billRate}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={6}>
+            <Form.Item
+              label="Hours"
+              name="hours"
+              rules={[{ required: true, message: "Please enter Hours" }]}
+            >
+              <Input
+                placeholder="Hours"
+                onChange={(e) =>
+                  handleGeneralData(e.target.value, "hours")
+                }
+                value={generalDetails.hours}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={25}>          
+          <Col span={12}>
+            <Form.Item
+              label="Invoice Month"
+              name="invoiceMonth"
+              rules={[
+                { required: true, message: "Please enter invoice month" },
+              ]}
+            >
+              <DatePicker
+                selected={generalDetails.invoiceMonth}
+                onChange={(date) =>
+                  handleGeneralData(date.toISOString().split("T")[0], "invoiceMonth")
+                }
+                showMonthYearPicker
+                dateFormat="MM/yyyy"
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Start Date"
+              name="startDate"              
+            >
+              <DatePicker
+                selected={generalDetails.startDate}
+                onChange={(date) =>
+                  handleGeneralData(date.toISOString().split("T")[0], "startDate")
+                }
+                dateFormat="yyyy-MM-dd"
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="End Date"
+              name="endDate"             
+            >
+              <DatePicker
+                selected={generalDetails.endDate}
+                onChange={(date) =>
+                  handleGeneralData(date.toISOString().split("T")[0], "endDate")
+                }
+                dateFormat="yyyy-MM-dd"
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <hr />
+                        <section>
+                        <Row gutter={30}>
+                            <Col span={8} className='form-row'>
+                                <Form.Item>
+                                    <Button type="primary" onClick={handleClear}>Clear</Button>
+                                </Form.Item>
+                            </Col>
+                            <Col span={8} className='form-row'>
+                                <Form.Item>
+                                    <Button type="primary" onClick={handleCancel}>Cancel</Button>
+                                </Form.Item>
+                            </Col>
+                            <Col span={8} className='form-row'>
+                                <Form.Item>
+                                    <Button type="primary" htmlType="submit" onClick={handleSubmit}>Submit</Button>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        </section>
+      </Form>
+    </>
+  );
+};
 
-      <Form.Item >
-        <Button type="primary" htmlType="submit" onClick={handleSubmit} block>Submit</Button>
-      </Form.Item>
-    </Form>
-        </>
-    );
-}
 export default NewInvoice;

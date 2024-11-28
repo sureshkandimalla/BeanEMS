@@ -222,18 +222,23 @@ if (loading) {
                         <Row gutter={30}>
                             <Col span={8} className='form-row'>
                             <Form.Item label="Employee" name="employeeId" rules={[{ required: true, message: 'Please select an employee' }]}>
-        <Select value={selectedEmployeeId} onChange={handleEmployeeChange}>
+        <Select showSearch value={selectedEmployeeId} onChange={handleEmployeeChange} filterOption={(input, option) =>
+      option?.children?.toLowerCase().includes(input.toLowerCase())
+    }>
           {employees.map((employee) => (
             <Option key={employee.employeeId} value={employee.employeeId}>
               {employee.firstName+' '+employee.lastName}
             </Option>
           ))}
+          
         </Select>
       </Form.Item>
                             </Col>
                             <Col span={8} className='form-row'>
                             <Form.Item label="Vendor" name="vendorId" rules={[{ required: true, message: 'Please select a vendor' }]}>
-        <Select value={selectedVendorId} onChange={handleVendorChange}>
+        <Select showSearch value={selectedVendorId} onChange={handleVendorChange} filterOption={(input, option) =>
+      option?.children?.toLowerCase().includes(input.toLowerCase())
+    }>
           {vendors.map((vendor) => (
             <Option key={vendor.customerId} value={vendor.customerId}>
               {vendor.customerCompanyName}

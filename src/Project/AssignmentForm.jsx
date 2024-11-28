@@ -170,7 +170,9 @@ const AssignmentForm = ({ onClose }) => {
           <Row gutter={30}>
             <Col span={8} className='form-row'>
               <Form.Item label="Employee" name="employeeId" rules={[{ required: true, message: 'Please select an employee' }]}>
-                <Select value={selectedEmployeeId} onChange={handleEmployeeChange}>
+                <Select showSearch value={selectedEmployeeId} onChange={handleEmployeeChange} filterOption={(input, option) =>
+      option?.children?.toLowerCase().includes(input.toLowerCase())
+    }>
                   {employees.map((employee) => (
                     <Option key={employee.employeeId} value={employee.employeeId}>
                       {employee.firstName + ' ' + employee.lastName}
@@ -211,7 +213,9 @@ const AssignmentForm = ({ onClose }) => {
             
             <Col span={8} className="form-row">
               <Form.Item label="AssignmentType" name="assignmentType">
-                <Select value={generalDetails.assignmentType} onChange={handleAssignmentChange}>
+                <Select showSearch value={generalDetails.assignmentType} onChange={handleAssignmentChange} filterOption={(input, option) =>
+      option?.children?.toLowerCase().includes(input.toLowerCase())
+    }>
                   {assignmentTypes.map((assign) => (
                     <Option key={assign} value={assign}>
                       {assign}

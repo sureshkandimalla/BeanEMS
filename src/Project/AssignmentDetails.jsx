@@ -43,7 +43,7 @@ useEffect(() => {
 
 const getFlattenedData = (data) => {
 
-    let updatedData = data.map((dataObj) => {
+    let updatedData = data?.map((dataObj) => {
     return { ...dataObj}
 
        // return { ...dataObj,...dataObj.assignments[0],...dataObj.employee.firstName.value, ...dataObj.employee.employeeAssignments[0],...dataObj.customer,...dataObj.billRates[0] }

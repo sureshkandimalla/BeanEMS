@@ -1,26 +1,22 @@
 import React, { useMemo,useState, useEffect,useRef } from "react";
-//import TextField from '@material-ui/core/TextField';
-import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
 import './ProjectGrid.css';
 import {DesktopOutlined,RiseOutlined,PlusOutlined} from '@ant-design/icons';
 import RevenueCharts from '../RevenueCharts/RevenueCharts';
-import { Col, Row ,Card, Button, Flex, Drawer  } from 'antd';
-import { Link } from 'react-router-dom';
+import { Col, Row ,Card, Button, Tabs, Drawer, Spin  } from 'antd';
 import ProjectOnBoardingForm from '../OnBoardingComponent/ProjectOnBoarding';
 import './ProjectGrid.css';
 import "@ag-grid-community/styles/ag-theme-quartz.css";
+import ProjectList from "./ProjectsList";
 
 const ProjectDashboard = () => {
 
-  //  const [rowData, setRowData] = useState();
   const [rowData, setRowData] = useState();
-  const [searchText, setSearchText] = useState('');
+  const [activeKey, setActiveKey] = useState("1"); // State for active tab
   const projectsSize = rowData ? rowData.length : 0
   const thisMonthData = [50000, 43000, 60000, 70000, 55000];
   const lastMonthData = [25000, 28000, 20000, 15000, 50000];
-  const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
-
+  const[isEmployeesLoading, setEmployeeLoading] = useState(true);
 
   const isInitialRender = useRef(true);
 
@@ -34,6 +30,19 @@ const onClose = () => {
 
 const [open, setOpen] = useState(false);
 
+const processedData = useMemo(() => {
+  if (!rowData) return {};
+  return {
+    all: rowData,
+    active: rowData.filter(({ status }) => status === "ACTIVE"),    
+  };
+}, [rowData]);
+
+const items = [
+  { key: '1', label: 'All', children: <ProjectList projectsList={rowData} />},
+  { key: '2', label: 'Active', children: <ProjectList projectsList={processedData?.active} /> }  
+];
+
 useEffect(() => {
   const fetchData = async () => {
       if (!isInitialRender.current) {
@@ -42,6 +51,7 @@ useEffect(() => {
               const data = await response.json();
               const flattendData = getFlattenedData(data)
               setRowData(flattendData); 
+              setEmployeeLoading(false);
               console.log(flattendData)                     
           } catch (error) {
               console.error('Error fetching data:', error);
@@ -64,67 +74,6 @@ const getFlattenedData = (data) => {
     console.log(updatedData)
     return updatedData || [];
 }
-
-useEffect(() => {
-  if (rowData && rowData.length > 0) {
-    console.log(rowData)
-    setPinnedBottomRowData([
-      {
-        projectName: "Total",
-        billRate: rowData.reduce((sum, row) => sum + (row.billRate || 0), 0),
-        net: rowData.reduce((sum, row) => sum + (row.net || 0), 0),
-        employeePay: rowData.reduce((sum, row) => sum + (row.employeePay || 0), 0),
-        expenseExternal: rowData.reduce((sum, row) => sum + (row.expenseExternal || 0), 0), // Summing billRate values
-        expenseInternal: rowData.reduce((sum, row) => sum + (row.expenseInternal || 0), 0),
-      },
-    ]);
-    console.log(pinnedBottomRowData)
-  }
-}, [rowData]);
-
- const handleSearchInputChange = (event) => {
-    setSearchText(event.target.value);
-  };
-
-  const filterData = () => {
-    if (!searchText) {
-      return rowData;
-    }
-
-    return rowData.filter((row) =>
-      Object.values(row).some((value) =>
-        String(value).toLowerCase().includes(searchText.toLowerCase())
-      )
-    );
-    };
-
-const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
-/// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Vendor','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
-   var columns = [
-                   { headerName: 'Project Name', field: 'projectName',cellRenderer: (params) => {const rowData = params.data;
-                    return ( <Link to='/projectFullDetais'state= {{ rowData }} > {rowData.projectName}</Link>)}, sortable: isSortable, editable: true, filter: 'agTextColumnFilter', },
-                    { headerName: 'Employee Name', field: 'employeeName', cellRenderer: (params) => { const rowData = params.data;
-                        return (<Link to={{  pathname: '/employeeProjectDetails', state: { rowData }, }} > {rowData.employeeName} </Link> );}, sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
-                    { headerName: 'Bill Rate', field: 'billRate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter',valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` },
-                    { headerName: 'Bean Net Internal', field: 'net', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' ,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
-                    { headerName: 'Employee pay Rate', field: 'employeePay', sortable: isSortable, editable: true, filter: 'agTextColumnFilter',valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` },
-                    { headerName: 'External', field: 'expenseExternal', sortable: isSortable, editable: true, filter: 'agTextColumnFilter',valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` },
-                    { headerName: 'Internal', field: 'expenseInternal', sortable: isSortable, editable: true, filter: 'agTextColumnFilter',valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` },
-                    { headerName: 'Bean Net', field: 'net', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' ,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
-                   
-                       { headerName: 'Project Id', field: 'projectId', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
-                  //  { headerName: 'Employee Id', field: 'employeeId', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                     //{ headerName: 'Employee Name', field: 'employeeName', valueGetter(params) { return  params.data.firstName + ' ' + params.data.lastName ;},sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
-                    { headerName: 'Client', field: 'clientName',sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                     { headerName: 'Project Start Date', field: 'startDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Project End Date', field: 'endDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                     { headerName: 'Invoice Terms', field: 'invoiceTerm', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                    { headerName: 'Invoice Terms', field: 'invoiceTerm', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-                  ]
-    return columns;
-}
-
-
 
 return (
   <>  
@@ -155,15 +104,7 @@ return (
                     </Col>
                 </Row>
 
-            </>
-    <div className="ag-theme-alpine employee-List-grid" >
-    <div class="container">      
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchText}
-          onChange={handleSearchInputChange}
-        />
+            </>               
         <Drawer
               title={`Create New Project`}
               placement="right"
@@ -173,46 +114,22 @@ return (
           >
               <ProjectOnBoardingForm onClose={onClose} />
 
-          </Drawer>
-            <Button type='primary' className='button-vendor' onClick={addNewProject}><PlusOutlined /> Add New Project</Button>
-            </div>
-            <AgGridReact rowData={filterData()} columnDefs={getColumnsDefList( true, false)} 
-            domLayout="autoHeight"
-            defaultColDef={{
-                flex: 1,
-                minWidth: 150,
-                resizable: true,
-                filter: false,
-                floatingFilter: false
-            }}
-            hiddenByDefault={false}
-            rowGroupPanelShow='never'
-            pivotPanelShow='always'
-            sideBar={{
-                toolPanels: [
-                    {
-                        id: 'columns',
-                        labelDefault: 'Columns',
-                        labelKey: 'columns',
-                        iconKey: 'columns',
-                        toolPanel: 'agColumnsToolPanel',
-                        toolPanelParams: {
-                            suppressRowGroups: false,
-                            suppressValues: true,
-                            suppressPivots: false, suppressPivotMode: true,
-                            suppressColumnFilter: true,
-                            suppressColumnSelectAll: true,
-                            suppressColumnExpandAll: true,
-                        }
-                    }
-                ]
-            }}
-            sortable={true}
-            defaultToolPanel='columns'
-            pagination={true}
-            paginationPageSize={15}
-            pinnedBottomRowData={pinnedBottomRowData} />
-    </div>
+          </Drawer>                 
+        {isEmployeesLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'top', height: '100vh' }}>
+          <Spin size="large" />
+        </div>
+      ) : (
+        <Card>
+          <Tabs
+            className="bean-home-tabs"            
+            onChange={setActiveKey}
+            items={items}
+            tabBarExtraContent={<Button type='primary' className='button-vendor' onClick={addNewProject}><PlusOutlined /> Add New Project</Button>            
+          }
+          />
+        </Card>
+      )}
     </>
 )
 }

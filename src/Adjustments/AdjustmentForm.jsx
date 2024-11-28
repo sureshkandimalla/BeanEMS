@@ -171,7 +171,9 @@ if (loading) {
                         <Row gutter={30}>
                             <Col span={8} className='form-row'>
                             <Form.Item label="FromName" name="fromId" rules={[{ required: true, message: 'Please select an FromName' }]}>
-        <Select value={selectedFromId} onChange={handleEmployeeChange}>
+        <Select showSearch value={selectedFromId} onChange={handleEmployeeChange} filterOption={(input, option) =>
+      option?.children?.toLowerCase().includes(input.toLowerCase())
+    }>
           {employees.map((employee) => (
             <Option key={employee.employeeId} value={employee.employeeId}>
               {employee.firstName+' '+employee.lastName}
@@ -182,7 +184,9 @@ if (loading) {
                             </Col>
                             <Col span={8} className='form-row'>
                             <Form.Item label="ToName" name="toId" rules={[{ required: true, message: 'Please select a ToName' }]}>
-        <Select value={selectedToId} onChange={handleVendorChange}>
+        <Select showSearch value={selectedToId} onChange={handleVendorChange} filterOption={(input, option) =>
+      option?.children?.toLowerCase().includes(input.toLowerCase())
+    }>
         {employees.map((employee) => (
             <Option key={employee.employeeId} value={employee.employeeId}>
               {employee.firstName+' '+employee.lastName}

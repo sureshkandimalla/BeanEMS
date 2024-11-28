@@ -208,7 +208,7 @@ const InvoiceDetails = () => {
 
   const handleSearchInputChange = (event) => {
       setSearchText(event.target.value);
-  };
+  }; 
     
   const filterData = () => {
       if (!searchText) {
@@ -266,13 +266,13 @@ const InvoiceDetails = () => {
       
       <div className="ag-theme-alpine employee-List-grid" >
           <Drawer
-              title={`Generate New Invoice`}
+              title={`Add New Invoice`}
               placement="right"
               size="large"
               onClose={onClose}
               open={open}
           >
-              <NewInvoice />
+              <NewInvoice onClose={onClose}/>
 
           </Drawer>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
