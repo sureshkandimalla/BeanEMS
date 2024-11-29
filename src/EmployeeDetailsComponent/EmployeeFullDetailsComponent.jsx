@@ -14,6 +14,8 @@ import InvoiceDetails from '../Invoice/InvoiceDetails'
 import PayrollDetails from "../Payroll/PayrollDetails";
 import AdjustementDetails from "../Adjustments/AdjustmentDetails";
 import ReconciliationDetails from "../Reconciliation/ReconciliationDetails"
+import InvoiceById from "../Invoice/InvoiceById";
+import BillingDetails from "../Billings/BillingDetails";
 
 const EmployeeFullDetails = () => {
     const divStyle = {
@@ -52,52 +54,54 @@ const EmployeeFullDetails = () => {
                 label: 'PROJECTS',
                 title: 'Emplyee Projects',
                 children: <ProjectGrid employeeId={rowData.employeeId}/>
-            },
+            },                       
             {
-                key: 3,
-                label: 'PAF'
+              key: 3,
+              label: 'INVOICES',
+              children: <InvoiceById url ={`http://localhost:8080/api/v1/invoice/getInvoicesForEmployee?employeeId=${rowData.employeeId}`}/>
+
             },
             {
               key: 4,
-              label: 'WA',
-              title: 'WORK AUTHORIZATION'
-            },
-            {
-              key: 5,
-              label: 'FORMS'
-            },
-            {
-              key: 6,
-              label: 'TASKS'
-            },
-            {
-              key: 7,
-              label: 'EVALUATION'
-            },
-            {
-              key: 8,
-              label: 'LEAVE REPORT'
-            },
-            {
-              key: 9,
-              label: 'INVOICES',
-              children: <InvoiceDetails />
-            },
-            {
-              key: 10,
               label: 'PAYROLLS',
               children: <PayrollDetails employeeId={rowData.employeeId} />
             },
             {
-              key: 11,
+              key: 5,
               label: 'ADJUSTMENTS',
               children: <AdjustementDetails employeeId={rowData.employeeId} />
             },
             {
-              key: 12,
+              key: 6,
               label: 'RECONCILIATION',
               children: <ReconciliationDetails employeeId={rowData.employeeId} />
-            }
+            },            
+            {
+              key: 7,
+              label: 'BillingDetails',
+              children: <BillingDetails url ={`http://localhost:8080/api/v1/bills/getBillsForProject?projectId=${33}`} />
+            }, 
+            {
+              key: 8,
+              label: 'WA',
+              title: 'WORK AUTHORIZATION'
+            },
+            {
+              key: 9,
+              label: 'FORMS'
+            },
+            {
+              key: 10,
+              label: 'TASKS'
+            },
+            {
+              key: 11,
+              label: 'EVALUATION'
+            },
+            {
+              key: 12,
+              label: 'LEAVE REPORT'
+            },
         ]
         
         const toggleTabs = (e) => {

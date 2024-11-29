@@ -13,6 +13,8 @@ import RevenueCharts from '../RevenueCharts/RevenueCharts';
 import ProjectPersonalFile from "./ProjectPersonalFile";
 import AssignmentDetails from "./AssignmentDetails";
 import WorkOrderDetails from "./WorkOrderDetails";
+import InvoiceById from "../Invoice/InvoiceById";
+import BillingDetails from "../Billings/BillingDetails";
 //const style: React.CSSProperties = { background: '#A9A9A9', padding: '8px 0' ,paddingLeft: '8px 0'};
 
 const ProjectFullDetails = () => {
@@ -92,7 +94,17 @@ const ProjectFullDetails = () => {
                 key: 3,
                 label: 'WorkOrders',
                 children: <WorkOrderDetails rowData ={workOrders}/>
-            }
+            },
+            {
+              key: 4,
+              label: 'Invoices',
+              children: <InvoiceById url ={`http://localhost:8080/api/v1/invoice/getInvoicesForProject?projectId=${rowData.projectId}`}/>
+          },
+          {
+            key: 5,
+            label: 'BillingDetails',
+            children: <BillingDetails url ={`http://localhost:8080/api/v1/bills/getBillsForProject?projectId=${rowData.projectId}`} />
+          },
             
         ]
         const toggleTabs = (e) => {
