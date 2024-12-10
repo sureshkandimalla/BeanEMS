@@ -98,7 +98,10 @@ const ProjectFullDetails = () => {
             {
               key: 4,
               label: 'Invoices',
-              children: <InvoiceById url ={`http://localhost:8080/api/v1/invoice/getInvoicesForProject?projectId=${rowData.projectId}`}/>
+              children: <InvoiceById 
+              url ={`http://localhost:8080/api/v1/invoice/getInvoicesForProject?projectId=${rowData.projectId}`}             
+              employeeId={rowData.employeeId}
+              />
           },
           {
             key: 5,

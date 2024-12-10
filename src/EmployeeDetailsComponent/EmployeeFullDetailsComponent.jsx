@@ -58,8 +58,10 @@ const EmployeeFullDetails = () => {
             {
               key: 3,
               label: 'INVOICES',
-              children: <InvoiceById url ={`http://localhost:8080/api/v1/invoice/getInvoicesForEmployee?employeeId=${rowData.employeeId}`}/>
-
+              children: <InvoiceById 
+              url ={`http://localhost:8080/api/v1/invoice/getInvoicesForEmployee?employeeId=${rowData.employeeId}`}
+              employeeId={rowData.employeeId}
+            />
             },
             {
               key: 4,

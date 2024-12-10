@@ -5,14 +5,17 @@ import 'ag-grid-enterprise';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'react-datepicker/dist/react-datepicker.css';
+import {PlusOutlined} from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { Button} from 'antd';
 
 
-
-const InvoiceById = ({url}) => {
+const InvoiceById = ({url,employeeId}) => {
     
   const [searchText, setSearchText] = useState('');
   const [rowData, setRowData] = useState();  
   const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
+  const navigate = useNavigate();
 
 
 //  const columnsList = ['Customer Id', 'Company Name', 'Email Id', 'Phone', 'Status', 'ein', 'Website','startDate','endDate' ];
@@ -106,7 +109,15 @@ const InvoiceById = ({url}) => {
               String(value).toLowerCase().includes(searchText.toLowerCase())
           )
       );
-  };  
+  };
+  
+  const generateInvoice = () => {
+    // Any additional logic can go here
+    navigate('/generateInvoice', {state: 
+      {
+        url: `http://localhost:8080/api/v1/activeProjectsForInvoiceByEmployee?employeeId=${employeeId}`       
+      }});
+  };
 
   useEffect(() => {
     if (rowData && rowData.length > 0) {
@@ -128,13 +139,24 @@ const InvoiceById = ({url}) => {
   
 
   return (
+    
       <div className="ag-theme-alpine employee-List-grid" >  
+      <div className="container">    
        <input
             type="text"
             placeholder="Search..."
             value={searchText}
             onChange={handleSearchInputChange}
-        />                  
+        /> 
+         <Button
+           type="primary"
+           style={{ marginLeft: "10px" }}
+           className="button-vendor"
+           onClick={generateInvoice}
+        >
+    <PlusOutlined /> Generate Invoice
+  </Button> 
+      </div>                
           <AgGridReact rowData={filterData()} columnDefs={getColumnsDefList(true)} gridOptions={gridOptions}
               defaultColDef={{
                   flex: 1,
@@ -169,7 +191,7 @@ const InvoiceById = ({url}) => {
             pinnedTopRowData={pinnedTopRowData}  // Set pinned bottom row data here  
             getRowStyle={getRowStyle}              
               />
-      </div>
+      </div>      
   )
 }
 

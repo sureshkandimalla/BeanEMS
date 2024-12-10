@@ -250,8 +250,19 @@ const InvoiceDetails = () => {
 
 
   const generateInvoice = () => {
+    const formattedDate = selectedDate ? new Date(selectedDate).toISOString().split('T')[0] : null;
+    const month = formattedDate
+    ? new Date(selectedDate).toLocaleString('default', { month: 'long' }) // Use 'short' for abbreviated month
+    : null;
+    const endDate =  new Date().toISOString().split('T')[0];
+    const encodedEndDate = encodeURIComponent(endDate);
+    const encodedFormatSelectedDate = encodeURIComponent(formattedDate);
     // Any additional logic can go here
-    navigate('/generateInvoice', { state: { selectedDate: selectedDate.toString() } });
+    navigate('/generateInvoice', { state: { 
+      url: `http://localhost:8080/api/v1/activeProjects?endDate=${encodedEndDate}&selectedDate=${encodedFormatSelectedDate}`,
+      month: month
+    }
+    });
   };
 
   const getRowStyle = (params) => {

@@ -7,15 +7,10 @@ import 'ag-grid-enterprise';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import "./Invoice.css";
-import NewInvoice from './NewInvoice';
-import MonthlyTimesheetDialog from "../Project/TimeSheet/MonthlyTimeSheetModal";
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EditIcon from '@mui/icons-material/Edit';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Cancel';
 import {IconButton } from '@mui/material';
 import EditHoursInvoiceModal from "./EditHoursInvoiceModel";
-import { red } from "@mui/material/colors";
 import './GenerateInvoiceDetails.css'
 
 
@@ -23,8 +18,7 @@ import './GenerateInvoiceDetails.css'
 
 const GenerateInvoiceDetails = () => {
   const location = useLocation();
-  const { selectedDate } = location.state || {};
-  const [editingRow, setEditingRow] = useState(null); // Track currently editing ro
+  const { url, month } = location.state || {};
   const [searchText, setSearchText] = useState('');
   const [rowData, setRowData] = useState();
   const [editingRowData, setEditingRowData] = useState(null);
@@ -36,7 +30,10 @@ const GenerateInvoiceDetails = () => {
 
 //  const columnsList = ['Customer Id', 'Company Name', 'Email Id', 'Phone', 'Status', 'ein', 'Website','startDate','endDate' ];
   const isInitialRender = useRef(true);
-  const formattedDate = selectedDate ? new Date(selectedDate).toISOString().split('T')[0] : null;
+  // const formattedDate = selectedDate ? new Date(selectedDate).toISOString().split('T')[0] : null;
+  // const month = formattedDate
+  // ? new Date(selectedDate).toLocaleString('default', { month: 'long' }) // Use 'short' for abbreviated month
+  // : null;
   const gridRef = useRef();
 
   useEffect(() => {
@@ -48,13 +45,11 @@ const GenerateInvoiceDetails = () => {
   }, []);
 
   const fetchData = () => {
-    //default status =viewAll
-    const today = new Date();
-    const endDate =  new Date().toISOString().split('T')[0];
-    const encodedEndDate = encodeURIComponent(endDate);
-    console.log(selectedDate);    
-    const encodedFormatSelectedDate = encodeURIComponent(formattedDate);
-    axios.get(`http://localhost:8080/api/v1/activeProjects?endDate=${encodedEndDate}&selectedDate=${encodedFormatSelectedDate}`, {
+    // const endDate =  new Date().toISOString().split('T')[0];
+    // const encodedEndDate = encodeURIComponent(endDate);
+    // const encodedFormatSelectedDate = encodeURIComponent(formattedDate);
+    console.log(url)
+    axios.get(url, {
       params: {
        // selectedDate: '2023-11-01',//formattedDate,
         //status: 'viewAll'
@@ -147,7 +142,7 @@ const handleEdit = (params) => {
 
     const updatedDataToSave = [{
         ...updatedRow, // Spread the existing properties
-        formatSelectedDate: formattedDate, // Add the new property
+        formatSelectedDate: updatedRow.startDate, // Add the new property
       }];
 
       fetch('http://localhost:8080/api/v1/invoice/addInvoices', {
@@ -187,7 +182,7 @@ const handleEdit = (params) => {
       setHasUnsavedChanges(false);   
       const updatedDataToSave = rowData.map(item => ({
         ...item, // Spread the existing properties
-        formatSelectedDate: formattedDate, // Add the new property
+        formatSelectedDate: item.startDate, // Add the new property
       }));
       console.log(updatedDataToSave);
       fetch('http://localhost:8080/api/v1/invoice/addInvoices', {
@@ -210,13 +205,14 @@ const handleEdit = (params) => {
  
 
   const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
-      var columns = [
-        { headerName: 'Employee Id', field: 'employeeId', sortable: true },
+      var columns = [       
         { headerName: 'Employee Name', field: 'employeeName', sortable: true },
         { headerName: 'Client', field: 'clientName', sortable: true },
         { headerName: 'Vendor', field: 'vendorName', sortable: true, editable: false },
         { headerName: 'Bill Rate', field: 'billRate', sortable: true, editable: false,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` },
         { headerName: 'Hours', field: 'hours', sortable: true, editable: true},
+        { headerName: 'Start Date', field: 'startDate', sortable: true, editable: true},
+        { headerName: 'End Date', field: 'endDate', sortable: true, editable: true},
         { headerName: 'Invoice ID', field: 'invoiceId', sortable: true, editable: true},
         { headerName: 'Total', field: 'total', sortable: true, editable: false,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
         {
@@ -321,8 +317,8 @@ const handleEdit = (params) => {
   };
 
   return (
-
-      
+    <>
+    {month ? (<p> Generating Invoice for {month}</p>): ''}
     <div className="ag-theme-alpine employee-List-grid">
     {loading ? (
       <div>Loading...</div> // Display loading indicator
@@ -396,6 +392,7 @@ const handleEdit = (params) => {
       </>
     )}
   </div>
+  </>
   )  
 }
 
