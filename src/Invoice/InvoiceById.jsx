@@ -70,8 +70,28 @@ const InvoiceById = ({url,employeeId}) => {
                         return params.node.rowPinned === 'bottom' ? "Total" : params.value;
                       } },
                        { headerName: 'Project Id', field: 'projectId',sortable: isSortable},
-                       { headerName: 'InvoiceMonth', field: 'invoiceMonth', sortable: isSortable},
-                       { headerName: 'Billing', field: 'billing', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                       { headerName: 'InvoiceMonth', field: 'invoiceMonth', sortable: isSortable, valueFormatter: (params) => {
+                        if (!params.value) return ''; // Handle empty or undefined values
+                        const date = new Date(params.value);
+                        return date.toLocaleDateString('en-US', {
+                          month: 'short', // Short month format (e.g., Mar)
+                          day: 'numeric', // Numeric day format
+                          year: 'numeric', // Full year format
+                        });
+                      },},
+                       {
+                        headerName: 'Billing',
+                        field: 'billing',
+                        sortable: isSortable,
+                        valueFormatter: (params) => {
+                          // Check if this is a pinned row
+                          if (params.node.rowPinned) {
+                            return params.value; // Return the raw value without formatting
+                          }
+                      
+                          // Apply formatting for non-pinned rows
+                          return `$${params.value ? params.value.toFixed(2) : '0.00'}`;
+                        }
                       },
                        { headerName: 'Hours', field: 'hours', sortable: isSortable},
                        { headerName: 'Total', field: 'total', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
@@ -124,8 +144,7 @@ const InvoiceById = ({url,employeeId}) => {
       console.log(rowData)
       setPinnedTopRowData([
         {
-          invoiceId: "Total",
-          billing: rowData.reduce((sum, row) => sum + (row.billing || 0), 0),
+          invoiceId: "Total",          
           hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
           total: rowData.reduce((sum, row) => sum + (row.total || 0), 0),
           invoicePaidAmount: rowData.reduce((sum, row) => sum + (row.invoicePaidAmount || 0), 0), // Summing billRate values

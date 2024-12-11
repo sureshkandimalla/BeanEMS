@@ -13,37 +13,32 @@ const ProjectGrid = ({employeeId}) => {
             headerName: 'Employee Name',
             field: 'employee.firstName',
             valueGetter: (params) =>           
-                `${params.data.firstName || ''} ${params.data.lastName || ''}`
+                `${params.data?.employee?.firstName || ''} ${params.data?.employee?.lastName || ''}`,
+            filter: true
         },
         { headerName: 'Client Name', 
             field: 'client',
-             cellRenderer: (params) => params.data?.customerCompanyName },
+             cellRenderer: (params) => params.data?.customer?.customerCompanyName,
+             filter: true
+        },
         {
             headerName: 'Bill Rate',
             field: 'billRates',
-            cellRenderer: (params) => params.data?.wage || 'N/A'
-        },
-        { headerName: 'Status', field: 'status' },
-        { headerName: 'EmailId', field: 'emailId'},
-        { headerName: 'phone',  field:'phone'},   
-        {headerName: 'SSN', field: 'ssn'},
-        {headerName: 'ReferredBy', field: 'referredBy'},     
-        { headerName: 'Start Date', field: 'startDate' },
-        { headerName: 'End Date', field: 'endDate' },
-        { headerName: 'Project Id', field: 'projectId' },
-        { headerName: 'Project Name', field: 'projectName' },
-        { headerName: 'Invoice Term', field: 'invoiceTerm' },
-        { headerName: 'Payment Term', field: 'paymentTerm' },
-        {headerName: 'VisaType', field:'visa'},
+            cellRenderer: (params) => params.data?.billRates?.[0].wage || 'N/A',
+            filter: true
+        },                         
+        { headerName: 'Invoice Term', field: 'invoiceTerm', filter: true },
+        { headerName: 'Payment Term', field: 'paymentTerm', filter: true } ,
+        { headerName: 'Start Date', field: 'startDate', filter: true },
+        { headerName: 'End Date', field: 'endDate', filter: true },  
+        { headerName: 'Status', field: 'status', filter: true }   
     ];
 
     useEffect(() => {
         fetch(`http://localhost:8080/api/v1/projects?employeeId=${employeeId}`)
             .then(response => response.json())
             .then(data => {
-                const transformedData = Array.isArray(data)
-                ? data?.map(item => flattenObject(item)) // Each flattened object wrapped in an array
-                : [];
+            const transformedData = flattenObject(data)                                
             setRowData(transformedData);
             console.log(transformedData)
             })
@@ -51,23 +46,17 @@ const ProjectGrid = ({employeeId}) => {
     }, []);      
 
 
-    const flattenObject = (obj, prefix = '') => {
-        return Object.keys(obj).reduce((acc, key) => {            
+    const flattenObject = (data) => {
+
+        let updatedData = data?.map((dataObj) => {
+        return { 
+            ...dataObj
+        }
     
-            if (typeof obj[key] === 'object' && obj[key] !== null) {
-                if (Array.isArray(obj[key])) {
-                    // Flatten only the first item in the array and skip the index prefix
-                    acc = { ...acc, ...flattenObject(obj[key][0] || {}) };
-                } else {
-                    // Recurse into nested objects
-                    acc = { ...acc, ...flattenObject(obj[key]) };
-                }
-            } else {
-                // Directly assign values if not an object or array
-                acc[key] = obj[key];
-            }
-            return acc;
-        }, {});
+           // return { ...dataObj,...dataObj.assignments[0],...dataObj.employee.firstName.value, ...dataObj.employee.employeeAssignments[0],...dataObj.customer,...dataObj.billRates[0] }
+        });
+        console.log(updatedData)
+        return updatedData || [];
     };
         const handleSearchInputChange = (event) => {
             setSearchText(event.target.value);

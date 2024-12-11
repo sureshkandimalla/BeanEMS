@@ -1,7 +1,5 @@
 import React, { useState, useEffect,useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Drawer } from 'antd';
-import {PlusOutlined} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import 'ag-grid-enterprise';
@@ -58,26 +56,41 @@ const BillingDetails = ({url}) => {
   }  
 
   const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
-      var columns = [
-                      /* { headerName: 'Invoice Id', field: 'invoiceId', sortable: isSortable,valueFormatter: (params) => {
-                        // Check if this row is the pinned bottom row and show "Total"
-                        return params.node.rowPinned === 'bottom' ? "Total" : params.value;
-                      } },*/
-                      { headerName: 'Description', field: 'billType',sortable: isSortable},
-                       { headerName: 'InvoiceMonth', field: 'invoiceMonth',sortable: isSortable},
-                       //{ headerName: 'EmployeeName', field: 'employeeName', sortable: isSortable},
-                       { headerName: 'Billing', field: 'billing', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+      var columns = [                     
+                      { headerName: 'Description', field: 'billType',sortable: isSortable, filter: true},
+                       { headerName: 'InvoiceMonth', field: 'invoiceMonth',sortable: isSortable, filter: true,valueFormatter: (params) => {
+                        if (!params.value) return ''; // Handle empty or undefined values
+                        const date = new Date(params.value);
+                        return date.toLocaleDateString('en-US', {
+                          month: 'short', // Short month format (e.g., Mar)
+                          day: 'numeric', // Numeric day format
+                          year: 'numeric', // Full year format
+                        });
+                      }},
+                      {
+                        headerName: 'Billing',
+                        field: 'billing',
+                        sortable: isSortable,
+                        valueFormatter: (params) => {
+                          // Check if this is a pinned row
+                          if (params.node.rowPinned) {
+                            return params.value; // Return the raw value without formatting
+                          }
+                      
+                          // Apply formatting for non-pinned rows
+                          return `$${params.value ? params.value.toFixed(2) : '0.00'}`;
+                        }
                       },
-                      { headerName: 'Hours', field: 'hours', sortable: isSortable},
-                       { headerName: 'Total', field: 'total', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                      { headerName: 'Hours', field: 'hours', sortable: isSortable, filter: true},
+                       { headerName: 'Total', field: 'total', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`, filter: true // Format with dollar sign
                       },
-                       { headerName: 'Bill PaidAmount', field: 'billPaidAmount', sortable: isSortable,   valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                       { headerName: 'Bill PaidAmount', field: 'billPaidAmount', sortable: isSortable,   valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`, filter: true // Format with dollar sign
                       },
-                      { headerName: 'billDate', field: 'billDate', sortable: isSortable},
-                       { headerName: 'Start Date', field: 'startDate', sortable: isSortable},
-                       { headerName: 'End Date', field: 'endDate', sortable: isSortable},
-                       { headerName: 'Payment Date', field: 'paymentDate', sortable: isSortable},
-                       { headerName: 'Status', field: 'status', sortable: isSortable}                       
+                      { headerName: 'BillDate', field: 'billDate', sortable: isSortable, filter: true},
+                       { headerName: 'Start Date', field: 'startDate', sortable: isSortable, filter: true},
+                       { headerName: 'End Date', field: 'endDate', sortable: isSortable, filter: true},
+                       { headerName: 'Payment Date', field: 'paymentDate', sortable: isSortable, filter: true},
+                       { headerName: 'Status', field: 'status', sortable: isSortable, filter: true}                       
                          
                    ]
        return columns;
@@ -110,8 +123,7 @@ const BillingDetails = ({url}) => {
       console.log(rowData)
       setPinnedBottomRowData([
         {
-          invoiceId: "Total",
-          billing: rowData.reduce((sum, row) => sum + (row.billing || 0), 0),
+          invoiceId: "Total",          
           hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
           total: rowData.reduce((sum, row) => sum + (row.total || 0), 0),
           billPaidAmount: rowData.reduce((sum, row) => sum + (row.billPaidAmount || 0), 0), // Summing billRate values

@@ -142,7 +142,7 @@ const InvoiceDetails = () => {
                        { headerName: 'Billing', field: 'billing', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
                       },
                        { headerName: 'Hours', field: 'hours', sortable: isSortable},
-                       { headerName: 'Total', field: 'total', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                       { headerName: 'InvoiceAmount', field: 'total', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
                       },
                        { headerName: 'Invoice PaidAmount', field: 'invoicePaidAmount', sortable: isSortable,   valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
                       },
@@ -237,7 +237,6 @@ const InvoiceDetails = () => {
       setPinnedTopRowData([
         {
           invoiceId: "Total",
-          billing: rowData.reduce((sum, row) => sum + (row.billing || 0), 0),
           hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
           total: rowData.reduce((sum, row) => sum + (row.total || 0), 0),
           invoicePaidAmount: rowData.reduce((sum, row) => sum + (row.invoicePaidAmount || 0), 0), // Summing billRate values

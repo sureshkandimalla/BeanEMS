@@ -52,20 +52,36 @@ const PayrollDetails = ({employeeId}) => {
 
   const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
       var columns = [
-                       { headerName: 'Payroll Id', field: 'payrollId', sortable: isSortable,valueFormatter: (params) => {
+                       { headerName: 'PayCheckId', field: 'payCheckId', filter: hasFilter,sortable: isSortable,valueFormatter: (params) => {
                         // Check if this row is the pinned bottom row and show "Total"
                         return params.node.rowPinned === 'bottom' ? "Total" : params.value;
                       } },
-                       { headerName: 'PayCycleStartDate', field: 'payCycleStartDate',sortable: isSortable},
-                       { headerName: 'PayCycleEndDate', field: 'payCycleEndDate', sortable: isSortable},                       
-                       { headerName: 'Hours', field: 'hours', sortable: isSortable},
-                       { headerName: 'TotalPaid', field: 'totalPaid', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                       { headerName: 'PayCycleStartDate', field: 'payCycleStartDate',sortable: isSortable,  filter: hasFilter,valueFormatter: (params) => {
+                        if (!params.value) return ''; // Handle empty or undefined values
+                        const date = new Date(params.value);
+                        return date.toLocaleDateString('en-US', {
+                          month: 'short', // Short month format (e.g., Mar)
+                          day: 'numeric', // Numeric day format
+                          year: 'numeric', // Full year format
+                        });
+                      },},
+                       { headerName: 'PayCycleEndDate', field: 'payCycleEndDate', sortable: isSortable,  filter: hasFilter,valueFormatter: (params) => {
+                        if (!params.value) return ''; // Handle empty or undefined values
+                        const date = new Date(params.value);
+                        return date.toLocaleDateString('en-US', {
+                          month: 'short', // Short month format (e.g., Mar)
+                          day: 'numeric', // Numeric day format
+                          year: 'numeric', // Full year format
+                        });
+                      }},                       
+                       { headerName: 'Hours', field: 'hours', sortable: isSortable,  filter: hasFilter},
+                       { headerName: 'TotalPaid', field: 'totalPaid', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`,  filter: hasFilter // Format with dollar sign
                       },
-                       { headerName: 'TaxWithheld', field: 'taxWithheld', sortable: isSortable,   valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                      { headerName: 'NetPay', field: 'netPay', sortable: isSortable, valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`,  filter: hasFilter},
+                       { headerName: 'TaxWithheld', field: 'taxWithheld', sortable: isSortable,   valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`,  filter: hasFilter // Format with dollar sign
                       },
-                       { headerName: 'Deductions', field: 'deductions', sortable: isSortable,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
-                       { headerName: 'NetPay', field: 'netPay', sortable: isSortable, valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
-                       { headerName: 'EmployerLiability', field: 'employerLiability', sortable: isSortable, valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`}                                         
+                       { headerName: 'Deductions', field: 'deductions', sortable: isSortable,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`,  filter: hasFilter},
+                       { headerName: 'EmployerLiability', field: 'employerLiability', sortable: isSortable, valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`,  filter: hasFilter}                                         
                        
                    ]
        return columns;
@@ -130,7 +146,7 @@ const PayrollDetails = ({employeeId}) => {
             onChange={handleSearchInputChange}
         />                                 
 
-          <AgGridReact rowData={filterData()} columnDefs={getColumnsDefList(true)} gridOptions={gridOptions}
+          <AgGridReact rowData={filterData()} columnDefs={getColumnsDefList(true,false,true)} gridOptions={gridOptions}
               defaultColDef={{
                   flex: 1,
                   minWidth: 150,

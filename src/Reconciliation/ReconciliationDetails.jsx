@@ -20,7 +20,7 @@ export default function ReconciliationDetails({employeeId}) {
   }, []);
 
   const fetchData = () => {
-    axios.get(`http://localhost:8080/api/v1/activeProjectsForInvoiceByEmployee?employeeId=${employeeId}`, {
+    axios.get(`http://localhost:8080/api/v1/reconcile/getReconcileRecords/${employeeId}`, {
       params: {
        // selectedDate: '2023-11-01',//formattedDate,
         //status: 'viewAll'
@@ -49,29 +49,27 @@ export default function ReconciliationDetails({employeeId}) {
       headerName: "Description",
       cellRenderer: "agGroupCellRenderer",
     },
-    { field: "hours", headerName: "Hours" },
-    { field: "projectBilling", headerName: "Project Billing" },
-    { field: "wage", headerName: "Wage" },
-    { field: "income", headerName: "Income" },
-    { field: "expense", headerName: "Expense" },
-    { field: "invoiceTotal", headerName: "Invoice Total" },
-    { field: "invoicePaidAmount", headerName: "Invoice Paid Amount" },
-    { field: "startDate", headerName: "Start Date" },
-    { field: "endDate", headerName: "End Date" },
+    { field: "hours", headerName: "Hours" , filter: true},
+    { field: "projectBilling", headerName: "Project Billing" , filter: true, valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
+    { field: "wage", headerName: "Wage", valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` , filter: true},
+    { field: "invoiceTotal", headerName: "Invoice Total" , valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`, filter: true},
+    { field: "invoicePaidAmount", headerName: "Invoice Paid Amount" , valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`, filter: true},
+    { field: "income", headerName: "Income" , valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`, filter: true},
+    { field: "expense", headerName: "Expense" , valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`, filter: true},
+    { field: "startDate", headerName: "Start Date" , filter: true},
+    { field: "endDate", headerName: "End Date" , filter: true},
   ];
 
   const detailCellRendererParams = {
     detailGridOptions: {
       columnDefs: [
-        { field: "description", headerName: "Expense Description" },
-        { field: "hours", headerName: "Hours" },
-        { field: "expenseType", headerName: "Expense Type" },
-        { field: "wage", headerName: "Wage" },
-        { field: "total", headerName: "Total Expense" },
-        { field: "employeeId", headerName: "Employee ID" },
-        { field: "startDate", headerName: "Start Date" },
-        { field: "endDate", headerName: "End Date" },
-        { field: "status", headerName: "Status" },
+        { field: "description", headerName: "Expense Description" , filter: true},
+        { field: "hours", headerName: "Hours" , filter: true},       
+        { field: "wage", headerName: "Wage" , valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`, filter: true},
+        { field: "total", headerName: "Total Expense" , valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`, filter: true},
+        { field: "expenseType", headerName: "Expense Type", filter: true },       
+        { field: "startDate", headerName: "Start Date" , filter: true},
+        { field: "endDate", headerName: "End Date" , filter: true},        
       ],
     },
     getDetailRowData: (params) => {
