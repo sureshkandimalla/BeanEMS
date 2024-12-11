@@ -80,7 +80,7 @@ const EmployeeFullDetails = () => {
             },            
             {
               key: 7,
-              label: 'BillingDetails',
+              label: 'Bills',
               children: <BillingDetails url ={`http://localhost:8080/api/v1/bills/getBillsForEmployee?employeeId=${rowData.employeeId}`} />
             }, 
             {

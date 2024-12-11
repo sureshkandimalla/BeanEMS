@@ -59,12 +59,13 @@ const BillingDetails = ({url}) => {
 
   const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
       var columns = [
-                       { headerName: 'Invoice Id', field: 'invoiceId', sortable: isSortable,valueFormatter: (params) => {
+                      /* { headerName: 'Invoice Id', field: 'invoiceId', sortable: isSortable,valueFormatter: (params) => {
                         // Check if this row is the pinned bottom row and show "Total"
                         return params.node.rowPinned === 'bottom' ? "Total" : params.value;
-                      } },
+                      } },*/
+                      { headerName: 'Description', field: 'billType',sortable: isSortable},
                        { headerName: 'InvoiceMonth', field: 'invoiceMonth',sortable: isSortable},
-                       { headerName: 'EmployeeName', field: 'employeeName', sortable: isSortable},
+                       //{ headerName: 'EmployeeName', field: 'employeeName', sortable: isSortable},
                        { headerName: 'Billing', field: 'billing', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
                       },
                       { headerName: 'Hours', field: 'hours', sortable: isSortable},
