@@ -175,7 +175,7 @@ const AssignmentForm = ({ onClose }) => {
     }>
                   {employees.map((employee) => (
                     <Option key={employee.employeeId} value={employee.employeeId}>
-                      {employee.firstName + ' ' + employee.lastName}
+                      {employee.name}
                     </Option>
                   ))}
                 </Select>

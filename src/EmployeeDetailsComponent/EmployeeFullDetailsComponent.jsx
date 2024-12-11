@@ -81,7 +81,7 @@ const EmployeeFullDetails = () => {
             {
               key: 7,
               label: 'BillingDetails',
-              children: <BillingDetails url ={`http://localhost:8080/api/v1/bills/getBillsForProject?projectId=${33}`} />
+              children: <BillingDetails url ={`http://localhost:8080/api/v1/bills/getBillsForEmployee?employeeId=${rowData.employeeId}`} />
             }, 
             {
               key: 8,

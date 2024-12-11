@@ -84,7 +84,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
     const handleFormSubmit = (generalDetails) => {
         //api should be called here
 
-        axios.post('http://localhost:8080/api/v1/projects/saveOnBoardProject', generalDetails, {
+        axios.post('http://localhost:8080/api/v1/saveOnBoardProject', generalDetails, {
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -227,7 +227,7 @@ if (loading) {
     }>
           {employees.map((employee) => (
             <Option key={employee.employeeId} value={employee.employeeId}>
-              {employee.firstName+' '+employee.lastName}
+              {employee.name}
             </Option>
           ))}
           

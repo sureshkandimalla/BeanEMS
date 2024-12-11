@@ -166,15 +166,15 @@ const handleEdit = (params) => {
     let isAllValid = true;
 
     // Validate each row
-    const updatedRowData = rowData.map((row) => {
-      const isRowValid = (row.hours == 0 && row.invoiceId == 0) || (row.hours > 0 && row.invoiceId > 0);
-      if (!isRowValid) {
-        isAllValid = false;
-        invalidRowsIds.push(row.projectId); 
-      }
-      return row;
-    });    
-    setInvalidRows(invalidRowsIds);    
+    // const updatedRowData = rowData.map((row) => {
+    //   const isRowValid = (row.hours == 0 && row.invoiceId == 0) || (row.hours > 0 && row.invoiceId > 0);
+    //   if (!isRowValid) {
+    //     isAllValid = false;
+    //     invalidRowsIds.push(row.projectId); 
+    //   }
+    //   return row;
+    // });    
+    // setInvalidRows(invalidRowsIds);    
 
     if (!isAllValid) {
       alert("Some rows are invalid. Please fix the highlighted errors.");
@@ -210,9 +210,10 @@ const handleEdit = (params) => {
         { headerName: 'Client', field: 'clientName', sortable: true },
         { headerName: 'Vendor', field: 'vendorName', sortable: true, editable: false },
         { headerName: 'Bill Rate', field: 'billRate', sortable: true, editable: false,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` },
-        { headerName: 'Hours', field: 'hours', sortable: true, editable: true},
+        
         { headerName: 'Start Date', field: 'startDate', sortable: true, editable: true},
         { headerName: 'End Date', field: 'endDate', sortable: true, editable: true},
+        { headerName: 'Hours', field: 'hours', sortable: true, editable: true},
         { headerName: 'Invoice ID', field: 'invoiceId', sortable: true, editable: true},
         { headerName: 'Total', field: 'total', sortable: true, editable: false,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
         {
