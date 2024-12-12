@@ -6,6 +6,7 @@ import { PlusOutlined} from '@ant-design/icons';
 import { Button, Drawer  } from 'antd';
 import "@ag-grid-community/styles/ag-theme-quartz.css";
 import WorkOrderForm from "./WorkOrderForm";
+import { formatCurrency } from "../Utils/CurrencyFormatter";
 const WorkOrderDetails = ({rowData}) => {
  console.log(rowData)
   //  const [rowData, setRowData] = useState();
@@ -61,7 +62,7 @@ const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
    var columns = [
                    { headerName: 'Wage Id', field: 'wageId'},
                    { headerName: 'Wage Type', field: 'wageType', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
-                   { headerName: 'Bill Rate', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                   { headerName: 'Bill Rate', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter', valueFormatter: (params) => formatCurrency(params.value), },
                    { headerName: 'Project Start Date', field: 'startDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                    { headerName: 'Project End Date', field: 'endDate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                   // { headerName: 'Wage', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },

@@ -18,6 +18,7 @@ import MonthlyTimesheetDialog from "../Project/TimeSheet/MonthlyTimeSheetModal";
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 
 
@@ -139,12 +140,12 @@ const InvoiceDetails = () => {
                       } },
                        { headerName: 'Project Id', field: 'projectId',sortable: isSortable},
                        { headerName: 'InvoiceMonth', field: 'invoiceMonth', sortable: isSortable},
-                       { headerName: 'Billing', field: 'billing', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                       { headerName: 'Billing', field: 'billing', sortable: isSortable,  valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
                       },
                        { headerName: 'Hours', field: 'hours', sortable: isSortable},
-                       { headerName: 'InvoiceAmount', field: 'total', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                       { headerName: 'InvoiceAmount', field: 'total', sortable: isSortable,  valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
                       },
-                       { headerName: 'Invoice PaidAmount', field: 'invoicePaidAmount', sortable: isSortable,   valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                       { headerName: 'Invoice PaidAmount', field: 'invoicePaidAmount', sortable: isSortable,   valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
                       },
                        { headerName: 'Start Date', field: 'startDate', sortable: isSortable},
                        { headerName: 'End Date', field: 'endDate', sortable: isSortable},

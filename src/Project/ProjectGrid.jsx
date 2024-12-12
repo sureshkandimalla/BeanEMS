@@ -24,8 +24,8 @@ const ProjectGrid = ({employeeId}) => {
         {
             headerName: 'Bill Rate',
             field: 'billRates',
-            cellRenderer: (params) => params.data?.billRates?.[0].wage || 'N/A',
-            filter: true
+            cellRenderer: (params) => `$${params.data?.billRates?.[0].wage.toFixed(2)}` || 'N/A',
+            filter: true,           
         },                         
         { headerName: 'Invoice Term', field: 'invoiceTerm', filter: true },
         { headerName: 'Payment Term', field: 'paymentTerm', filter: true } ,

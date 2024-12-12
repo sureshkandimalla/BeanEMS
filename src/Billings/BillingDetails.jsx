@@ -6,6 +6,7 @@ import 'ag-grid-enterprise';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'react-datepicker/dist/react-datepicker.css';
+import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 
 
@@ -40,7 +41,8 @@ const BillingDetails = ({url}) => {
     })
       .then(response => {
         console.log(response.data);
-        setRowData(getFlattenedData(response.data));
+        const data = getFlattenedData(response.data);
+        setRowData(data);       
       })
       .catch(error => {
         console.error(error);
@@ -57,13 +59,12 @@ const BillingDetails = ({url}) => {
 
   const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
       var columns = [                     
-                      { headerName: 'Description', field: 'billType',sortable: isSortable, filter: true},
-                       { headerName: 'InvoiceMonth', field: 'invoiceMonth',sortable: isSortable, filter: true,valueFormatter: (params) => {
+                      { headerName: 'Description', field: 'billType',sortable: isSortable, width: 250},
+                       { headerName: 'InvoiceMonth', field: 'invoiceMonth',sortable: isSortable, valueFormatter: (params) => {
                         if (!params.value) return ''; // Handle empty or undefined values
                         const date = new Date(params.value);
                         return date.toLocaleDateString('en-US', {
-                          month: 'short', // Short month format (e.g., Mar)
-                          day: 'numeric', // Numeric day format
+                          month: 'short', // Short month format (e.g., Mar)                         
                           year: 'numeric', // Full year format
                         });
                       }},
@@ -78,19 +79,19 @@ const BillingDetails = ({url}) => {
                           }
                       
                           // Apply formatting for non-pinned rows
-                          return `$${params.value ? params.value.toFixed(2) : '0.00'}`;
+                          return formatCurrency(params.value);
                         }
                       },
-                      { headerName: 'Hours', field: 'hours', sortable: isSortable, filter: true},
-                       { headerName: 'Total', field: 'total', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`, filter: true // Format with dollar sign
+                      { headerName: 'Hours', field: 'hours', sortable: isSortable, },
+                       { headerName: 'Total', field: 'total', sortable: isSortable,  valueFormatter: (params) => formatCurrency(params.value),  // Format with dollar sign
                       },
-                       { headerName: 'Bill PaidAmount', field: 'billPaidAmount', sortable: isSortable,   valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`, filter: true // Format with dollar sign
+                       { headerName: 'Bill PaidAmount', field: 'billPaidAmount', sortable: isSortable,   valueFormatter: (params) => formatCurrency(params.value),  // Format with dollar sign
                       },
-                      { headerName: 'BillDate', field: 'billDate', sortable: isSortable, filter: true},
-                       { headerName: 'Start Date', field: 'startDate', sortable: isSortable, filter: true},
-                       { headerName: 'End Date', field: 'endDate', sortable: isSortable, filter: true},
-                       { headerName: 'Payment Date', field: 'paymentDate', sortable: isSortable, filter: true},
-                       { headerName: 'Status', field: 'status', sortable: isSortable, filter: true}                       
+                      { headerName: 'BillDate', field: 'billDate', sortable: isSortable, },
+                       { headerName: 'Start Date', field: 'startDate', sortable: isSortable, },
+                       { headerName: 'End Date', field: 'endDate', sortable: isSortable, },
+                       { headerName: 'Payment Date', field: 'paymentDate', sortable: isSortable, },
+                       { headerName: 'Status', field: 'status', sortable: isSortable, }                       
                          
                    ]
        return columns;
@@ -99,7 +100,7 @@ const BillingDetails = ({url}) => {
   const gridOptions = {
       pagination: true,
       paginationPageSize: 10, // Number of rows to show per page
-      domLayout: 'autoHeight',
+      domLayout: 'autoHeight'      
   };
 
   const handleSearchInputChange = (event) => {
@@ -129,11 +130,10 @@ const BillingDetails = ({url}) => {
           billPaidAmount: rowData.reduce((sum, row) => sum + (row.billPaidAmount || 0), 0), // Summing billRate values
       
         },
-      ]);
-      console.log(pinnedBottomRowData)
+      ]);      
     }
   }, [rowData]);
-
+  
 
   const getRowStyle = (params) => {
     if (params.node.rowPinned) {
@@ -162,11 +162,9 @@ const BillingDetails = ({url}) => {
                   
 
           <AgGridReact rowData={filterData()} columnDefs={getColumnsDefList(true)} gridOptions={gridOptions}
-              defaultColDef={{
-                  flex: 1,
-                  minWidth: 150,
-                  resizable: true,
-                  filter: false,
+              defaultColDef={{                  
+                  minWidth: 150,                  
+                  filter: true,
                   floatingFilter: false
               }}
               sideBar={{
@@ -193,7 +191,8 @@ const BillingDetails = ({url}) => {
             pagination={true}
             paginationPageSize={15}
             pinnedTopRowData={pinnedBottomRowData}  // Set pinned bottom row data here                
-            getRowStyle={getRowStyle}
+            getRowStyle={getRowStyle}           
+
               />
       </div>
   )

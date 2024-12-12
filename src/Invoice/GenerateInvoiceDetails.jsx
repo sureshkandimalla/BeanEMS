@@ -12,6 +12,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import {IconButton } from '@mui/material';
 import EditHoursInvoiceModal from "./EditHoursInvoiceModel";
 import './GenerateInvoiceDetails.css'
+import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 
 
@@ -209,13 +210,13 @@ const handleEdit = (params) => {
         { headerName: 'Employee Name', field: 'employeeName', sortable: true },
         { headerName: 'Client', field: 'clientName', sortable: true },
         { headerName: 'Vendor', field: 'vendorName', sortable: true, editable: false },
-        { headerName: 'Bill Rate', field: 'billRate', sortable: true, editable: false,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` },
+        { headerName: 'Bill Rate', field: 'billRate', sortable: true, editable: false,valueFormatter: (params) => formatCurrency(params.value), },
         
         { headerName: 'Start Date', field: 'startDate', sortable: true, editable: true},
         { headerName: 'End Date', field: 'endDate', sortable: true, editable: true},
         { headerName: 'Hours', field: 'hours', sortable: true, editable: true},
         { headerName: 'Invoice ID', field: 'invoiceId', sortable: true, editable: true},
-        { headerName: 'Total', field: 'total', sortable: true, editable: false,valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}`},
+        { headerName: 'Total', field: 'total', sortable: true, editable: false,valueFormatter: (params) => formatCurrency(params.value),},
         {
             headerName: 'Timesheet',
             field: 'timesheet',

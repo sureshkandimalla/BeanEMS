@@ -8,6 +8,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import {PlusOutlined} from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { Button} from 'antd';
+import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 
 const InvoiceById = ({url,employeeId}) => {
@@ -69,13 +70,12 @@ const InvoiceById = ({url,employeeId}) => {
                        { headerName: 'Invoice Id', field: 'invoiceId', sortable: isSortable,valueFormatter: (params) => {
                         return params.node.rowPinned === 'bottom' ? "Total" : params.value;
                       } },
-                       { headerName: 'Project Id', field: 'projectId',sortable: isSortable},
+                       { headerName: 'Project Id', field: 'projectId',sortable: isSortable, },
                        { headerName: 'InvoiceMonth', field: 'invoiceMonth', sortable: isSortable, valueFormatter: (params) => {
                         if (!params.value) return ''; // Handle empty or undefined values
                         const date = new Date(params.value);
                         return date.toLocaleDateString('en-US', {
-                          month: 'short', // Short month format (e.g., Mar)
-                          day: 'numeric', // Numeric day format
+                          month: 'short', // Short month format (e.g., Mar)                         
                           year: 'numeric', // Full year format
                         });
                       },},
@@ -83,6 +83,7 @@ const InvoiceById = ({url,employeeId}) => {
                         headerName: 'Billing',
                         field: 'billing',
                         sortable: isSortable,
+                        
                         valueFormatter: (params) => {
                           // Check if this is a pinned row
                           if (params.node.rowPinned) {
@@ -90,19 +91,20 @@ const InvoiceById = ({url,employeeId}) => {
                           }
                       
                           // Apply formatting for non-pinned rows
-                          return `$${params.value ? params.value.toFixed(2) : '0.00'}`;
+                          return formatCurrency(params.value);
                         }
                       },
-                       { headerName: 'Hours', field: 'hours', sortable: isSortable},
-                       { headerName: 'Total', field: 'total', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                       { headerName: 'Hours', field: 'hours', sortable: isSortable },
+                       { headerName: 'Total', field: 'total', sortable: isSortable,  valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
                       },
-                       { headerName: 'Invoice PaidAmount', field: 'invoicePaidAmount', sortable: isSortable,   valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                       { headerName: 'Invoice PaidAmount', field: 'invoicePaidAmount', sortable: isSortable,   valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
                       },
                        { headerName: 'Start Date', field: 'startDate', sortable: isSortable},
                        { headerName: 'End Date', field: 'endDate', sortable: isSortable},
                        {
                         headerName: "Status",
-                        field: "status"
+                        field: "status",
+                        
                       },                   
                        
                    ]
@@ -181,7 +183,7 @@ const InvoiceById = ({url,employeeId}) => {
                   flex: 1,
                   minWidth: 150,
                   resizable: true,
-                  filter: false,
+                  filter: true,
                   floatingFilter: false
               }}
               sideBar={{

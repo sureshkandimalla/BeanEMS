@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import './ProjectGrid.css';
 import "@ag-grid-community/styles/ag-theme-quartz.css";
 import AssignmentForm from "./AssignmentForm";
+import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 const AssignmentDetails = ({projectId}) => {
  console.log(projectId)
@@ -76,7 +77,7 @@ const getColumnsDefList = ( isSortable, isEditable, hasFilter) => {
                    { headerName: 'Assignment Id', field: 'assignmentId'},
                    { headerName: 'Assignment Type', field: 'assignmentType', sortable: isSortable, editable: false, filter: 'agTextColumnFilter' },
                    { headerName: 'Employee Name', field: 'employeeName', cellRenderer: (params) => params.data?.firstName +" "+ params.data?.lastName},
-                   { headerName: 'Wage', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+                   { headerName: 'Wage', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter', valueFormatter: (params) => formatCurrency(params.value), },
                    { headerName: 'Status', field: 'status', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                    //{ headerName: 'Client', field: 'clientName',sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
                    //{ headerName: 'Vendor', field: 'vendorName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },

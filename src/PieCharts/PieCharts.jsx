@@ -1,45 +1,53 @@
-// src/PieChart.js
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 
 const PieCharts = ({ chartData, chartLabels }) => {
-
-  let labels = chartLabels; // Take the first 3 labels
-  let series = chartData; 
-  let colors = ['#f8aa4e', '#6bcbe2', '#78a0ed']; 
+  let labels = chartLabels; 
+  let series = chartData;
+  let colors = ['#f8aa4e', '#6bcbe2', '#78a0ed'];
 
   if (chartData?.length === 4) {
-      labels = chartLabels.slice(0, 4); // Take all 4 labels
-      series = chartData.slice(0, 4); 
-      colors.push('#596b4e'); 
+      labels = chartLabels.slice(0, 4);
+      series = chartData.slice(0, 4);
+      colors.push('#596b4e');
   }
 
   const chartOptions = {
-    options: {
-      dataLabels: {
-        enabled: false,},
-      labels: labels,
-      colors: colors,
-      responsive: [{
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: 200
-          },
-          legend: {
-            position: 'bottom'
+    chart: {
+      type: 'donut',
+      width: '100%',
+      height: 'auto',
+      responsive: [
+        {
+          breakpoint: 480,
+          options: {
+            chart: {
+              width: '100%',
+              height: 'auto',
+            },
+            legend: {
+              position: 'bottom'
+            }
           }
         }
-      }]
+      ]
     },
-    series: series,
-    chart: {
-      type: 'donut'
+    labels: labels,
+    colors: colors,
+    dataLabels: {
+      enabled: false
     }
   };
 
   return (
-    <ReactApexChart options={chartOptions?.options} series={chartOptions?.series} type="donut" width="100%" />
+    <div style={{ width: '100%', maxWidth: '300px', margin: '0 auto' }}>
+      <ReactApexChart 
+        options={chartOptions} 
+        series={series} 
+        type="donut" 
+        width="100%" 
+      />
+    </div>
   );
 };
 

@@ -9,6 +9,7 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import 'react-datepicker/dist/react-datepicker.css';
 import AdjustmentForm from './AdjustmentForm'
+import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 
 
@@ -67,11 +68,11 @@ const AdjustementDetails = ({employeeId}) => {
                       } },
                        { headerName: 'FromName', field: 'fromName',sortable: isSortable},
                        { headerName: 'ToName', field: 'toName', sortable: isSortable},
-                       { headerName: 'Amount', field: 'amount', sortable: isSortable,  valueFormatter: (params) => `$${params.value ? params.value.toFixed(2) : '0.00'}` // Format with dollar sign
+                       { headerName: 'Amount', field: 'amount', sortable: isSortable,  valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
                       },
-                       { headerName: 'AdjustmentType', field: 'adjustmentType', sortable: isSortable},
-                       { headerName: 'Notes', field: 'notes', sortable: isSortable },                       
-                       { headerName: 'AdjustmentDate', field: 'adjustmentDate', sortable: isSortable}                                                                                     
+                       { headerName: 'AdjustmentType', field: 'adjustmentType', sortable: isSortable, filter:true},
+                       { headerName: 'Notes', field: 'notes', sortable: isSortable,  width: 550 },                       
+                       { headerName: 'AdjustmentDate', field: 'adjustmentDate', sortable: isSortable, filter:true}                                                                                     
                        
                    ]
        return columns;
@@ -165,11 +166,8 @@ const AdjustementDetails = ({employeeId}) => {
                   
 
           <AgGridReact rowData={filterData()} columnDefs={getColumnsDefList(true)} gridOptions={gridOptions}
-              defaultColDef={{
-                  flex: 1,
-                  minWidth: 150,
-                  resizable: true,
-                  filter: false,
+              defaultColDef={{                                  
+                  filter: true,
                   floatingFilter: false
               }}
               sideBar={{
