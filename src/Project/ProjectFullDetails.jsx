@@ -47,7 +47,7 @@ const ProjectFullDetails = () => {
             const fetchData = async () => {
               if (!isInitialRender.current) {
                   try {
-                    const response = await fetch(`http://localhost:8080/api/v1/projects/${rowData.projectId}`);
+                    const response = await fetch(`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/projects/${rowData.projectId}`);
                       const data = await response.json();
                       const flattendData = getFlattenedData(data)
                       setResponseData(flattendData);                    
@@ -99,14 +99,14 @@ const ProjectFullDetails = () => {
               key: 4,
               label: 'Invoices',
               children: <InvoiceById 
-              url ={`http://localhost:8080/api/v1/invoice/getInvoicesForProject?projectId=${rowData.projectId}`}             
+              url ={`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/getInvoicesForProject?projectId=${rowData.projectId}`}             
               employeeId={rowData.employeeId}
               />
           },
           {
             key: 5,
             label: 'BillingDetails',
-            children: <BillingDetails url ={`http://localhost:8080/api/v1/bills/getBillsForProject?projectId=${rowData.projectId}`} />
+            children: <BillingDetails url ={`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/bills/getBillsForProject?projectId=${rowData.projectId}`} />
           },
             
         ]

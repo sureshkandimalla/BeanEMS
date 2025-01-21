@@ -35,7 +35,7 @@ const TwoPartPage = () => {
           const [isLoading, setIsLoading] = useState(true);
           const [error, setError] = useState();
           
-          const apiUrl = 'http://localhost:8080';
+          const apiUrl = 'http://beanservices.us-east-1.elasticbeanstalk.com';
           const endpoint = '/api/v1/employees/employee';
           const empId = bigInt(rowData.employeeId);
           // Construct the URL with the path variable

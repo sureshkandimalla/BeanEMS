@@ -43,13 +43,13 @@ const NewInvoice = ({onClose}) => {
   const fetchEmployeesAndVendors = async () => {
     try {
       const [employeesData, vendorsData, projectsData] = await Promise.all([
-        fetch("http://localhost:8080/api/v1/employees/getEmployees").then(
+        fetch("http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees").then(
           (response) => response.json()
         ),
-        fetch("http://localhost:8080/api/v1/customers/getAllCustomers").then(
+        fetch("http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers").then(
           (response) => response.json()
         ),
-        fetch("http://localhost:8080/api/v1/getProjects").then(
+        fetch("http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects").then(
           (response) => response.json()
         ),
       ]);
@@ -98,7 +98,7 @@ const NewInvoice = ({onClose}) => {
         ...generalDetails, // Spread the existing properties
         formatSelectedDate: generalDetails.invoiceMonth, // Add the new property
       }];
-      fetch('http://localhost:8080/api/v1/invoice/addInvoices', {
+      fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/addInvoices', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

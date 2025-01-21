@@ -10,17 +10,17 @@ import PieCharts from '../PieCharts/PieCharts';
 
 // Utility functions for API calls
 const fetchEmployees = async () => {
-  const response = await fetch('http://localhost:8080/api/v1/employees/getAllEmployees');
+  const response = await fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getAllEmployees');
   return response.json();
 };
 
 const fetchWorkforceChartData = async () => {
-  const response = await fetch('http://localhost:8080/api/v1/employees/employeesCountByStatus');
+  const response = await fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/employeesCountByStatus');
   return response.json();
 };
 
 const fetchInvoicesChartData = async () => {
-  const response = await fetch('http://localhost:8080/api/v1/invoice/invoicesCountByStatus');
+  const response = await fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/invoicesCountByStatus');
   return response.json();
 };
 

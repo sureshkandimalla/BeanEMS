@@ -59,7 +59,7 @@ const EmployeeFullDetails = () => {
               key: 3,
               label: 'INVOICES',
               children: <InvoiceById 
-              url ={`http://localhost:8080/api/v1/invoice/getInvoicesForEmployee?employeeId=${rowData.employeeId}`}
+              url ={`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/getInvoicesForEmployee?employeeId=${rowData.employeeId}`}
               employeeId={rowData.employeeId}
             />
             },
@@ -81,7 +81,7 @@ const EmployeeFullDetails = () => {
             {
               key: 7,
               label: 'Bills',
-              children: <BillingDetails url ={`http://localhost:8080/api/v1/bills/getBillsForEmployee?employeeId=${rowData.employeeId}`} />
+              children: <BillingDetails url ={`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/bills/getBillsForEmployee?employeeId=${rowData.employeeId}`} />
             }, 
             {
               key: 8,

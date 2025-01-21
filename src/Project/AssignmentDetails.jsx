@@ -29,7 +29,7 @@ const [open, setOpen] = useState(false);
 useEffect(() => {
   const fetchData = async () => {     
           try {
-            const response = await fetch(`http://localhost:8080/api/v1/assignmentsForProject?projectId=${projectId}`);
+            const response = await fetch(`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/assignmentsForProject?projectId=${projectId}`);
               const data = await response.json();
               const flattendData = getFlattenedData(data)
               setRowData(flattendData); 

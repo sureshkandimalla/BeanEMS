@@ -137,7 +137,7 @@ const InvoiceById = ({url,employeeId}) => {
     // Any additional logic can go here
     navigate('/generateInvoice', {state: 
       {
-        url: `http://localhost:8080/api/v1/activeProjectsForInvoiceByEmployee?employeeId=${employeeId}`       
+        url: `http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/activeProjectsForInvoiceByEmployee?employeeId=${employeeId}`       
       }});
   };
 

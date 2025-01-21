@@ -28,7 +28,7 @@ const Dashboard = () => {
         const fetchData = async () => {
             if (!isInitialRender.current) {
                 try {
-                    const response1 = await fetch('http://localhost:8080/api/v1/employees/employeesCountByStatus');
+                    const response1 = await fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/employeesCountByStatus');
                     const data1 = await response1.json();
 
                     // Assuming the response from your API is an array of objects with 'label' and 'value' properties
@@ -37,7 +37,7 @@ const Dashboard = () => {
                     setWorkForceChartLabels(labels);
                     setWorkForceChartData(chartData);
 
-                    const response2 = await fetch('http://localhost:8080/api/v1/invoice/invoicesCountByStatus');
+                    const response2 = await fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/invoicesCountByStatus');
                     const data2 = await response2.json();
                     const labels2 = data2.map(item => item.status);
                     const chartData2 = data2.map(item => item.count);
@@ -46,7 +46,7 @@ const Dashboard = () => {
                     setInvoicesChartLabels(labels2);
                     setInvoicesChartData(chartData2);
 
-                    const response3 = await fetch('http://localhost:8080/api/v1/getProjects');
+                    const response3 = await fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects');
                     const data3 = await response3.json();
                     setRowData(data3)
                 } catch (error) {

@@ -110,7 +110,7 @@ const Newemployee =()=>{
     };
     const handleFormSubmit = (generalDetails) => {
 
-      axios.post('http://localhost:8080/api/v1/employees/saveOnBoardDetails', generalDetails)
+      axios.post('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/saveOnBoardDetails', generalDetails)
           .then(response => {
               if (response && response.data) {
                   // Display success message

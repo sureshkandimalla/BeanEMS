@@ -17,7 +17,7 @@ const Grid = () => {
       const history = useHistory();
 
     useEffect(() => {
-        fetch('http://localhost:8080/api/v1/getProjects')
+        fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects')
             .then(response => response.json())
             .then(data => {
                 setRowData(getFlattenedData(data));

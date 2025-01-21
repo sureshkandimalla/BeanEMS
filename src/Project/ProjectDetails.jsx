@@ -53,7 +53,7 @@ const TwoPartPage = () => {
           const [isLoading, setIsLoading] = useState(true);
           const [error, setError] = useState();
           
-          const projectsApiUrl = 'http://localhost:8080/api/v1/projects';
+          const projectsApiUrl = 'http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/projects';
 
           const projectId = bigInt(rowData.projectId);
        //   alert(rowData);

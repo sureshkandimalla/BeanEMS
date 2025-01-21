@@ -35,7 +35,7 @@ const ProjectGrid = ({employeeId}) => {
     ];
 
     useEffect(() => {
-        fetch(`http://localhost:8080/api/v1/projects?employeeId=${employeeId}`)
+        fetch(`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/projects?employeeId=${employeeId}`)
             .then(response => response.json())
             .then(data => {
             const transformedData = flattenObject(data)                                

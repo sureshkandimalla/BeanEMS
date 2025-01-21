@@ -22,8 +22,8 @@ const ProjectOnBoardingForm = ({ onClose }) => {
     const fetchEmployeesAndVendors = async () => {
         try {
             const [employeesData, vendorsData] = await Promise.all([
-                fetch('http://localhost:8080/api/v1/employees/getEmployees').then(response => response.json()),
-                fetch('http://localhost:8080/api/v1/customers/getAllCustomers').then(response => response.json())
+                fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees').then(response => response.json()),
+                fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers').then(response => response.json())
             ]);
             
             setEmployeesData(getFlattenedData(employeesData));
@@ -84,7 +84,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
     const handleFormSubmit = (generalDetails) => {
         //api should be called here
 
-        axios.post('http://localhost:8080/api/v1/saveOnBoardProject', generalDetails, {
+        axios.post('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/saveOnBoardProject', generalDetails, {
             headers: {
                 'Content-Type': 'application/json'
             }

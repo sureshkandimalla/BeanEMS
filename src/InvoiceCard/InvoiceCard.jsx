@@ -39,7 +39,7 @@ const fetchData = () => {
   //default status =viewAll
   const today = new Date();
   const formattedDate = today.toISOString().split('T')[0];
-  axios.get('http://localhost:8080/api/v1/invoice/getAllInvoices', {
+  axios.get('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/getAllInvoices', {
     //params: {
       //selectedDate:'2023-11-01',//formattedDate,
       //status: invoiceStatus

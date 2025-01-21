@@ -45,7 +45,7 @@ const InvoiceDetails = () => {
   const fetchData = () => {
     //default status =viewAll
     setRowData([])    
-    axios.get('http://localhost:8080/api/v1/invoice/getAllInvoices', {
+    axios.get('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/getAllInvoices', {
       params: {
        // selectedDate: '2023-11-01',//formattedDate,
         //status: 'viewAll'
@@ -73,7 +73,7 @@ const InvoiceDetails = () => {
     console.log(updatedRow);
     // Call the PUT API to update the row
     axios
-      .put(`http://localhost:8080/api/v1/invoice/invoices/${updatedRow.invoiceId}`, updatedRow)
+      .put(`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/invoices/${updatedRow.invoiceId}`, updatedRow)
       .then((response) => {
         console.log("Invoice updated successfully:", response.data);
         fetchData();
@@ -259,7 +259,7 @@ const InvoiceDetails = () => {
     const encodedFormatSelectedDate = encodeURIComponent(formattedDate);
     // Any additional logic can go here
     navigate('/generateInvoice', { state: { 
-      url: `http://localhost:8080/api/v1/activeProjects?endDate=${encodedEndDate}&selectedDate=${encodedFormatSelectedDate}`,
+      url: `http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/activeProjects?endDate=${encodedEndDate}&selectedDate=${encodedFormatSelectedDate}`,
       month: month
     }
     });

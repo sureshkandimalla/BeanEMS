@@ -37,7 +37,7 @@ const AdjustementDetails = ({employeeId}) => {
     //default status =viewAll
     setRowData([])
     const today = new Date();   
-    axios.get(`http://localhost:8080/api/v1/adjustment/findAdjustmentsByEmployeeId?id=${employeeId}`, {
+    axios.get(`http://http://beanems.s3-website-us-east-1.amazonaws.com//api/v1/adjustment/findAdjustmentsByEmployeeId?id=${employeeId}`, {
       params: {
        // selectedDate: '2023-11-01',//formattedDate,
         //status: 'viewAll'

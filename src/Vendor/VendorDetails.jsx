@@ -15,7 +15,7 @@ const VendorDetails = () => {
   //  const columnsList = ['Customer Id', 'Company Name', 'Email Id', 'Phone', 'Status', 'ein', 'Website','startDate','endDate' ];
 
     useEffect(() => {
-        fetch('http://localhost:8080/api/v1/customers/getAllCustomers')
+        fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers')
             .then(response => response.json())
             .then(data => {
                 setRowData(getFlattenedData(data));

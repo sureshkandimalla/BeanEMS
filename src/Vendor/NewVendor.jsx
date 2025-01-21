@@ -37,7 +37,7 @@ const NewVendor =()=>{
     };
     const handleFormSubmit = (generalDetails) => {
 
-      axios.post('http://localhost:8080/api/v1/customers/saveOnBoardDetails', generalDetails)
+      axios.post('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/saveOnBoardDetails', generalDetails)
           .then(response => {
               if (response && response.data) {
                   // Display success message

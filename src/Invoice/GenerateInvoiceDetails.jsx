@@ -146,7 +146,7 @@ const handleEdit = (params) => {
         formatSelectedDate: updatedRow.startDate, // Add the new property
       }];
 
-      fetch('http://localhost:8080/api/v1/invoice/addInvoices', {
+      fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/addInvoices', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ const handleEdit = (params) => {
         formatSelectedDate: item.startDate, // Add the new property
       }));
       console.log(updatedDataToSave);
-      fetch('http://localhost:8080/api/v1/invoice/addInvoices', {
+      fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/addInvoices', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

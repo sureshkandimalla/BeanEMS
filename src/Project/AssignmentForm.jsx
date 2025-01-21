@@ -40,8 +40,8 @@ const AssignmentForm = ({ onClose }) => {
     const fetchEmployeesAndVendors = async () => {
       try {
         const [employeesData, vendorsData] = await Promise.all([
-          fetch('http://localhost:8080/api/v1/employees/getEmployees').then(response => response.json()),
-          fetch('http://localhost:8080/api/v1/customers/getAllCustomers').then(response => response.json())
+          fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees').then(response => response.json()),
+          fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers').then(response => response.json())
         ]);
         
         setEmployeesData(employeesData);
@@ -101,7 +101,7 @@ const AssignmentForm = ({ onClose }) => {
   };
 
   const handleFormSubmit = (data) => {
-    axios.post('http://localhost:8080/api/v1/assignments', data, {
+    axios.post('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/assignments', data, {
         headers: {
             'Content-Type': 'application/json'
         }

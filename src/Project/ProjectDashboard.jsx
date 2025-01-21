@@ -47,7 +47,7 @@ useEffect(() => {
   const fetchData = async () => {
       if (!isInitialRender.current) {
           try {
-            const response = await fetch('http://localhost:8080/api/v1/getProjects');
+            const response = await fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects');
               const data = await response.json();
               const flattendData = getFlattenedData(data)
               setRowData(flattendData); 

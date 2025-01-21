@@ -17,7 +17,7 @@ const AdjustmentForm = ({ onClose }) => {
     const fetchEmployeesAndVendors = async () => {
         try {
             const [employeesData, vendorsData] = await Promise.all([
-                fetch('http://localhost:8080/api/v1/employees/getEmployees').then(response => response.json()),
+                fetch('http://http://beanems.s3-website-us-east-1.amazonaws.com//api/v1/employees/getEmployees').then(response => response.json()),
             ]);            
             setEmployeesData(getFlattenedData(employeesData));
         } catch (error) {
@@ -59,7 +59,7 @@ const AdjustmentForm = ({ onClose }) => {
     const handleFormSubmit = (generalDetails) => {
         //api should be called here
 
-        axios.post('http://localhost:8080/api/v1/adjustment/addAdjustment', generalDetails, {
+        axios.post('http://http://beanems.s3-website-us-east-1.amazonaws.com//api/v1/adjustment/addAdjustment', generalDetails, {
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -176,7 +176,7 @@ if (loading) {
     }>
           {employees.map((employee) => (
             <Option key={employee.employeeId} value={employee.employeeId}>
-              {employee.firstName+' '+employee.lastName}
+              {employee.name}
             </Option>
           ))}
         </Select>

@@ -52,7 +52,7 @@ const WorkOrderForm = ({ onClose }) => {
 
   const handleFormSubmit = (data) => {
     console.log(data)
-    axios.post('http://localhost:8080/api/v1/wages/wage', data, {
+    axios.post('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/wages/wage', data, {
         headers: {
             'Content-Type': 'application/json'
         }
