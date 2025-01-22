@@ -5,7 +5,7 @@ import logo from '../bean-logo.png';
 const items = [
     {
       key: '1',
-      label: 'Suresh',
+      label: localStorage.getItem("user"),
     },
     {
       key: '2',

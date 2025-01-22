@@ -1,6 +1,6 @@
-import React,{useState} from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { Layout, Menu ,Button,Col, Row,Dropdown,Space,Flex} from 'antd';
+import { Layout, Col, Row } from 'antd';
 import Header from './Header/Header';
 import LeftTabs from './LeftTabs/LeftTabs';
 import Dashboard from './Dashboard/Dashboard';
@@ -14,38 +14,30 @@ import ProjectDashboard from './Project/ProjectDashboard';
 import ProjectOnBoardingForm from './OnBoardingComponent/ProjectOnBoarding';
 import ProjectFullDetails from './Project/ProjectFullDetails';
 import GenerateInvoiceDetails from './Invoice/GenerateInvoiceDetails';
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { AuthProvider } from "./Authentication/Context/AuthContext"; 
+import Login from "./Authentication/pages/Login";
+import ProtectedRoute from "./Authentication/routes/ProtectedRoute";
+import AuthLayout from "./Layouts/AuthLayout"
+import MainLayout from "./Layouts/MainLayout"; 
 
-
-
-
-const {Content } = Layout;
+const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+const { Content } = Layout;
 
 const App = () => {
   return (
-    <Router>
-    <Layout>
-<Header/>
-      <Layout>
-      <Row>
-      <Col span={2}>
-        <LeftTabs/>
-      </Col>
-          <Col span={22}>
-        <Layout
-          style={{
-            padding: '10px 24px 10px 0px',
-          }}
-        >
-          <Content
-            style={{
-              padding: 0,
-              margin: 0,
-              minHeight: 280
-            }}
-          >
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
+    <GoogleOAuthProvider clientId={clientId}>
+      <AuthProvider>
+        <Router>
+        <Routes>
+          {/* Authentication Layout (No Header, No Sidebar) */}
+          <Route element={<AuthLayout />}>
+              <Route path="/" element={<Login />} />
+            </Route>
+            {/* Main Application Layout (Protected) */}
+            <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
               <Route path="/workforce" element={<WorkForce />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/employeeonboard" element={<EmployeeOnboard />} />
               <Route path="/vendordetails" element={<VendorDetails />} />
               <Route path="/invoicedetails" element={<InvoiceDetails />} />
@@ -53,18 +45,17 @@ const App = () => {
               <Route path="/employeeDetailDashboard" element={<EmployeeDetailDashboard />} />
               <Route path="/ProjectOnBoardingForm" element={<ProjectOnBoardingForm />} />
               <Route path="/projects" element={<ProjectDashboard />} />
-              <Route path="/projectFullDetais" element={<ProjectFullDetails/>}/>
-              <Route path='/generateInvoice' element ={<GenerateInvoiceDetails/>}/>
-              {/* Add more routes here */}
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </Content>
-        </Layout>
-        </Col>
-        </Row>
-      </Layout>
-    </Layout>
-    </Router>
+              <Route path="/projectFullDetails" element={<ProjectFullDetails />} />
+              <Route path='/generateInvoice' element={<GenerateInvoiceDetails />} />
+
+              {/* Redirect unknown routes to Dashboard */}
+              <Route path="*" element={<Navigate to="/dashboard" />} />
+            </Route>
+          </Routes>         
+        </Router>
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 };
+
 export default App;

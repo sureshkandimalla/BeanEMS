@@ -9,20 +9,22 @@ import { ColumnsToolPanelModule } from "@ag-grid-enterprise/column-tool-panel";
 import { MenuModule } from "@ag-grid-enterprise/menu";
 import { ClientSideRowModelModule } from "@ag-grid-community/client-side-row-model";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
   ColumnsToolPanelModule,
   MenuModule,
 ]);
+const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <App />
+  <React.StrictMode>     
+    <App />   
   </React.StrictMode>
 );
-
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
