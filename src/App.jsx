@@ -21,7 +21,7 @@ import ProtectedRoute from "./Authentication/routes/ProtectedRoute";
 import AuthLayout from "./Layouts/AuthLayout"
 import MainLayout from "./Layouts/MainLayout"; 
 
-const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+const clientId = '206630439236-q0q2np2g72vf5rgodjk4hhv814i3q7ai.apps.googleusercontent.com';
 const { Content } = Layout;
 
 const App = () => {
