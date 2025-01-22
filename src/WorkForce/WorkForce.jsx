@@ -32,8 +32,8 @@ const WorkForceContent = () => {
   const { data: employeeData, isLoading: isEmployeesLoading, error: employeesError } = useQuery({
     queryKey: ['employees'],
     queryFn: fetchEmployees,
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
+   // staleTime: 5 * 60 * 1000,
+    // cacheTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
@@ -79,7 +79,8 @@ const WorkForceContent = () => {
   const invoicesChartValues = invoicesChartData?.map((item) => item.count) || [];
 
   const items = [
-    { key: '1', label: 'USA', children: <WorkForceList employees={processedData.usa} /> },
+    { key: '0', label: 'USA', children: <WorkForceList employees={processedData.usa} /> },
+   // { key: '1', label: 'USA', children: <WorkForceList employees={processedData.usa} /> },
     { key: '2', label: 'India', children: <WorkForceList employees={processedData.india} /> },
     { key: '3', label: 'Billable Employees', children: <WorkForceList employees={processedData.billable} /> },
     { key: '4', label: 'Workforce', children: <WorkForceList employees={paginatedData} /> },
