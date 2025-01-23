@@ -116,7 +116,7 @@ const WorkForceList = ({employees}) => {
                 defaultColDef={{
                     flex: 1,                    
                     resizable: true, 
-                    floatingFilter: true,
+                    floatingFilter: false,
                     filter: true
                 }}
                 
