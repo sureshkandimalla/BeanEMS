@@ -32,7 +32,7 @@ const CurrentEmployeeCard = () => {
 
   const fetchData = () => {
     //default status =onBoarding
-    axios.get('http://http://beanems.s3-website-us-east-1.amazonaws.com//api/v1/employees/employeesListByStatus', {
+    axios.get('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/employeesListByStatus', {
       params: {
         status: empStatus
       }

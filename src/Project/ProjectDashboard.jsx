@@ -45,7 +45,7 @@ const items = [
 
 useEffect(() => {
   const fetchData = async () => {
-      if (!isInitialRender.current) {
+      if (isInitialRender.current) {
           try {
             const response = await fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects');
               const data = await response.json();
