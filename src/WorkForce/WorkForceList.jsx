@@ -5,13 +5,15 @@ import 'ag-grid-enterprise';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import './WorkForce.css';
+import { formatCurrency } from "../Utils/CurrencyFormatter";
 
-const WorkForceList = ({employees}) => {
-    //console.log(employees)
+
+const WorkForceList = ({employees}) => {   
     const [searchText, setSearchText] = useState('');
     const [rowData, setRowData] = useState();
-    const columnsList = ['First Name', 'Last Name', 'Visa','status','Annual Pay','Designation', 'startDate','Primary Skills','Work City','Work Country','Email Id', 'Phone', 'DOB','endDate'
-        ,'Employment Type', 'SSN', 'Gender','Employee Id'];
+    const [gridApi, setGridApi] = useState(null);
+    const columnsList = ['First Name', 'Last Name', 'Visa','Status','Annual Pay','Designation', 'StartDate','Primary Skills','Work City','Work Country','Email Id', 'Phone', 'DOB','EndDate'
+        ,'Employment Type', 'SSN'];
 
     useEffect(() => {
         setRowData(employees)
@@ -27,6 +29,26 @@ const WorkForceList = ({employees}) => {
 
             let updatedColumn = column === 'DOB' ? 'Date of Birth' : column
             updatedColumn = column
+            let columnFilter;
+        if (column === 'Date of Birth' || column === 'startDate' || column === 'DOB' || column === 'endDate') {
+            columnFilter = "agDateColumnFilter"; 
+        } else if (column === 'Annual Pay'  || column === 'EmployeeId') {
+            columnFilter = "agNumberColumnFilter";
+        } else {
+            columnFilter = "agSetColumnFilter";
+        }
+        const headerPadding = 20; // Extra space for better visibility       
+        const maxDataLength = (rowData && rowData.length > 0) 
+        ? rowData.reduce((max, row) => {        
+        const valueLength = row[fieldValue] ? row[fieldValue].toString().length : 0;
+        return Math.max(max, valueLength);
+    }, column.length)
+    : column.length; 
+
+        const charWidth = 8; 
+        const maxAllowedWidth = 25 * charWidth; 
+        console.log(column.length)
+        const autoWidth = Math.min((maxDataLength * charWidth) + 30, maxAllowedWidth);   
            /* if(column == 'startDate' )
                 updatedColumn='Employment Start Date';
             else if(column == 'endDate')
@@ -37,7 +59,9 @@ const WorkForceList = ({employees}) => {
                     field: fieldValue,
                     sortable: isSortable,
                     editable: true,
-                    filter: 'agTextColumnFilter',
+                    filter: columnFilter,
+                    minWidth:  autoWidth,   
+                    suppressSizeToFit: true,              
                     tooltipValueGetter: (params) => params.value, 
                     cellRenderer: (params) => {
                         if (column === 'First Name' || column === 'Last Name') {
@@ -46,17 +70,18 @@ const WorkForceList = ({employees}) => {
                                     {params.value}
                                 </Link>
                             );
-                        } else {
+                        }else if (params.colDef.field === "annualPay") {                             
+                            return formatCurrency(params.value); 
+                        }
+                         else {
                             return params.value;
                         }
-                    },
-                    //tooltipComponent: 'customTooltip',
+                    },                    
                     tooltipShowDelay: 0,
                 };
             });
             return columns;
-        };
-
+        };        
         const handleSearchInputChange = (event) => {
             setSearchText(event.target.value);
           };
@@ -87,17 +112,15 @@ const WorkForceList = ({employees}) => {
                     />
                 </div>
             <AgGridReact rowData={filterData()} frameworkComponents={{ customTooltip: CustomTooltip }} columnDefs={getColumnsDefList(columnsList, true, false)}
-                domLayout="autoHeight"
+                domLayout="autoHeight"                               
                 defaultColDef={{
-                    flex: 1,
-                    minWidth: 150,
-                    resizable: true,
-                    filter: false,
-                    floatingFilter: false
+                    flex: 1,                    
+                    resizable: true, 
+                    floatingFilter: true,
+                    filter: true
                 }}
-                hiddenByDefault={false}
-                rowGroupPanelShow='always'
-                pivotPanelShow='always'
+                
+                hiddenByDefault={false}                
                 sideBar={{
                     toolPanels: [
                         {
@@ -117,8 +140,7 @@ const WorkForceList = ({employees}) => {
                         }
                     ]
                 }}
-                sortable={true}
-                defaultToolPanel='columns'
+                sortable={true}                
                 pagination={true}
                 paginationPageSize={20} />
         </div>

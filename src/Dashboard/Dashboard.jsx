@@ -20,24 +20,8 @@ const Dashboard = () => {
     const [invoicesChartLabels, setInvoicesChartLabels] = useState([]);
     const isInitialRender = useRef(true);
 
-    // useEffect(() => {
-    //     if (!isInitialRender.current) {
-    //         fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects')
-    //             .then(response => response.json())
-    //             .then(rowData => {
-    //                 setRowData(rowData);
-    //                 console.log(rowData);
-
-    //             })
-    //             .catch(error => console.error('Error fetching data:', error));
-    //         } else {
-    //         isInitialRender.current = false;
-    //     }
-    // }, []);
-
-    
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchData = async () => {           
             if (!isInitialRender.current) {
                 try {
                     const response1 = await fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/employeesCountByStatus');
@@ -71,29 +55,9 @@ const Dashboard = () => {
 
         fetchData();
     }, []);
-
-
-
-    // useEffect(() => {
-    //         fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/employeesCountByStatus')
-    //             .then(response => response.json())
-    //             .then(data => {
-    //                 // Assuming the response from your API is an array of objects with 'label' and 'value' properties
-    //                 const labels = data.map(item => item.status);
-    //                 const chartData = data.map(item => item.count);
-
-    //                 console.log(labels);
-    //                 console.log(chartData);
-    //                 setWorkForceChartLabels(labels);
-    //                 setWorkForceChartData(chartData);
-    //             })
-    //             .catch(error => {
-    //                 console.error('Error fetching data:', error);
-    //             });
-    //     }, []);
-
-        const totalParamCount = workForceChartData[0] + workForceChartData[1] + workForceChartData[2] + workForceChartData[3];
-        const projectsSize = rowData ? rowData.length : 0
+    
+    const totalParamCount = workForceChartData[0] + workForceChartData[1] + workForceChartData[2] + workForceChartData[3];
+    const projectsSize = rowData ? rowData.length : 0
 
     const [employeeDrawerVisible, setEmployeeDrawerVisible] = useState(false);
     const [vendorDrawerVisible, setVendorDrawerVisible] = useState(false);
@@ -160,7 +124,7 @@ const Dashboard = () => {
             <Row justify={'end'}>
                 <Col span={8} className='welCCol'>
                     <h1 className='mrgBtm10 WelcomeHeading' data-text="Welcome Back">Welcome Back</h1>
-                    <p>Suresh.K(suresh@beeninfosystems.com)</p>
+                    <p>{JSON.parse(localStorage.getItem("user")).email}</p>
                 </Col>
                 <Col span={16} className='buttonsBar'>
                     <Flex gap="small" wrap={false} justify="end" align="center">
