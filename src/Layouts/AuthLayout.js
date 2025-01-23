@@ -23,6 +23,7 @@ const styles = {
         width: "100vw",        
         overflow: "hidden",    
         backgroundImage: `url(${bglogo})`, 
+        backgroundRepeat: "no-repeat",
         backgroundPosition: "center",        
         position: "relative",
     },
