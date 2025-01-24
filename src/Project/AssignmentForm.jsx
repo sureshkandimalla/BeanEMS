@@ -1,8 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Input, Form, Row, Col, Card, Button, DatePicker, Select, Spin } from 'antd';
-import moment from 'moment';
-import axios from 'axios';
-
+import React, { useState, useEffect } from "react";
+import {
+  Modal,
+  Input,
+  Form,
+  Row,
+  Col,
+  Card,
+  Button,
+  DatePicker,
+  Select,
+  Spin,
+} from "antd";
+import moment from "moment";
+import axios from "axios";
 
 const AssignmentForm = ({ onClose }) => {
   const { Option } = Select;
@@ -13,49 +23,54 @@ const AssignmentForm = ({ onClose }) => {
   const [vendors, setVendorsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const assignmentTypes = ["Employee", "Referral", "Commission"];
-  
-  const projectId = localStorage.getItem('projectId');
-  const projectName = localStorage.getItem('projectName');
+
+  const projectId = localStorage.getItem("projectId");
+  const projectName = localStorage.getItem("projectName");
   console.log(projectId);
-  console.log(projectName)
+  console.log(projectName);
   const [generalDetails, setGeneralDetails] = useState({
     employeeId: null,
     projectId: projectId,
     projectName: projectName || "",
     // vendorName: "",
     // vendorId: null,
-    // clientName: "",   
+    // clientName: "",
     // clientId: null,
-    startDate: "", 
-    status:"",
-    endDate: "",  
+    startDate: "",
+    status: "",
+    endDate: "",
     wage: 0,
     assignmentType: "",
-    assignmentTaxType:"",
+    assignmentTaxType: "",
     assignmentNotes: [],
-    lastUpdated:""
+    lastUpdated: "",
   });
 
   useEffect(() => {
     const fetchEmployeesAndVendors = async () => {
       try {
         const [employeesData, vendorsData] = await Promise.all([
-          fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees').then(response => response.json()),
-          fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers').then(response => response.json())
+          fetch(
+            "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees",
+          ).then((response) => response.json()),
+          fetch(
+            "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers",
+          ).then((response) => response.json()),
         ]);
-        
+
         setEmployeesData(employeesData);
         setVendorsData(vendorsData);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         Modal.error({
-          content: 'Error fetching employees or customers. Please try again later.'
+          content:
+            "Error fetching employees or customers. Please try again later.",
         });
       } finally {
         setLoading(false);
       }
     };
-    
+
     fetchEmployeesAndVendors();
   }, []);
 
@@ -75,9 +90,9 @@ const AssignmentForm = ({ onClose }) => {
   };
 
   const handleGeneralData = (value, field) => {
-    setGeneralDetails(prevState => ({
+    setGeneralDetails((prevState) => ({
       ...prevState,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -85,45 +100,51 @@ const AssignmentForm = ({ onClose }) => {
     // Add selected employee and vendor IDs to generalDetails
     const updatedDetails = {
       ...generalDetails,
-      employeeId: selectedEmployeeId
+      employeeId: selectedEmployeeId,
     };
 
     console.log("Submitted Details:", updatedDetails);
-    
+
     // Validate the form data
     // !updatedDetails.clientName ||
-    if ( !updatedDetails.assignmentType || !updatedDetails.wage) {
-      alert('Please fill in all mandatory fields');
+    if (!updatedDetails.assignmentType || !updatedDetails.wage) {
+      alert("Please fill in all mandatory fields");
       return;
     }
-    
+
     handleFormSubmit(updatedDetails);
   };
 
   const handleFormSubmit = (data) => {
-    axios.post('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/assignments', data, {
-        headers: {
-            'Content-Type': 'application/json'
+    axios
+      .post(
+        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/assignments",
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+      )
+      .then((response) => {
+        if (response && response.status === 200) {
+          console.log("response.data: " + response.data);
+          Modal.success({
+            content: "Data saved successfully",
+            onOk: onClose,
+          });
+        } else {
+          // Handle other cases
+          console.log("Response data does not have expected value");
         }
-    }).then(response => {
-            if (response && response.status === 200) {
-                console.log("response.data: "+response.data);
-                Modal.success({
-                    content: 'Data saved successfully',
-                    onOk: onClose
-                });
-            } else {
-                // Handle other cases
-                console.log('Response data does not have expected value');
-            }
-        })
-        .catch(error => {
-            console.error('Error posting data:', error);
-            // Display error message
-            Modal.error({
-                content: 'Error posting data. Please try again later.'
-            });
+      })
+      .catch((error) => {
+        console.error("Error posting data:", error);
+        // Display error message
+        Modal.error({
+          content: "Error posting data. Please try again later.",
         });
+      });
   };
 
   const handleClear = () => {
@@ -135,56 +156,73 @@ const AssignmentForm = ({ onClose }) => {
       projectId: null,
       projectName: projectName || "", // Retain the project name from localStorage
       assignmentType: "",
-      status:"",
-    //   vendorName: "",
-    //   vendorId: null,
-    //   clientName: "",     
-    //   clientId: null,
+      status: "",
+      //   vendorName: "",
+      //   vendorId: null,
+      //   clientName: "",
+      //   clientId: null,
       startDate: "",
       assignmentNotes: [],
       endDate: "",
       wage: 0,
-      assignmentTaxType:""
+      assignmentTaxType: "",
     });
   };
-  
 
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh'
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
         <Spin size="large" />
       </div>
     );
   }
 
   return (
-    <div className='employee-onboarding-form'>
-      <h3 className='header'>Onboard Project(s)</h3>
-      <Card className='employee-onboard-card'>
+    <div className="employee-onboarding-form">
+      <h3 className="header">Onboard Project(s)</h3>
+      <Card className="employee-onboard-card">
         <Form form={form}>
           <Row gutter={30}>
-            <Col span={8} className='form-row'>
-              <Form.Item label="Employee" name="employeeId" rules={[{ required: true, message: 'Please select an employee' }]}>
-                <Select showSearch value={selectedEmployeeId} onChange={handleEmployeeChange} filterOption={(input, option) =>
-      option?.children?.toLowerCase().includes(input.toLowerCase())
-    }>
+            <Col span={8} className="form-row">
+              <Form.Item
+                label="Employee"
+                name="employeeId"
+                rules={[
+                  { required: true, message: "Please select an employee" },
+                ]}
+              >
+                <Select
+                  showSearch
+                  value={selectedEmployeeId}
+                  onChange={handleEmployeeChange}
+                  filterOption={(input, option) =>
+                    option?.children
+                      ?.toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
                   {employees.map((employee) => (
-                    <Option key={employee.employeeId} value={employee.employeeId}>
+                    <Option
+                      key={employee.employeeId}
+                      value={employee.employeeId}
+                    >
                       {employee.name}
                     </Option>
                   ))}
                 </Select>
               </Form.Item>
               <Form.Item label="Project Name" name="projectName">
-            <span>{projectName || 'N/A'}</span>
-            </Form.Item>
+                <span>{projectName || "N/A"}</span>
+              </Form.Item>
             </Col>
-            
+
             {/* <Col span={8} className='form-row'>
               <Form.Item label="Vendor" name="vendorId">
                 <Select value={selectedVendorId} onChange={handleVendorChange}>
@@ -196,26 +234,43 @@ const AssignmentForm = ({ onClose }) => {
                 </Select>
               </Form.Item>
             </Col> */}
-            
-            <Col span={8} className='form-row'>
-              <Form.Item label="Bill Rate" name="wage" rules={[{ required: true }]}>
-                <Input type="number" onChange={(e) => handleGeneralData(Number(e.target.value), 'wage')} value={generalDetails.wage} />
+
+            <Col span={8} className="form-row">
+              <Form.Item
+                label="Bill Rate"
+                name="wage"
+                rules={[{ required: true }]}
+              >
+                <Input
+                  type="number"
+                  onChange={(e) =>
+                    handleGeneralData(Number(e.target.value), "wage")
+                  }
+                  value={generalDetails.wage}
+                />
               </Form.Item>
             </Col>
           </Row>
-          
+
           <Row gutter={30}>
             {/* <Col span={8} className='form-row'>
               <Form.Item label="Client" name="clientName" rules={[{ required: true }]}>
                 <Input onChange={(e) => handleGeneralData(e.target.value, 'clientName')} value={generalDetails.clientName} />
               </Form.Item>
             </Col> */}
-            
+
             <Col span={8} className="form-row">
               <Form.Item label="AssignmentType" name="assignmentType">
-                <Select showSearch value={generalDetails.assignmentType} onChange={handleAssignmentChange} filterOption={(input, option) =>
-      option?.children?.toLowerCase().includes(input.toLowerCase())
-    }>
+                <Select
+                  showSearch
+                  value={generalDetails.assignmentType}
+                  onChange={handleAssignmentChange}
+                  filterOption={(input, option) =>
+                    option?.children
+                      ?.toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
                   {assignmentTypes.map((assign) => (
                     <Option key={assign} value={assign}>
                       {assign}
@@ -224,45 +279,63 @@ const AssignmentForm = ({ onClose }) => {
                 </Select>
               </Form.Item>
             </Col>
-            
+
             {/* <Col span={8} className='form-row'>
               <Form.Item label="Project Name" name="projectName">
                 <Input value={projectName} />
               </Form.Item>
             </Col> */}
           </Row>
-          
+
           <Row gutter={30}>
-            <Col span={8} className='form-row'>
+            <Col span={8} className="form-row">
               <Form.Item label="Start Date">
                 <DatePicker
-                  onChange={(date, dateString) => handleGeneralData(dateString, 'startDate')}
-                  value={generalDetails.startDate ? moment(generalDetails.startDate) : null}
+                  onChange={(date, dateString) =>
+                    handleGeneralData(dateString, "startDate")
+                  }
+                  value={
+                    generalDetails.startDate
+                      ? moment(generalDetails.startDate)
+                      : null
+                  }
                 />
               </Form.Item>
             </Col>
-            
-            <Col span={8} className='form-row'>
+
+            <Col span={8} className="form-row">
               <Form.Item label="End Date">
                 <DatePicker
-                  onChange={(date, dateString) => handleGeneralData(dateString, 'endDate')}
-                  value={generalDetails.endDate ? moment(generalDetails.endDate) : null}
+                  onChange={(date, dateString) =>
+                    handleGeneralData(dateString, "endDate")
+                  }
+                  value={
+                    generalDetails.endDate
+                      ? moment(generalDetails.endDate)
+                      : null
+                  }
                 />
               </Form.Item>
-            </Col>   
+            </Col>
           </Row>
-          
+
           <Row gutter={30}>
-            <Col span={8} className='form-row'>
-              <Button type="primary" onClick={handleClear}>Clear</Button>
+            <Col span={8} className="form-row">
+              <Button type="primary" onClick={handleClear}>
+                Clear
+              </Button>
             </Col>
-            
-            <Col span={8} className='form-row'>
-              <Button type="primary" onClick={onClose}>Cancel</Button>
+
+            <Col span={8} className="form-row">
+              <Button type="primary" onClick={onClose}>
+                Cancel
+              </Button>
             </Col>
-            
-            <Col span={8} className='form-row'>
-              <Button type="primary" onClick={handleSubmit}>Onboard</Button>
+
+            <Col span={8} className="form-row">
+              <Button type="primary" onClick={handleSubmit}>
+                Onboard
+              </Button>
             </Col>
           </Row>
         </Form>

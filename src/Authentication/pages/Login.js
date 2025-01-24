@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import AuthContext from "../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import logo from "../pages/bean-logo.png";  
+import logo from "../pages/bean-logo.png";
 //import bglogo from "../pages/bg_image1.jpg";  // ✅ Import Background Image
 
 const Login = () => {
@@ -15,11 +15,11 @@ const Login = () => {
   };
 
   return (
-    <div>      
-      <div style={styles.loginBox}>        
+    <div>
+      <div style={styles.loginBox}>
         <div style={styles.googleLogin}>
-          <GoogleLogin 
-            onSuccess={handleLoginSuccess} 
+          <GoogleLogin
+            onSuccess={handleLoginSuccess}
             onError={() => console.log("Login Failed")}
             theme="outline"
             size="large"
@@ -30,10 +30,9 @@ const Login = () => {
   );
 };
 
-
-const styles = {  
+const styles = {
   loginBox: {
-    backgroundColor: "transparent", 
+    backgroundColor: "transparent",
     padding: "30px",
     borderRadius: "10px",
     textAlign: "center",
@@ -41,13 +40,13 @@ const styles = {
   },
   title: {
     marginBottom: "10px",
-    color: "rgb(71 107 148);", 
+    color: "rgb(71 107 148);",
   },
   googleLogin: {
     position: "absolute",
     top: "20px",
-    right: "20px", 
-  }
+    right: "20px",
+  },
 };
 
 export default Login;

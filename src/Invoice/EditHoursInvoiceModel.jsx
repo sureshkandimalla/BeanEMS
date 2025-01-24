@@ -12,11 +12,10 @@ const EditHoursInvoiceModal = ({ open, onClose, onSave, initialData }) => {
   }, [initialData]);
 
   const handleSave = () => {
-    if(hours>0 && invoiceId>0){
-    onSave({ hours, invoiceId });
-    }
-    else{
-        alert("Please enter hours and Invoice Id Greater than Zero")
+    if (hours > 0 && invoiceId > 0) {
+      onSave({ hours, invoiceId });
+    } else {
+      alert("Please enter hours and Invoice Id Greater than Zero");
     }
   };
 
@@ -31,7 +30,7 @@ const EditHoursInvoiceModal = ({ open, onClose, onSave, initialData }) => {
         </Button>,
         <Button key="save" type="primary" onClick={handleSave}>
           Save
-        </Button>
+        </Button>,
       ]}
     >
       <div>

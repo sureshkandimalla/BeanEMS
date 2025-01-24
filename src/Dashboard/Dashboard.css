@@ -1,94 +1,126 @@
-.currentEmployeesCard{background: #fafafa;}
+.currentEmployeesCard {
+  background: #fafafa;
+}
 .ant-card.totalProjectsCard {
-    background: #fff3ed;
+  background: #fff3ed;
 }
 
 .ant-card.totalProjectsCard .anticon-desktop {
-    font-size: 30px;
-    background: #fff;
-    padding: 10px;
-    border-radius: 10px;
-    vertical-align: middle;
-    margin-right: 25px;
+  font-size: 30px;
+  background: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  vertical-align: middle;
+  margin-right: 25px;
 }
 
-span.totalProjectLabel,.totalRevenueLabel,.invoiceCardTitle,.totalWorkTitle {
-    font-size: 18px;
-    font-weight: 700;
+span.totalProjectLabel,
+.totalRevenueLabel,
+.invoiceCardTitle,
+.totalWorkTitle {
+  font-size: 18px;
+  font-weight: 700;
 }
 
-
-span.totalProjectsCount,.totalRevenueCount,.totalWorkForceCount {
-    font-size: 30px;
-    font-weight: 700;
+span.totalProjectsCount,
+.totalRevenueCount,
+.totalWorkForceCount {
+  font-size: 30px;
+  font-weight: 700;
 }
-.totalRevenueCount,.totalWorkTitle{display: block;}
-.mrgtop145{margin-top: 125px;}
-.welCCol h1{margin-top: 10px;margin-bottom: 5px;}
-.welCCol p{margin-top: 5px;}
+.totalRevenueCount,
+.totalWorkTitle {
+  display: block;
+}
+.mrgtop145 {
+  margin-top: 125px;
+}
+.welCCol h1 {
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+.welCCol p {
+  margin-top: 5px;
+}
 
 .ant-col.projectStatcol {
-    font-size: 16px;
-    margin-top: 10px;
+  font-size: 16px;
+  margin-top: 10px;
 }
 
 .ant-col.projectStatcol .ant-icon {
-    font-size: 22px;
+  font-size: 22px;
 }
 
 span.anticon.anticon-rise.riseIcon {
-    color: green;
-    font-size: 26px;
-    vertical-align: middle;
-    margin-right: 8px;
+  color: green;
+  font-size: 26px;
+  vertical-align: middle;
+  margin-right: 8px;
 }
 
-.totalRevenceCard,.invoiceCard,.totalworkForceCard{background-color: #fefbff;}
-.totalRevenceCard .ant-card-body{    padding-bottom: 21px;}
-span.invoiceCardTitle {
-    margin: 10px 18px;
-    display: block;
-    text-align: right;
-    position: relative;
-    top: 33px;
+.totalRevenceCard,
+.invoiceCard,
+.totalworkForceCard {
+  background-color: #fefbff;
 }
-.invoiceStatusCard .ant-card-body {padding:0px 15px 0px 0px!important;}
+.totalRevenceCard .ant-card-body {
+  padding-bottom: 21px;
+}
+span.invoiceCardTitle {
+  margin: 10px 18px;
+  display: block;
+  text-align: right;
+  position: relative;
+  top: 33px;
+}
+.invoiceStatusCard .ant-card-body {
+  padding: 0px 15px 0px 0px !important;
+}
 .totalworkForceCard .ant-card-body {
-    padding-left: 0px;
-    padding-bottom: 8px;
+  padding-left: 0px;
+  padding-bottom: 8px;
 }
 .totalWorkFrcDiv {
-    position: absolute;
-    top: 110px;
-    left: -98px;
+  position: absolute;
+  top: 110px;
+  left: -98px;
 }
 .invoiceStatusCard {
-    margin-right: 15px;
+  margin-right: 15px;
 }
-h1.WelcomeHeading{position: relative;color: #ccc;}
-h1.WelcomeHeading::before{
-    content: attr(data-text);
-    position: absolute;
-    color: #000;
+h1.WelcomeHeading {
+  position: relative;
+  color: #ccc;
+}
+h1.WelcomeHeading::before {
+  content: attr(data-text);
+  position: absolute;
+  color: #000;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px soild #000;
+  animation: animateHeading 8s linear;
+}
+@keyframes animateHeading {
+  0%,
+  10%,
+  100% {
+    width: 0%;
+  }
+  70%,
+  90% {
     width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    border-right: 3px soild #000;
-    animation: animateHeading 8s linear;
-}
-@keyframes animateHeading{
-    0%,10%,100%{
-        width: 0%;
-    }
-    70%,90%{
-        width: 100%;
-    }
+  }
 }
 li.ant-menu-item.ant-menu-item-selected {
-    color: #552612 !important;
-    font-weight:700
+  color: #552612 !important;
+  font-weight: 700;
 }
-li.ant-menu-item-active{  border-bottom-color: #552612 !important;}
+li.ant-menu-item-active {
+  border-bottom-color: #552612 !important;
+}
 .ant-menu-item-selected::after {
-    border-bottom-color: #552612 !important;
+  border-bottom-color: #552612 !important;
 }

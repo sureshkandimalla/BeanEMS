@@ -1,6 +1,8 @@
 .invoiceCardFilters {
-    padding: 24px 16px;
-    background: #fafafa;
+  padding: 24px 16px;
+  background: #fafafa;
 }
 
-.invoiceCard .ant-card-body {padding: 0 !important;}
+.invoiceCard .ant-card-body {
+  padding: 0 !important;
+}

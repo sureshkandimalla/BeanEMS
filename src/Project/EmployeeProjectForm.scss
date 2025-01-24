@@ -1,18 +1,19 @@
 .employee-List-grid {
-    width: 100%;
-    font-family: -webkit-body;
-    // padding: 20px;
-  }
+  width: 100%;
+  font-family: -webkit-body;
+  // padding: 20px;
+}
 
-  .ag-theme-alpine .ag-layout-auto-height .ag-center-cols-clipper, 
-  .ag-theme-alpine .ag-layout-auto-height .ag-center-cols-container,
-    .ag-theme-alpine .ag-layout-print .ag-center-cols-clipper, .ag-theme-alpine 
-    .ag-layout-print .ag-center-cols-container, .ag-theme-alpine-dark .ag-layout-auto-height
-    .ag-center-cols-clipper, .ag-theme-alpine-dark .ag-layout-auto-height .ag-center-cols-container, 
-    .ag-theme-alpine-dark .ag-layout-print .ag-center-cols-clipper, .ag-theme-alpine-dark 
-    .ag-layout-print .ag-center-cols-container {
-    min-height: auto;
-  }
+.ag-theme-alpine .ag-layout-auto-height .ag-center-cols-clipper,
+.ag-theme-alpine .ag-layout-auto-height .ag-center-cols-container,
+.ag-theme-alpine .ag-layout-print .ag-center-cols-clipper,
+.ag-theme-alpine .ag-layout-print .ag-center-cols-container,
+.ag-theme-alpine-dark .ag-layout-auto-height .ag-center-cols-clipper,
+.ag-theme-alpine-dark .ag-layout-auto-height .ag-center-cols-container,
+.ag-theme-alpine-dark .ag-layout-print .ag-center-cols-clipper,
+.ag-theme-alpine-dark .ag-layout-print .ag-center-cols-container {
+  min-height: auto;
+}
 
 .card {
   width: 300px;
@@ -40,8 +41,6 @@ h2 {
 p {
   margin: 10px 0;
 }
-
-
 
 .two-parts-container {
   display: flex;

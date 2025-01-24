@@ -28,7 +28,7 @@ const MainLayout = () => {
                   minHeight: 280,
                 }}
               >
-                <Outlet /> 
+                <Outlet />
               </Content>
             </Layout>
           </Col>

@@ -4,14 +4,13 @@ import { jwtDecode } from "jwt-decode";
 const AuthContext = createContext(); // Ensure this is properly exported
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(null);
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    console.log(storedUser)
+    console.log(storedUser);
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-    
   }, []);
 
   const login = (credentialResponse) => {

@@ -4,7 +4,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./Invoice.css";
 
-const NewInvoice = ({onClose}) => {
+const NewInvoice = ({ onClose }) => {
   const { Option } = Select;
   const [form] = Form.useForm();
   const [selectedEmployeeId, setSelectedEmployeeId] = useState();
@@ -13,15 +13,15 @@ const NewInvoice = ({onClose}) => {
   const [employees, setEmployeesData] = useState([]);
   const [vendors, setVendorsData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const[projects, setProjectsData] = useState([]);
+  const [projects, setProjectsData] = useState([]);
 
-  const initialGeneralDetails =  {
+  const initialGeneralDetails = {
     employeeId: null,
     employeeName: "",
     vendorName: "",
     vendorId: null,
     projectId: null,
-    projectName:"",
+    projectName: "",
     startDate: "",
     endDate: "",
     billRate: 0,
@@ -29,9 +29,9 @@ const NewInvoice = ({onClose}) => {
     invoiceId: 0,
     invoiceMonth: "",
     total: 0,
-  }
+  };
   const [generalDetails, setGeneralDetails] = useState(initialGeneralDetails);
-  
+
   const handleAddNew = () => {
     form.resetFields(); // Reset Ant Design form fields
     setGeneralDetails(initialGeneralDetails); // Reset state
@@ -43,19 +43,19 @@ const NewInvoice = ({onClose}) => {
   const fetchEmployeesAndVendors = async () => {
     try {
       const [employeesData, vendorsData, projectsData] = await Promise.all([
-        fetch("http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees").then(
-          (response) => response.json()
-        ),
-        fetch("http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers").then(
-          (response) => response.json()
-        ),
-        fetch("http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects").then(
-          (response) => response.json()
-        ),
+        fetch(
+          "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees",
+        ).then((response) => response.json()),
+        fetch(
+          "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers",
+        ).then((response) => response.json()),
+        fetch(
+          "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects",
+        ).then((response) => response.json()),
       ]);
       setEmployeesData(getFlattenedData(employeesData));
       setVendorsData(getFlattenedData(vendorsData));
-      setProjectsData(getFlattenedData(projectsData))
+      setProjectsData(getFlattenedData(projectsData));
     } catch (error) {
       console.error("Error fetching data:", error);
       Modal.error({
@@ -81,82 +81,85 @@ const NewInvoice = ({onClose}) => {
     console.log("Submitted General Details:", generalDetails);
 
     // Validate required fields
-    if (      
+    if (
       !generalDetails.vendorId ||
       !generalDetails.invoiceId ||
       !generalDetails.billRate ||
-      !generalDetails.invoiceMonth||
+      !generalDetails.invoiceMonth ||
       !generalDetails.hours
     ) {
       Modal.error({
         content: "Please fill in all mandatory fields before submitting.",
       });
       return;
-    }
-    else{
-      const updatedDataToSave = [{
-        ...generalDetails, // Spread the existing properties
-        formatSelectedDate: generalDetails.invoiceMonth, // Add the new property
-      }];
-      fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/addInvoices', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    } else {
+      const updatedDataToSave = [
+        {
+          ...generalDetails, // Spread the existing properties
+          formatSelectedDate: generalDetails.invoiceMonth, // Add the new property
         },
-        body: JSON.stringify(updatedDataToSave),
-      })
-        .then(response =>{
-          if (response && response.status === 201) {          
-          Modal.success({
-              content: 'Data saved successfully',
-              onOk : () =>{
+      ];
+      fetch(
+        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/addInvoices",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedDataToSave),
+        },
+      )
+        .then((response) => {
+          if (response && response.status === 201) {
+            Modal.success({
+              content: "Data saved successfully",
+              onOk: () => {
                 onClose();
-                handleClear()
-              }
+                handleClear();
+              },
+            });
+          } else {
+            // Handle other cases
+            console.log("Response data does not have expected value");
+          }
+        })
+        .catch((error) => {
+          console.error("Error posting data:", error);
+          // Display error message
+          Modal.error({
+            content: "Error posting data. Please try again later.",
           });
-      } else {
-          // Handle other cases
-          console.log('Response data does not have expected value');
-      }
-  })
-  .catch(error => {
-      console.error('Error posting data:', error);
-      // Display error message
-      Modal.error({
-          content: 'Error posting data. Please try again later.'
-      });
-  });
+        });
     }
-  }  
+  };
 
   const handleCancel = () => {
     //history.push('/project')
     Modal.warning({
-        content: 'Are you sure you want to cancel?',
-        onOk : () =>{
-          onClose();
-          handleClear()
-        }
+      content: "Are you sure you want to cancel?",
+      onOk: () => {
+        onClose();
+        handleClear();
+      },
     });
+  };
 
-}
-
-const handleClear= () => {
-  form.resetFields();
-  setGeneralDetails({
-    employeeId: null,
-    employeeName: "",
-    vendorName: "",
-    vendorId: null,
-    startDate: "",
-    endDate: "",
-    billRate: 0,
-    hours: 0,
-    invoiceId: 0,
-    invoiceMonth: "",
-    total: 0,
-  });
-}
+  const handleClear = () => {
+    form.resetFields();
+    setGeneralDetails({
+      employeeId: null,
+      employeeName: "",
+      vendorName: "",
+      vendorId: null,
+      startDate: "",
+      endDate: "",
+      billRate: 0,
+      hours: 0,
+      invoiceId: 0,
+      invoiceMonth: "",
+      total: 0,
+    });
+  };
 
   const handleGeneralData = (value, field) => {
     setGeneralDetails((prevState) => ({
@@ -166,25 +169,32 @@ const handleClear= () => {
   };
 
   const handleEmployeeChange = (value) => {
-    const selectedEmployee = employees.find((employee) => employee.employeeId === value);
-    setSelectedEmployeeId(value);    
+    const selectedEmployee = employees.find(
+      (employee) => employee.employeeId === value,
+    );
+    setSelectedEmployeeId(value);
     handleGeneralData(value, "employeeId");
-    handleGeneralData((selectedEmployee?.firstName +" "+ selectedEmployee?.lastName) || "", "employeeName");
-
+    handleGeneralData(
+      selectedEmployee?.firstName + " " + selectedEmployee?.lastName || "",
+      "employeeName",
+    );
   };
 
   const handleProjectChange = (value) => {
-    console.log(projects)
-    const selectedProject = projects.find((project) => project.projectId === value);
-    console.log(selectedProject)
-    setSelectedProjectId(value);    
+    console.log(projects);
+    const selectedProject = projects.find(
+      (project) => project.projectId === value,
+    );
+    console.log(selectedProject);
+    setSelectedProjectId(value);
     handleGeneralData(value, "projectId");
-    handleGeneralData((selectedProject?.projectName) || "", "projectName");
-
+    handleGeneralData(selectedProject?.projectName || "", "projectName");
   };
 
   const handleVendorChange = (value) => {
-    const selectedVendor = vendors.find((vendor) => vendor.customerId === value);
+    const selectedVendor = vendors.find(
+      (vendor) => vendor.customerId === value,
+    );
     setSelectedVendorId(value);
     handleGeneralData(value, "vendorId");
     handleGeneralData(selectedVendor?.customerCompanyName || "", "vendorName");
@@ -229,9 +239,7 @@ const handleClear= () => {
                 value={selectedEmployeeId}
                 onChange={handleEmployeeChange}
                 filterOption={(input, option) =>
-                  option?.children
-                    ?.toLowerCase()
-                    .includes(input.toLowerCase())
+                  option?.children?.toLowerCase().includes(input.toLowerCase())
                 }
               >
                 {employees.map((employee) => (
@@ -242,7 +250,7 @@ const handleClear= () => {
               </Select>
             </Form.Item>
           </Col>
-          
+
           <Col span={12}>
             <Form.Item
               label="Vendor"
@@ -254,9 +262,7 @@ const handleClear= () => {
                 value={selectedVendorId}
                 onChange={handleVendorChange}
                 filterOption={(input, option) =>
-                  option?.children
-                    ?.toLowerCase()
-                    .includes(input.toLowerCase())
+                  option?.children?.toLowerCase().includes(input.toLowerCase())
                 }
               >
                 {vendors.map((vendor) => (
@@ -278,9 +284,7 @@ const handleClear= () => {
                 value={selectedProjectId}
                 onChange={handleProjectChange}
                 filterOption={(input, option) =>
-                  option?.children
-                    ?.toLowerCase()
-                    .includes(input.toLowerCase())
+                  option?.children?.toLowerCase().includes(input.toLowerCase())
                 }
               >
                 {projects.map((project) => (
@@ -301,9 +305,7 @@ const handleClear= () => {
             >
               <Input
                 placeholder="Invoice Id"
-                onChange={(e) =>
-                  handleGeneralData(e.target.value, "invoiceId")
-                }
+                onChange={(e) => handleGeneralData(e.target.value, "invoiceId")}
                 value={generalDetails.invoiceId}
               />
             </Form.Item>
@@ -332,15 +334,13 @@ const handleClear= () => {
             >
               <Input
                 placeholder="Hours"
-                onChange={(e) =>
-                  handleGeneralData(e.target.value, "hours")
-                }
+                onChange={(e) => handleGeneralData(e.target.value, "hours")}
                 value={generalDetails.hours}
               />
             </Form.Item>
           </Col>
         </Row>
-        <Row gutter={25}>          
+        <Row gutter={25}>
           <Col span={12}>
             <Form.Item
               label="Invoice Month"
@@ -352,7 +352,10 @@ const handleClear= () => {
               <DatePicker
                 selected={generalDetails.invoiceMonth}
                 onChange={(date) =>
-                  handleGeneralData(date.toISOString().split("T")[0], "invoiceMonth")
+                  handleGeneralData(
+                    date.toISOString().split("T")[0],
+                    "invoiceMonth",
+                  )
                 }
                 showMonthYearPicker
                 dateFormat="MM/yyyy"
@@ -360,24 +363,21 @@ const handleClear= () => {
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item
-              label="Start Date"
-              name="startDate"              
-            >
+            <Form.Item label="Start Date" name="startDate">
               <DatePicker
                 selected={generalDetails.startDate}
                 onChange={(date) =>
-                  handleGeneralData(date.toISOString().split("T")[0], "startDate")
+                  handleGeneralData(
+                    date.toISOString().split("T")[0],
+                    "startDate",
+                  )
                 }
                 dateFormat="yyyy-MM-dd"
               />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item
-              label="End Date"
-              name="endDate"             
-            >
+            <Form.Item label="End Date" name="endDate">
               <DatePicker
                 selected={generalDetails.endDate}
                 onChange={(date) =>
@@ -389,25 +389,31 @@ const handleClear= () => {
           </Col>
         </Row>
         <hr />
-                        <section>
-                        <Row gutter={30}>
-                            <Col span={8} className='form-row'>
-                                <Form.Item>
-                                    <Button type="primary" onClick={handleClear}>Clear</Button>
-                                </Form.Item>
-                            </Col>
-                            <Col span={8} className='form-row'>
-                                <Form.Item>
-                                    <Button type="primary" onClick={handleCancel}>Cancel</Button>
-                                </Form.Item>
-                            </Col>
-                            <Col span={8} className='form-row'>
-                                <Form.Item>
-                                    <Button type="primary" htmlType="submit" onClick={handleSubmit}>Submit</Button>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                        </section>
+        <section>
+          <Row gutter={30}>
+            <Col span={8} className="form-row">
+              <Form.Item>
+                <Button type="primary" onClick={handleClear}>
+                  Clear
+                </Button>
+              </Form.Item>
+            </Col>
+            <Col span={8} className="form-row">
+              <Form.Item>
+                <Button type="primary" onClick={handleCancel}>
+                  Cancel
+                </Button>
+              </Form.Item>
+            </Col>
+            <Col span={8} className="form-row">
+              <Form.Item>
+                <Button type="primary" htmlType="submit" onClick={handleSubmit}>
+                  Submit
+                </Button>
+              </Form.Item>
+            </Col>
+          </Row>
+        </section>
       </Form>
     </>
   );

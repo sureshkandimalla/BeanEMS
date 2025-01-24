@@ -1,5 +1,3 @@
-
-
 /* Reset basic styles for consistent layout */
 body {
   margin: 0;
@@ -103,7 +101,7 @@ body {
 }
 
 .update-button {
-  background-color: #4CAF50; /* Green button color */
+  background-color: #4caf50; /* Green button color */
   color: white;
   padding: 8px 16px;
   border: none;
@@ -127,7 +125,7 @@ body {
 
 .header-title {
   margin: 0;
-  color:#042c54;
+  color: #042c54;
 }
 
 .header-title-green {
@@ -171,7 +169,7 @@ body {
 .field-value {
   font-weight: bold;
   display: block; /* Display the field value as a block */
-  color:#042c54;
+  color: #042c54;
 }
 
 .dotted-line {
