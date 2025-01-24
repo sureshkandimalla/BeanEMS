@@ -15,7 +15,7 @@ const VendorDetails = () => {
 
   useEffect(() => {
     fetch(
-      "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers",
+      "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers"
     )
       .then((response) => response.json())
       .then((data) => {
@@ -76,8 +76,8 @@ const VendorDetails = () => {
 
     return rowData.filter((row) =>
       Object.values(row).some((value) =>
-        String(value).toLowerCase().includes(searchText.toLowerCase()),
-      ),
+        String(value).toLowerCase().includes(searchText.toLowerCase())
+      )
     );
   };
 
@@ -101,16 +101,35 @@ const VendorDetails = () => {
       >
         <Newvendor />
       </Drawer>
-      <div class="container">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchText}
-          onChange={handleSearchInputChange}
-        />
-        <Button type="primary" className="button-vendor" onClick={addNewVendor}>
-          <PlusOutlined /> Add New Vendor
-        </Button>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "end",
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchText}
+            onChange={handleSearchInputChange}
+            style={{ marginRight: "2px" }} // Correct inline style syntax
+          />
+
+          <Button
+            type="primary"
+            className="button-vendor"
+            onClick={addNewVendor}
+          >
+            <PlusOutlined /> Add New Vendor
+          </Button>
+        </div>
       </div>
       <AgGridReact
         rowData={filterData()}

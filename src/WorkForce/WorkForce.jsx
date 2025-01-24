@@ -177,50 +177,40 @@ const WorkForceContent = () => {
         <Newemployee />
       </Drawer>
 
-      <Row>
-        <Col span={24}>
-          <Row gutter={16}>
-            <Col span={8}>
-              <Card className="billingCard">
-                <span className="invoiceCardTitle">Billing</span>
-                {isInvoicesLoading ? (
-                  <Spin />
-                ) : (
-                  <PieCharts
-                    chartData={invoicesChartValues}
-                    chartLabels={invoicesChartLabels}
-                  />
-                )}
-              </Card>
-            </Col>
-            <Col span={8}>
-              <Card className="totalworkForceCard1">
-                {isWorkforceLoading ? (
-                  <Spin />
-                ) : (
-                  <PieCharts
-                    chartData={workforceChartValues}
-                    chartLabels={workforceChartLabels}
-                  />
-                )}
-              </Card>
-            </Col>
-            <Col span={8}>
-              <Card className="invoiceStatusCard1">
-                <span className="invoiceCardTitle">Invoice Status</span>
-                {isInvoicesLoading ? (
-                  <Spin />
-                ) : (
-                  <PieCharts
-                    chartData={invoicesChartValues}
-                    chartLabels={invoicesChartLabels}
-                  />
-                )}
-              </Card>
-            </Col>
-          </Row>
-        </Col>
-      </Row>
+      <Row gutter={[16, 16]} justify="center">
+      <Col xs={24} sm={24} md={8} lg={8}>
+        <Card className="billingCard">
+          <span className="invoiceCardTitle">Billing</span>
+          {isInvoicesLoading ? (
+            <Spin />
+          ) : (
+            <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />
+          )}
+        </Card>
+      </Col>
+      
+      <Col xs={24} sm={24} md={8} lg={8}>
+        <Card className="totalworkForceCard1">
+          <span className="invoiceCardTitle">Workforce Status</span> {/* Ensure title is consistent */}
+          {isWorkforceLoading ? (
+            <Spin />
+          ) : (
+            <PieCharts chartData={workforceChartValues} chartLabels={workforceChartLabels} />
+          )}
+        </Card>
+      </Col>
+
+      <Col xs={24} sm={24} md={8} lg={8}>
+        <Card className="invoiceStatusCard1">
+          <span className="invoiceCardTitle">Invoice Status</span>
+          {isInvoicesLoading ? (
+            <Spin />
+          ) : (
+            <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />
+          )}
+        </Card>
+      </Col>
+    </Row>
 
       {isEmployeesLoading ? (
         <div

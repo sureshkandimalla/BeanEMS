@@ -2,88 +2,65 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  width: 100%;
+  max-width: 100vw;
 }
 
 #myGrid {
-  flex: 1 1 0px;
+  flex: 1 1 auto;
   width: 100%;
+  min-height: 300px;
+  overflow: auto;
 }
 
 .example-header {
   font-family: Verdana, Geneva, Tahoma, sans-serif;
-  font-size: 13px;
-  margin-bottom: 5px;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
 }
 
 .bean-home-tabs {
-  padding: 0 10px;
-  margin-bottom: 10px;
+  padding: 0 1rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  height: auto;
 }
 
 .modify-columns-icon {
   cursor: pointer;
 }
+
 .container {
   display: flex;
+  flex-wrap: wrap;
   background-color: #f2f2f2;
   border: 1px solid #ccc;
   border-radius: 4px;
-  padding: 10px;
+  padding: 1rem;
+  width: 100%;
 }
 
 input {
-  padding: 8px;
-  margin-bottom: 0px;
+  padding: 0.5rem;
+  margin-bottom: 0;
+  width: 100%;
 }
 
 .custom-tooltip {
-  color: red; /* Set the color to red */
-}
-
-.billingCard .ant-card-body {
-  padding: 0px 15px 0px 0px !important;
-}
-
-.billingCard {
-  margin-right: 15px;
-  padding-bottom: 0px;
-  height: 300px;
-}
-
-.totalworkForceCard1 {
-  padding-left: 0px;
-  padding-bottom: 8px;
-  height: 300px;
-  margin-right: 15px;
-}
-.invoiceStatusCard1 {
-  padding: 0px 15px 0px 0px !important;
-}
-.invoiceStatusCard1 {
-  margin-right: 15px;
-  height: 300px;
-  margin-right: 15px;
-}
-.pie-chart-container {
-  width: 400px;
-  height: 400px;
+  color: red;
 }
 
 .employee-List-grid {
   display: flex;
   flex-direction: column;
-  height: 100%; /* Ensure container takes full height */
+  height: 100%;
 }
 
 .ag-grid-wrapper {
-  width: 100%; /* Fixed width */
-  height: 400px; /* Fixed height */
-  overflow-x: auto; /* Enables horizontal scrolling */
-  overflow-y: auto; /* Enables vertical scrolling */
-}
-
-.bean-home-tabs {
-  height: 500px;
+  width: 100%;
+  min-height: 300px;
+  overflow: auto;
 }
 
 .ag-cell-centered {
@@ -95,4 +72,96 @@ input {
 
 .ag-header-cell-label {
   justify-content: center;
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .billingCard,
+  .totalworkForceCard1,
+  .invoiceStatusCard1 {
+    flex: 1 1 100%;
+    margin-right: 0;
+  }
+
+  .pie-chart-container {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .example-header {
+    font-size: 0.9rem;
+  }
+
+  .bean-home-tabs {
+    height: auto;
+    padding: 0.5rem;
+  }
+
+  input {
+    padding: 0.4rem;
+  }
+
+  .ag-grid-wrapper {
+    min-height: 250px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .example-wrapper {
+    padding: 0.5rem;
+  }
+
+  .example-header {
+    font-size: 0.85rem;
+  }
+
+  .container {
+    padding: 0.5rem;
+  }
+
+  .billingCard,
+  .totalworkForceCard1,
+  .invoiceStatusCard1 {
+    min-width: 100%;
+  }
+}
+
+
+.billingCard, .totalworkForceCard1, .invoiceStatusCard1 { 
+  height: 250px; 
+  min-height: 250px; /* Ensure cards don't shrink */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.invoiceCardTitle {
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* Ensure Pie Charts have consistent size */
+.pie-chart-container {
+  width: 100%;
+  max-width: 250px; /* Keep it uniform */
+  min-height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media screen and (max-width: 768px) {
+  .billingCard, .totalworkForceCard1, .invoiceStatusCard1 {
+    min-height: 300px; /* Adjust for smaller screens */
+  }
 }
