@@ -14,22 +14,23 @@ const AuthLayout = () => {
 export default AuthLayout;
 
 const styles = {
-  pageContainer: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    width: "100vw",
-    overflow: "hidden",
-    backgroundImage: `url(${bglogo})`,
-    backgroundPosition: "center",
-    position: "relative",
-  },
-  logo: {
-    position: "absolute",
-    top: "20px",
-    left: "20px",
-    width: "120px",
-  },
-};
+    pageContainer: {
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",       
+        width: "100vw",        
+        overflow: "hidden",    
+        backgroundImage: `url(${bglogo})`, 
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",        
+        position: "relative",
+    },
+    logo: {
+        position: "absolute",
+        top: "20px",        
+        left: "20px",       
+        width: "120px",     
+      },
+}

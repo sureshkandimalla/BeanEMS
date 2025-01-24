@@ -50,21 +50,19 @@ const ProjectDashboard = () => {
     },
   ];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!isInitialRender.current) {
-        try {
-          const response = await fetch(
-            "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects",
-          );
-          const data = await response.json();
-          const flattendData = getFlattenedData(data);
-          setRowData(flattendData);
-          setEmployeeLoading(false);
-          console.log(flattendData);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
+useEffect(() => {
+  const fetchData = async () => {
+      if (isInitialRender.current) {
+          try {
+            const response = await fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects');
+              const data = await response.json();
+              const flattendData = getFlattenedData(data)
+              setRowData(flattendData); 
+              setEmployeeLoading(false);
+              console.log(flattendData)                     
+          } catch (error) {
+              console.error('Error fetching data:', error);
+          }
       } else {
         isInitialRender.current = false;
       }

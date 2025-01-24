@@ -24,37 +24,34 @@ const AdjustmentForm = ({ onClose }) => {
   const [employees, setEmployeesData] = useState();
   const [loading, setLoading] = useState(true);
 
-  const fetchEmployeesAndVendors = async () => {
-    try {
-      const [employeesData, vendorsData] = await Promise.all([
-        fetch(
-          "http://http://beanems.s3-website-us-east-1.amazonaws.com//api/v1/employees/getEmployees",
-        ).then((response) => response.json()),
-      ]);
-      setEmployeesData(getFlattenedData(employeesData));
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      Modal.error({
-        content:
-          "Error fetching employees or customers. Please try again later.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Call fetchEmployeesAndCustomers when the component mounts
-  useEffect(() => {
-    fetchEmployeesAndVendors();
-  }, []);
-  console.log(employees);
-  const handleEmployeeChange = (value) => {
-    setSelectedFromId(value);
-  };
-
-  const handleVendorChange = (value) => {
-    setSelectedToId(value);
-  };
+    const fetchEmployeesAndVendors = async () => {
+        try {
+            const [employeesData, vendorsData] = await Promise.all([
+                fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees').then(response => response.json()),
+            ]);            
+            setEmployeesData(getFlattenedData(employeesData));
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            Modal.error({
+                content: 'Error fetching employees or customers. Please try again later.'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    // Call fetchEmployeesAndCustomers when the component mounts
+    useEffect(() => {
+        fetchEmployeesAndVendors();
+    }, []);
+    console.log(employees);   
+    const handleEmployeeChange = (value) => {
+        setSelectedFromId(value);
+      };
+      
+    const handleVendorChange = (value) => {
+        setSelectedToId(value);
+      };
 
   //const history = useHistory();
   //const location = useLocation();
@@ -72,35 +69,29 @@ const AdjustmentForm = ({ onClose }) => {
   const handleFormSubmit = (generalDetails) => {
     //api should be called here
 
-    axios
-      .post(
-        "http://http://beanems.s3-website-us-east-1.amazonaws.com//api/v1/adjustment/addAdjustment",
-        generalDetails,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      )
-      .then((response) => {
-        if (response && response.status === 200) {
-          Modal.success({
-            content: "Data saved successfully",
-            onOk: onClose("submit"),
-          });
-        } else {
-          // Handle other cases
-          console.log("Response data does not have expected value");
-        }
-      })
-      .catch((error) => {
-        console.error("Error posting data:", error);
-        // Display error message
-        Modal.error({
-          content: "Error posting data. Please try again later.",
-        });
-      });
-  };
+        axios.post('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/adjustment/addAdjustment', generalDetails, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(response => {
+                if (response && response.status === 200) {                    
+                    Modal.success({
+                        content: 'Data saved successfully',
+                        onOk: onClose('submit')
+                      });
+                } else {
+                    // Handle other cases
+                    console.log('Response data does not have expected value');
+                }
+            })
+            .catch(error => {
+                console.error('Error posting data:', error);
+                // Display error message
+                Modal.error({
+                    content: 'Error posting data. Please try again later.'
+                });
+            });
+    }
 
   const getFlattenedData = (data) => {
     let updatedData = data.map((dataObj) => {
@@ -178,170 +169,102 @@ const AdjustmentForm = ({ onClose }) => {
     );
   }
 
-  return (
-    <div className="employee-onboarding-form">
-      <h3 className="header">Add Adjustement</h3>
-      <Card className="employee-onboard-card">
-        <Form form={form}>
-          <Row className="card-header-section">
-            <Col>
-              <h4 className="header">Project Details</h4>
-            </Col>
-            <Col>
-              <span>
-                Mandatory Fields are marked with{" "}
-                <span className="asterisk">*</span>
-              </span>
-            </Col>
-          </Row>
-          <Row gutter={30}>
-            <Col span={8} className="form-row">
-              <Form.Item
-                label="FromName"
-                name="fromId"
-                rules={[
-                  { required: true, message: "Please select an FromName" },
-                ]}
-              >
-                <Select
-                  showSearch
-                  value={selectedFromId}
-                  onChange={handleEmployeeChange}
-                  filterOption={(input, option) =>
-                    option?.children
-                      ?.toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
-                >
-                  {employees.map((employee) => (
-                    <Option
-                      key={employee.employeeId}
-                      value={employee.employeeId}
-                    >
-                      {employee.name}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={8} className="form-row">
-              <Form.Item
-                label="ToName"
-                name="toId"
-                rules={[{ required: true, message: "Please select a ToName" }]}
-              >
-                <Select
-                  showSearch
-                  value={selectedToId}
-                  onChange={handleVendorChange}
-                  filterOption={(input, option) =>
-                    option?.children
-                      ?.toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
-                >
-                  {employees.map((employee) => (
-                    <Option
-                      key={employee.employeeId}
-                      value={employee.employeeId}
-                    >
-                      {employee.firstName + " " + employee.lastName}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={8} className="form-row">
-              <Form.Item
-                label="Amount"
-                name="Amount"
-                rules={[{ required: true, message: "Fill Amount" }]}
-              >
-                <Input
-                  type="number"
-                  onChange={(e) =>
-                    handleGeneralData(Number(e.target.value), "amount")
-                  }
-                  value={generalDetails.billRate}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={30}>
-            <Col span={8} className="form-row">
-              <Form.Item label="Adjustment Date">
-                <DatePicker
-                  onChange={(date, dateString) =>
-                    handleGeneralData(dateString, "adjustmentDate")
-                  }
-                  className="dobDatepicker"
-                  value={
-                    generalDetails.adjustmentDate
-                      ? moment(generalDetails.adjustmentDate)
-                      : null
-                  }
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={30}>
-            <Col span={10} className="form-row">
-              <Form.Item
-                label="Adjustment Type"
-                name="Adjustement Type"
-                rules={[{ required: true }]}
-              >
-                <Input
-                  onChange={(e) =>
-                    handleGeneralData(e.target.value, "adjustmentType")
-                  }
-                  value={generalDetails.adjustmentType}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={10} className="form-row">
-              <Form.Item label="Notes" name="Notes">
-                <Input
-                  onChange={(e) => handleGeneralData(e.target.value, "notes")}
-                  value={generalDetails.notes}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <hr />
-          <section>
-            <Row gutter={30}>
-              <Col span={8} className="form-row">
-                <Form.Item>
-                  <Button type="primary" onClick={handleClear}>
-                    Clear
-                  </Button>
-                </Form.Item>
-              </Col>
-              <Col span={8} className="form-row">
-                <Form.Item>
-                  <Button type="primary" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                </Form.Item>
-              </Col>
-              <Col span={8} className="form-row">
-                <Form.Item>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    onClick={handleSubmit}
-                  >
-                    Submit
-                  </Button>
-                </Form.Item>
-              </Col>
-            </Row>
-          </section>
-        </Form>
-      </Card>
-    </div>
-  );
-};
+    return (
+        
+            <div className='employee-onboarding-form'>
+                <h3 className='header'>Add Adjustement</h3>
+                <Card className='employee-onboard-card'>
+                <Form form={form}>
+                        <Row className='card-header-section'>
+                            <Col>
+                                <h4 className='header'>Project Details</h4>
+                            </Col>
+                            <Col>
+                                <span>Mandatory Fields are marked with <span className='asterisk'>*</span></span>
+                            </Col>
+                        </Row>
+                        <Row gutter={30}>
+                            <Col span={8} className='form-row'>
+                            <Form.Item label="FromName" name="fromId" rules={[{ required: true, message: 'Please select an FromName' }]}>
+        <Select showSearch value={selectedFromId} onChange={handleEmployeeChange} filterOption={(input, option) =>
+      option?.children?.toLowerCase().includes(input.toLowerCase())
+    }>
+          {employees.map((employee) => (
+            <Option key={employee.employeeId} value={employee.employeeId}>
+              {employee.name}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
+                            </Col>
+                            <Col span={8} className='form-row'>
+                            <Form.Item label="ToName" name="toId" rules={[{ required: true, message: 'Please select a ToName' }]}>
+        <Select showSearch value={selectedToId} onChange={handleVendorChange} filterOption={(input, option) =>
+      option?.children?.toLowerCase().includes(input.toLowerCase())
+    }>
+        {employees.map((employee) => (
+            <Option key={employee.employeeId} value={employee.employeeId}>
+              {employee.name}
+            </Option>
+          ))}
+        </Select>
+      </Form.Item>
+                            </Col>
+                            <Col span={8} className='form-row'>
+                                <Form.Item label="Amount" name="Amount" rules={[{ required: true , message: 'Fill Amount'}]}>
+                                    <Input  type="number" onChange={(e) => handleGeneralData(Number(e.target.value), 'amount')}  value={generalDetails.billRate} />
+                                </Form.Item>
+                            </Col>
+                        </Row>                       
+                        <Row gutter={30}>
+                            <Col span={8} className='form-row'>
+                                <Form.Item label="Adjustment Date">
+                                <DatePicker
+                                    onChange={(date, dateString) => handleGeneralData(dateString, 'adjustmentDate')}
+                                    className='dobDatepicker'
+                                    value={generalDetails.adjustmentDate ? moment(generalDetails.adjustmentDate) : null}
+                                />
+                                </Form.Item>
+                            </Col>                             
+                        </Row>
+                        <Row gutter={30}>
+                            <Col span={10} className='form-row'>
+                                <Form.Item label="Adjustment Type" name="Adjustement Type"  rules={[{ required: true }]}>
+                                    <Input onChange={(e) => handleGeneralData(e.target.value, 'adjustmentType')} value={generalDetails.adjustmentType} />
+                                </Form.Item>
+                            </Col>
+                            <Col span={10} className='form-row'>
+                                <Form.Item label="Notes" name="Notes" >
+                                    <Input onChange={(e) => handleGeneralData(e.target.value, 'notes')} value={generalDetails.notes} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <hr />
+                        <section>
+                        <Row gutter={30}>
+                            <Col span={8} className='form-row'>
+                                <Form.Item>
+                                    <Button type="primary" onClick={handleClear}>Clear</Button>
+                                </Form.Item>
+                            </Col>
+                            <Col span={8} className='form-row'>
+                                <Form.Item>
+                                    <Button type="primary" onClick={handleCancel}>Cancel</Button>
+                                </Form.Item>
+                            </Col>
+                            <Col span={8} className='form-row'>
+                                <Form.Item>
+                                    <Button type="primary" htmlType="submit" onClick={handleSubmit}>Submit</Button>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        </section>
+                   
+                        </Form>
+                </Card>
+            </div>
+       
+    )
+}
 
 export default AdjustmentForm;
