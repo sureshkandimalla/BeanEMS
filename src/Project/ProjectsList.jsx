@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import "./ProjectGrid.css";
 
 const ProjectList = ({ projectsList }) => {
   console.log(projectsList);
@@ -25,15 +26,15 @@ const ProjectList = ({ projectsList }) => {
           net: rowData.reduce((sum, row) => sum + (row.net || 0), 0),
           employeePay: rowData.reduce(
             (sum, row) => sum + (row.employeePay || 0),
-            0,
+            0
           ),
           expenseExternal: rowData.reduce(
             (sum, row) => sum + (row.expenseExternal || 0),
-            0,
+            0
           ), // Summing billRate values
           expenseInternal: rowData.reduce(
             (sum, row) => sum + (row.expenseInternal || 0),
-            0,
+            0
           ),
         },
       ]);
@@ -188,12 +189,12 @@ const ProjectList = ({ projectsList }) => {
 
     return rowData.filter((row) =>
       Object.values(row).some((value) =>
-        String(value).toLowerCase().includes(searchText.toLowerCase()),
-      ),
+        String(value).toLowerCase().includes(searchText.toLowerCase())
+      )
     );
   };
   return (
-    <div className="ag-theme-alpine">
+    <div className="ag-theme-alpine project-List-grid">
       <div class="container">
         <input
           type="text"
@@ -202,46 +203,51 @@ const ProjectList = ({ projectsList }) => {
           onChange={handleSearchInputChange}
         />
       </div>
-      <AgGridReact
-        rowData={filterData()}
-        columnDefs={getColumnsDefList(true)}
-        domLayout="autoHeight"
-        defaultColDef={{
-          flex: 1,
-          minWidth: 150,
-          resizable: true,
-          filter: false,
-          floatingFilter: false,
-        }}
-        hiddenByDefault={false}
-        rowGroupPanelShow="never"
-        pivotPanelShow="always"
-        sideBar={{
-          toolPanels: [
-            {
-              id: "columns",
-              labelDefault: "Columns",
-              labelKey: "columns",
-              iconKey: "columns",
-              toolPanel: "agColumnsToolPanel",
-              toolPanelParams: {
-                suppressRowGroups: false,
-                suppressValues: true,
-                suppressPivots: false,
-                suppressPivotMode: true,
-                suppressColumnFilter: true,
-                suppressColumnSelectAll: true,
-                suppressColumnExpandAll: true,
+      <div className="ag-grid-wrapper">
+        <AgGridReact
+          rowData={filterData()}
+          columnDefs={getColumnsDefList(true)}
+          defaultColDef={{
+            flex: 1,
+            minWidth: 180,
+            resizable: true,
+            filter: false,
+            floatingFilter: false,
+            cellClass: "ag-cell-centered",
+            headerClass: "ag-header-cell",
+          }}
+          hiddenByDefault={false}
+          rowGroupPanelShow="never"
+          pivotPanelShow="always"
+          sideBar={{
+            toolPanels: [
+              {
+                id: "columns",
+                labelDefault: "Columns",
+                labelKey: "columns",
+                iconKey: "columns",
+                toolPanel: "agColumnsToolPanel",
+                toolPanelParams: {
+                  suppressRowGroups: false,
+                  suppressValues: true,
+                  suppressPivots: false,
+                  suppressPivotMode: true,
+                  suppressColumnFilter: true,
+                  suppressColumnSelectAll: true,
+                  suppressColumnExpandAll: true,
+                },
               },
-            },
-          ],
-        }}
-        sortable={true}
-        defaultToolPanel="columns"
-        pagination={true}
-        paginationPageSize={15}
-        pinnedBottomRowData={pinnedBottomRowData}
-      />
+            ],
+          }}
+          sortable={true}
+          defaultToolPanel="columns"
+          pagination={true}
+          paginationPageSize={10}
+          paginationPageSizeSelector={[10, 20, 50, 100]}
+          domLayout="normal"
+          pinnedBottomRowData={pinnedBottomRowData}
+        />
+      </div>
     </div>
   );
 };

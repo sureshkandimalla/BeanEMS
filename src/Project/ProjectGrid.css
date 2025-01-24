@@ -69,3 +69,31 @@ input {
   width: 400px;
   height: 400px;
 }
+
+.ag-grid-wrapper {
+  width: 100%; /* Fixed width */
+  height: 400px; /* Fixed height */
+  overflow-x: auto; /* Enables horizontal scrolling */
+  overflow-y: auto; /* Enables vertical scrolling */
+}
+
+.project-List-grid{
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Ensure container takes full height */
+}
+
+.bean-home-tabs {
+  height: 500px;
+}
+
+.ag-cell-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ag-header-cell-label {
+  justify-content: center;
+}

@@ -374,6 +374,8 @@ const InvoiceDetails = () => {
           resizable: true,
           filter: false,
           floatingFilter: false,
+          cellClass: "ag-cell-centered",
+          headerClass: "ag-header-cell"
         }}
         sideBar={{
           toolPanels: [

@@ -23,3 +23,14 @@ input {
   padding: 8px;
   margin-bottom: 0px;
 }
+
+.ag-cell-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ag-header-cell-label {
+  justify-content: center;
+}
