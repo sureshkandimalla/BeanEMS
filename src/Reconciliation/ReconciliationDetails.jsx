@@ -55,14 +55,14 @@ export default function ReconciliationDetails({ employeeId }) {
     },
     { field: "hours", headerName: "Hours", filter: true },
     {
-      field: "projectBilling",
-      headerName: "Project Billing",
-      filter: true,
+      field: "income",
+      headerName: "Income",
       valueFormatter: (params) => formatCurrency(params.value),
+      filter: true,
     },
     {
-      field: "wage",
-      headerName: "Wage",
+      field: "expense",
+      headerName: "Expense",
       valueFormatter: (params) => formatCurrency(params.value),
       filter: true,
     },
@@ -79,17 +79,18 @@ export default function ReconciliationDetails({ employeeId }) {
       filter: true,
     },
     {
-      field: "income",
-      headerName: "Income",
-      valueFormatter: (params) => formatCurrency(params.value),
+      field: "projectBilling",
+      headerName: "Project Billing",
       filter: true,
+      valueFormatter: (params) => formatCurrency(params.value),
     },
     {
-      field: "expense",
-      headerName: "Expense",
+      field: "wage",
+      headerName: "Wage",
       valueFormatter: (params) => formatCurrency(params.value),
       filter: true,
     },
+    
     { field: "startDate", headerName: "Start Date", filter: true },
     { field: "endDate", headerName: "End Date", filter: true },
   ];
