@@ -50,7 +50,7 @@ const ProjectList = ({ projectsList }) => {
         cellRenderer: (params) => {
           const rowData = params.data;
           return (
-            <Link to="/projectFullDetais" state={{ rowData }}>
+            <Link to="/projectFullDetails" state={{ rowData }}>
               {" "}
               {rowData.projectName}
             </Link>
