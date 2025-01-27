@@ -1,5 +1,6 @@
 import React from "react";
 import ReactApexChart from "react-apexcharts";
+import '../PieCharts/Piecharts.css'
 
 const PieCharts = ({ chartData, chartLabels }) => {
   let labels = chartLabels;
@@ -11,12 +12,12 @@ const PieCharts = ({ chartData, chartLabels }) => {
     series = chartData.slice(0, 4);
     colors.push("#596b4e");
   }
-
+ 
   const chartOptions = {
     chart: {
       type: "donut",
       width: "100%",
-      height: "auto",
+      height: "100%", // Ensure it respects parent height
     },
     labels: labels,
     colors: colors,
@@ -33,7 +34,7 @@ const PieCharts = ({ chartData, chartLabels }) => {
         options: {
           chart: {
             width: "100%",
-            height: "auto",
+            height: "100%",
           },
           legend: {
             position: "bottom",
@@ -45,7 +46,7 @@ const PieCharts = ({ chartData, chartLabels }) => {
         options: {
           chart: {
             width: "100%",
-            height: "auto",
+            height: "100%",
           },
           legend: {
             position: "bottom",
@@ -58,7 +59,7 @@ const PieCharts = ({ chartData, chartLabels }) => {
         options: {
           chart: {
             width: "100%",
-            height: "auto",
+            height: "100%",
           },
           legend: {
             position: "bottom",
@@ -70,19 +71,13 @@ const PieCharts = ({ chartData, chartLabels }) => {
   };
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: "800px", // Increase max-width for better responsiveness
-        margin: "0 auto",
-        padding: "10px",
-      }}
-    >
+    <div className="pie-chart-container">
       <ReactApexChart
         options={chartOptions}
         series={series}
         type="donut"
         width="100%"
+        height="100%" // Ensure height is fully contained
       />
     </div>
   );

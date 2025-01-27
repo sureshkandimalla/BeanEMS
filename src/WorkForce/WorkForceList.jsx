@@ -4,10 +4,10 @@ import { Link } from "react-router-dom";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import "./WorkForce.css";
+import "./WorkForceList.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 
-const WorkForceList = ({ employees }) => {
+const WorkForceList = ({ employees, isCollapsed  }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState();
   const [gridApi, setGridApi] = useState(null);
@@ -83,8 +83,7 @@ const WorkForceList = ({ employees }) => {
             : column.length;
 
         const charWidth = 8;
-        const maxAllowedWidth = 25 * charWidth;
-        console.log(column.length);
+        const maxAllowedWidth = 25 * charWidth;       
         autoWidth = Math.min(maxDataLength * charWidth + 30, maxAllowedWidth);
       }
 
@@ -141,8 +140,8 @@ const WorkForceList = ({ employees }) => {
     );
   };
   return (
-    <div className="ag-theme-alpine employee-List-grid">
-      <div class="container">
+    <div className="ag-theme-alpine workforce-container">
+      <div class="workforce-search-container">
         <input
           type="text"
           placeholder="Search..."
@@ -150,7 +149,7 @@ const WorkForceList = ({ employees }) => {
           onChange={handleSearchInputChange}
         />
       </div>
-      <div className="ag-grid-wrapper">
+      <div  className={`ag-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           rowData={filterData()}
           frameworkComponents={{ customTooltip: CustomTooltip }}
@@ -183,8 +182,8 @@ const WorkForceList = ({ employees }) => {
           }}
           sortable={true}
           pagination={true}
-          paginationPageSize={10}
-          paginationPageSizeSelector={[10, 20, 50, 100]}
+          paginationPageSize={100}
+          paginationPageSizeSelector={[20, 50, 100]}
           domLayout="normal"
         />
       </div>

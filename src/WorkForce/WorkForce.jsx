@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Tabs, Card, Row, Col, Button, Drawer, Spin, message } from "antd";
+import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
@@ -7,6 +7,7 @@ import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persist
 import Newemployee from "../Newemployee/Newemployee";
 import WorkForceList from "./WorkForceList";
 import PieCharts from "../PieCharts/PieCharts";
+import "../WorkForce/WorkForce.css"
 
 // Utility functions for API calls
 const fetchEmployees = async () => {
@@ -30,10 +31,13 @@ const fetchInvoicesChartData = async () => {
   return response.json();
 };
 
+const { Panel } = Collapse;
+
 const WorkForceContent = () => {
   const [open, setOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [isCollapsed, setIsCollapsed] = useState(false);
+ const pageSize = 10;
 
   const {
     data: employeeData,
@@ -42,8 +46,8 @@ const WorkForceContent = () => {
   } = useQuery({
     queryKey: ["employees"],
     queryFn: fetchEmployees,
-    // staleTime: 5 * 60 * 1000,
-    // cacheTime: 10 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
 
@@ -70,6 +74,10 @@ const WorkForceContent = () => {
     cacheTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
+
+  const handleCollapseChange = () => {
+    setIsCollapsed((prev) => !prev);
+  };
 
   const processedData = useMemo(() => {
     if (!employeeData) return {};
@@ -113,48 +121,48 @@ const WorkForceContent = () => {
     {
       key: "0",
       label: "USA",
-      children: <WorkForceList employees={processedData.usa} />,
+      children: <WorkForceList employees={processedData.usa} isCollapsed={isCollapsed}  />,
     },
     // { key: '1', label: 'USA', children: <WorkForceList employees={processedData.usa} /> },
     {
       key: "2",
       label: "India",
-      children: <WorkForceList employees={processedData.india} />,
+      children: <WorkForceList employees={processedData.india}  isCollapsed={isCollapsed} />,
     },
     {
       key: "3",
       label: "Billable Employees",
-      children: <WorkForceList employees={processedData.billable} />,
+      children: <WorkForceList employees={processedData.billable} isCollapsed={isCollapsed}  />,
     },
     {
       key: "4",
       label: "Workforce",
-      children: <WorkForceList employees={paginatedData} />,
+      children: <WorkForceList employees={paginatedData}  isCollapsed={isCollapsed} />,
     },
     {
       key: "5",
       label: "Active Employees",
-      children: <WorkForceList employees={processedData.active} />,
+      children: <WorkForceList employees={processedData.active} isCollapsed={isCollapsed}  />,
     },
     {
       key: "6",
       label: "Onboarding",
-      children: <WorkForceList employees={processedData.onboarding} />,
+      children: <WorkForceList employees={processedData.onboarding} isCollapsed={isCollapsed}  />,
     },
     {
       key: "7",
       label: "Fulltime",
-      children: <WorkForceList employees={processedData.terminated} />,
+      children: <WorkForceList employees={processedData.terminated} isCollapsed={isCollapsed} />,
     },
     {
       key: "8",
       label: "Corp to Corp",
-      children: <WorkForceList employees={processedData.terminated} />,
+      children: <WorkForceList employees={processedData.terminated} isCollapsed={isCollapsed} />,
     },
     {
       key: "9",
       label: "Terminated",
-      children: <WorkForceList employees={processedData.terminated} />,
+      children: <WorkForceList employees={processedData.terminated} isCollapsed={isCollapsed} />,
     },
   ];
 
@@ -167,77 +175,80 @@ const WorkForceContent = () => {
 
   return (
     <>
-      <Drawer
-        title="Employee Onboarding"
-        placement="right"
-        size="large"
-        onClose={handleDrawerClose}
-        open={open}
-      >
+    {/* Drawer for Adding Employee */}
+    <Drawer title="Employee Onboarding" placement="right" size="large" onClose={handleDrawerClose} open={open}>
         <Newemployee />
       </Drawer>
 
-      <Row gutter={[16, 16]} justify="center">
-      <Col xs={24} sm={24} md={8} lg={8}>
+    <div style={{
+          height: "100vh", // Full viewport height
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", // Prevents unwanted scroll
+        }}>
+      {/* Collapsible Section (Takes 30% Height) */}
+      <Collapse
+  onChange={handleCollapseChange}
+  style={{
+    flex: isCollapsed ? "0 0 33%":"0 0 5%", /* Hide when collapsed */
+    marginBottom: "10px",
+    transition: "flex 0.3s ease-in-out", /* Smooth transition */
+  }}
+>
+  <Panel header="Company Overview" key="1">
+    <Row gutter={[16, 16]} justify="center">
+      {/* Billing Card */}
+      <Col xs={24} sm={8}>
         <Card className="billingCard">
-          <span className="invoiceCardTitle">Billing</span>
-          {isInvoicesLoading ? (
-            <Spin />
-          ) : (
-            <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />
-          )}
-        </Card>
-      </Col>
-      
-      <Col xs={24} sm={24} md={8} lg={8}>
-        <Card className="totalworkForceCard1">
-          <span className="invoiceCardTitle">Workforce Status</span> {/* Ensure title is consistent */}
-          {isWorkforceLoading ? (
-            <Spin />
-          ) : (
-            <PieCharts chartData={workforceChartValues} chartLabels={workforceChartLabels} />
-          )}
+          <Typography.Text className="invoiceCardTitle">Billing</Typography.Text>
+          {isInvoicesLoading ? <Spin /> : <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />}
         </Card>
       </Col>
 
-      <Col xs={24} sm={24} md={8} lg={8}>
+      {/* Workforce Status Card */}
+      <Col xs={24} sm={8}>
+        <Card className="totalworkForceCard1">
+          <Typography.Text className="invoiceCardTitle">Workforce Status</Typography.Text>
+          {isWorkforceLoading ? <Spin /> : <PieCharts chartData={workforceChartValues} chartLabels={workforceChartLabels} />}
+        </Card>
+      </Col>
+
+      {/* Invoice Status Card */}
+      <Col xs={24} sm={8}>
         <Card className="invoiceStatusCard1">
-          <span className="invoiceCardTitle">Invoice Status</span>
-          {isInvoicesLoading ? (
-            <Spin />
-          ) : (
-            <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />
-          )}
+          <Typography.Text className="invoiceCardTitle">Invoice Status</Typography.Text>
+          {isInvoicesLoading ? <Spin /> : <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />}
         </Card>
       </Col>
     </Row>
+  </Panel>
+</Collapse>
 
-      {isEmployeesLoading ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "top",
-            height: "100vh",
-          }}
-        >
-          <Spin size="large" />
-        </div>
-      ) : (
-        <Card>
-          <Tabs
-            className="bean-home-tabs"
-            defaultActiveKey="1"
-            items={items}
-            tabBarExtraContent={
-              <Button type="primary" onClick={handleAddNewEmployee}>
-                <PlusOutlined /> Add New Employee
-              </Button>
-            }
-          />
-        </Card>
-      )}
-    </>
+
+<div style={{
+      flex: isCollapsed ? "0 0 70%": "0 0 90%", /* Expand when collapsed */
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      overflow: "auto", /* Enables scrolling if needed */
+      transition: "flex 0.3s ease-in-out", /* Smooth transition */
+}}>
+  <Card className="employeeTableCard" style={{ height: "100%" }}>
+    <Tabs
+      className="bean-home-tabs"
+      defaultActiveKey="1"
+      items={items}
+      tabBarExtraContent={
+        <Button type="primary" onClick={handleAddNewEmployee}>
+          <PlusOutlined /> Add New Employee
+        </Button>
+      }
+    />
+  </Card>
+</div>
+
+    </div>
+  </>
   );
 };
 
