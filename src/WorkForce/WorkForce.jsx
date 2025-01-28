@@ -6,15 +6,23 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import Newemployee from "../Newemployee/Newemployee";
 import WorkForceList from "./WorkForceList";
+import WorkForceReconcileList from "./WorkForceReconcileList"
 import PieCharts from "../PieCharts/PieCharts";
 import "../WorkForce/WorkForce.css"
 
 // Utility functions for API calls
 const fetchEmployees = async () => {
   const response = await fetch(
-    "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getAllEmployees",
+   "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getAllEmployees",
+  
   );
   return response.json();
+};
+const fetchReconcileRecords = async () => {
+const response = await fetch(
+  "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/reconcile/getReconcileRecords",
+ );
+ return response.json();
 };
 
 const fetchWorkforceChartData = async () => {
@@ -39,6 +47,17 @@ const WorkForceContent = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
  const pageSize = 10;
 
+  const {
+    data: reconcileData,
+    isLoading: isreconcileDatasLoading,
+    error: reconcileDataError,
+  } = useQuery({
+    queryKey: ["employees"],
+    queryFn: fetchReconcileRecords,
+   // staleTime: 5 * 60 * 1000,
+   // cacheTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
   const {
     data: employeeData,
     isLoading: isEmployeesLoading,
@@ -164,6 +183,11 @@ const WorkForceContent = () => {
       label: "Terminated",
       children: <WorkForceList employees={processedData.terminated} isCollapsed={isCollapsed} />,
     },
+    {
+      key: "10",
+      label: "Reconcile",
+      children: <WorkForceReconcileList employees={reconcileData} isCollapsed={isCollapsed} />,
+    },
   ];
 
   const handleAddNewEmployee = () => setOpen(true);
@@ -187,10 +211,10 @@ const WorkForceContent = () => {
           overflow: "hidden", // Prevents unwanted scroll
         }}>
       {/* Collapsible Section (Takes 30% Height) */}
-      <Collapse
+<Collapse
   onChange={handleCollapseChange}
   style={{
-    flex: isCollapsed ? "0 0 33%":"0 0 5%", /* Hide when collapsed */
+    flex: isCollapsed ? "0 0 24%":"0 0 5%", /* Hide when collapsed */
     marginBottom: "10px",
     transition: "flex 0.3s ease-in-out", /* Smooth transition */
   }}
@@ -226,7 +250,7 @@ const WorkForceContent = () => {
 
 
 <div style={{
-      flex: isCollapsed ? "0 0 70%": "0 0 90%", /* Expand when collapsed */
+      flex: isCollapsed ? "0 0 76%": "0 0 100%", /* Expand when collapsed */
       display: "flex",
       flexDirection: "column",
       height: "100%",

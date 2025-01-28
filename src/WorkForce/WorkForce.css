@@ -100,8 +100,8 @@
 
   /* Adjust Employee Table */
   .employeeTableCard {
-    flex: 1 1 100%;
-    max-width: 100%;
+    flex: 1 1 70%;
+    max-width: 70%;
   }
 }
 

@@ -16,7 +16,7 @@ const PayrollDetails = ({ employeeId }) => {
   const isInitialRender = useRef(true);
 
   useEffect(() => {
-    if (!isInitialRender.current) {
+    if (isInitialRender.current) {
       fetchData();
     } else {
       isInitialRender.current = false;
