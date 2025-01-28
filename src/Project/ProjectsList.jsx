@@ -194,7 +194,7 @@ const ProjectList = ({ projectsList }) => {
     );
   };
   return (
-    <div className="project-ag-theme-alpine project-List-grid" style={{ height: "100%", minHeight: "400px" }}>
+    <div className="ag-theme-alpine project-List-grid" style={{ height: "100%", minHeight: "400px" }}>
       <div class="container">
         <input
           type="text"

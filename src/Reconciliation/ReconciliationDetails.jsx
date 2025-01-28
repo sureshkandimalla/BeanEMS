@@ -8,6 +8,8 @@ import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 export default function ReconciliationDetails({ employeeId }) {
   const [rowData, setRowData] = useState([]);
+  const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
+  
 
   const isInitialRender = useRef(true);
 
@@ -47,6 +49,37 @@ export default function ReconciliationDetails({ employeeId }) {
     return updatedData || [];
   };
 
+    useEffect(() => {
+      if (rowData && rowData.length > 0) {
+        console.log(rowData);
+        setPinnedTopRowData([
+          {
+            description: "Total",
+            hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
+            income: rowData.reduce((sum, row) => sum + (row.income || 0), 0),
+            expense: rowData.reduce((sum, row) => sum + (row.expense || 0), 0),
+            invoiceTotal: rowData.reduce(
+              (sum, row) => sum + (row.invoiceTotal || 0),
+              0,
+            ),
+            invoicePaidAmount: rowData.reduce(
+              (sum, row) => sum + (row.invoicePaidAmount || 0),
+              0,
+            ), // Summing billRate values
+            projectBilling: rowData.reduce(
+              (sum, row) => sum + (row.projectBilling || 0),
+              0,
+            ),
+            wage: rowData.reduce(
+              (sum, row) => sum + (row.wage || 0),
+              0,
+            ),
+            actions: null,
+          },
+        ]);
+        console.log(pinnedTopRowData);
+      }
+    }, [rowData]);
   const columnDefs = [
     {
       field: "description",
@@ -95,6 +128,13 @@ export default function ReconciliationDetails({ employeeId }) {
     { field: "endDate", headerName: "End Date", filter: true },
   ];
 
+  const getRowStyle = (params) => {
+    if (params.node.rowPinned) {
+      return { backgroundColor: "#d3f4ff", fontWeight: "bold" }; // Custom inline style for pinned rows
+    }
+    return null;
+  };
+
   const detailCellRendererParams = {
     detailGridOptions: {
       columnDefs: [
@@ -133,6 +173,8 @@ export default function ReconciliationDetails({ employeeId }) {
         columnDefs={columnDefs}
         masterDetail={true}
         detailCellRendererParams={detailCellRendererParams}
+        pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here
+        getRowStyle={getRowStyle}
         animateRows={true}
       />
     </div>
