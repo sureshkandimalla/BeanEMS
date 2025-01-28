@@ -142,7 +142,7 @@ const BillingDetails = ({ url }) => {
       console.log(rowData);
       setPinnedBottomRowData([
         {
-          invoiceId: "Total",
+          billType: "Total",         
           hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
           total: rowData.reduce((sum, row) => sum + (row.total || 0), 0),
           billPaidAmount: rowData.reduce(
