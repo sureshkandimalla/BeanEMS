@@ -1,80 +1,92 @@
+/* 📌 Ensures AG Grid takes full width and height */
 .ag-theme-alpine {
-    width: 100%;
-    height: 100%;
-  }
+  width: 100%;
+  height: 100%;
+  min-height: 300px; /* Prevents the grid from collapsing */
+  flex-grow: 1; /* Ensures grid expands inside parent */
+}
 
-/* 📌 Ensuring AG-Grid Columns Stay Centered */
-.ag-cell-centered {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-  
-  .ag-header-cell-label {
-    justify-content: center;
-  }
+/* 📌 Workforce Search Container - Responsive */
+.workforce-search-container {
+  padding: 10px;
+  background-color: #f2f2f2;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-  .workforce-search-container {
-    padding: 10px;
-    background-color: #f2f2f2;
-    border-bottom: 1px solid #ccc;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
+/* 📌 Search Input Field - Responsive */
+.workforce-search-container input {
+  width: 100%;
+  max-width: 400px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* 📌 Responsive Search Input for Smaller Screens */
+@media screen and (max-width: 768px) {
   .workforce-search-container input {
-    width: 100%;
-    max-width: 400px;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+      max-width: 100%; /* Takes full width on mobile */
+      padding: 6px;
   }
+}
 
-  /* 📌 Ensuring AG-Grid Fits its Parent Container */
+/* 📌 Workforce Container - Responsive */
 .workforce-container {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    width: 100%;
-    overflow: hidden; /* Prevent unnecessary scrollbars */
-  }
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  transition: flex 0.3s ease-in-out;
+  height: 100%;
+  width: 100%;
+}
 
+/* 📌 AG Grid Wrapper - Ensures Grid Takes Space */
+.ag-grid-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100% !important;
+  min-height: 300px;
+  max-height: calc(100vh - 250px);
+  transition: max-height 0.3s ease-in-out;
+}
+
+/* 📌 Adjust height dynamically when collapsed */
+.ag-grid-wrapper.ag-grid-collapsed {
+  max-height: calc(100vh - 300px);
+  width: 100%;
+}
+
+.ag-grid-wrapper.ag-grid-expanded {
+  max-height: calc(100vh - 200px);
+  width: 100%;
+}
+
+/* 📌 Responsive Grid Wrapper */
+@media screen and (max-width: 1024px) {
   .ag-grid-wrapper {
-    flex: 1 1 auto;
-    width: 100%;  
-    overflow: auto;
-    transition: height 0.3s ease-in-out;
+      max-height: calc(100vh - 280px); /* Adjust height for smaller screens */
   }
-  
-  .ag-grid-expanded {
-    min-height: 220px;    
-  }
-  
-  /* When Collapse is Closed (Pie Charts Hidden) */
-  .ag-grid-collapsed {
-    min-height: calc(100vh - 300px);   
-  }
+}
 
-  @media screen and (max-width: 1440px) {
-    .ag-grid-wrapper {
-      max-height: calc(100vh - 300px); /* Reduce height calculation for smaller screens */
-    }
+@media screen and (max-width: 768px) {
+  .ag-grid-wrapper {
+      max-height: calc(100vh - 320px);
   }
-  
-  @media screen and (max-width: 1366px) {
-    .ag-grid-expanded {  
-      height: 210px;  
-      min-height: 210px; /* Adjust to prevent layout issues on smaller laptops */
-    }
-  }
-  
-  /* 📌 Further Adjustment for Very Small Screens */
-  @media screen and (max-width: 1024px) {
-    .ag-grid-wrapper {
-      max-height: calc(100vh - 350px); /* Adjust grid height for small laptop screens */
-    }
-  }
+}
 
- 
+/* 📌 Left-align AG Grid Header Text */
+.ag-header-cell-label {
+  justify-content: flex-start !important;  /* Ensures left alignment */
+  text-align: left !important;
+}
+
+/* 📌 Improve Grid Layout on Smaller Screens */
+@media screen and (max-width: 768px) {
+  .ag-theme-alpine {
+      min-height: 200px; /* Prevents too much space usage */
+  }
+}

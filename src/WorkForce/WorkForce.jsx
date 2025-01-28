@@ -67,7 +67,7 @@ const WorkForceContent = () => {
     queryFn: fetchEmployees,
     staleTime: 5 * 60 * 1000,
     cacheTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    // refetchOnWindowFocus: false,
   });
 
   const {
@@ -79,7 +79,7 @@ const WorkForceContent = () => {
     queryFn: fetchWorkforceChartData,
     staleTime: 5 * 60 * 1000,
     cacheTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    // refetchOnWindowFocus: false,
   });
 
   const {
@@ -91,7 +91,7 @@ const WorkForceContent = () => {
     queryFn: fetchInvoicesChartData,
     staleTime: 5 * 60 * 1000,
     cacheTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
+    // refetchOnWindowFocus: false,
   });
 
   const handleCollapseChange = () => {
@@ -214,7 +214,11 @@ const WorkForceContent = () => {
 <Collapse
   onChange={handleCollapseChange}
   style={{
+<<<<<<< HEAD
     flex: isCollapsed ? "0 0 24%":"0 0 5%", /* Hide when collapsed */
+=======
+    flex: isCollapsed ? "0 0 22%":"0 0 5%", /* Hide when collapsed */
+>>>>>>> 0a535ca45c90bcc37752912dcafe0bddebcc3beb
     marginBottom: "10px",
     transition: "flex 0.3s ease-in-out", /* Smooth transition */
   }}
@@ -249,6 +253,7 @@ const WorkForceContent = () => {
 </Collapse>
 
 
+<<<<<<< HEAD
 <div style={{
       flex: isCollapsed ? "0 0 76%": "0 0 100%", /* Expand when collapsed */
       display: "flex",
@@ -257,6 +262,9 @@ const WorkForceContent = () => {
       overflow: "auto", /* Enables scrolling if needed */
       transition: "flex 0.3s ease-in-out", /* Smooth transition */
 }}>
+=======
+<div className={`workforce-c ${isCollapsed ? "expanded" : "collapsed"}`}>
+>>>>>>> 0a535ca45c90bcc37752912dcafe0bddebcc3beb
   <Card className="employeeTableCard" style={{ height: "100%" }}>
     <Tabs
       className="bean-home-tabs"

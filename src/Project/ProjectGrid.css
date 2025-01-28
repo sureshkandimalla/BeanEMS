@@ -72,7 +72,7 @@ input {
 
 .ag-grid-wrapper {
   width: 100%; /* Fixed width */
-  height: 400px; /* Fixed height */
+  min-height: 400px; /* Fixed height */
   overflow-x: auto; /* Enables horizontal scrolling */
   overflow-y: auto; /* Enables vertical scrolling */
 }
