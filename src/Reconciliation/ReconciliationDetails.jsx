@@ -22,7 +22,7 @@ export default function ReconciliationDetails({ employeeId }) {
   const fetchData = () => {
     axios
       .get(
-        `http://localhost:8080/api/v1/reconcile/getReconcileRecords/${employeeId}`,
+        `http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/reconcile/getReconcileRecords/${employeeId}`,
         {
           params: {
             // selectedDate: '2023-11-01',//formattedDate,

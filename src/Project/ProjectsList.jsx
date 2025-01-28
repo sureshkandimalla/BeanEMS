@@ -194,7 +194,7 @@ const ProjectList = ({ projectsList }) => {
     );
   };
   return (
-    <div className="ag-theme-alpine project-List-grid">
+    <div className="project-ag-theme-alpine project-List-grid" style={{ height: "100%", minHeight: "400px" }}>
       <div class="container">
         <input
           type="text"
@@ -203,7 +203,7 @@ const ProjectList = ({ projectsList }) => {
           onChange={handleSearchInputChange}
         />
       </div>
-      <div className="ag-grid-wrapper">
+      <div className="project-grid-wrapper" style={{ flex: 1 }}>
         <AgGridReact
           rowData={filterData()}
           columnDefs={getColumnsDefList(true)}

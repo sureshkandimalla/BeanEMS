@@ -183,7 +183,8 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
           pagination={true}
           paginationPageSize={100}
           paginationPageSizeSelector={[20, 50, 100]}
-          domLayout="normal"
+          domLayout="normal"            
+          enableBrowserTooltips={true}                   
         />
       </div>
     </div>

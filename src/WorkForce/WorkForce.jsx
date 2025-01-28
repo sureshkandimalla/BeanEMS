@@ -52,10 +52,10 @@ const WorkForceContent = () => {
     isLoading: isreconcileDatasLoading,
     error: reconcileDataError,
   } = useQuery({
-    queryKey: ["employees"],
+    queryKey: ["reconcileData"],
     queryFn: fetchReconcileRecords,
-   // staleTime: 5 * 60 * 1000,
-   // cacheTime: 10 * 60 * 1000,
+     staleTime: 5 * 60 * 1000,
+     cacheTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
   const {
@@ -67,7 +67,7 @@ const WorkForceContent = () => {
     queryFn: fetchEmployees,
     staleTime: 5 * 60 * 1000,
     cacheTime: 10 * 60 * 1000,
-    // refetchOnWindowFocus: false,
+    refetchOnWindowFocus: false,
   });
 
   const {
@@ -79,7 +79,7 @@ const WorkForceContent = () => {
     queryFn: fetchWorkforceChartData,
     staleTime: 5 * 60 * 1000,
     cacheTime: 10 * 60 * 1000,
-    // refetchOnWindowFocus: false,
+    refetchOnWindowFocus: false,
   });
 
   const {
@@ -91,7 +91,7 @@ const WorkForceContent = () => {
     queryFn: fetchInvoicesChartData,
     staleTime: 5 * 60 * 1000,
     cacheTime: 10 * 60 * 1000,
-    // refetchOnWindowFocus: false,
+    refetchOnWindowFocus: false,
   });
 
   const handleCollapseChange = () => {
@@ -99,7 +99,8 @@ const WorkForceContent = () => {
   };
 
   const processedData = useMemo(() => {
-    if (!employeeData) return {};
+    console.log(employeeData)
+    if (!Array.isArray(employeeData))  return {};
     return {
       all: employeeData,
       usa: employeeData.filter(({ workCountry }) => workCountry === "USA"),
@@ -193,7 +194,7 @@ const WorkForceContent = () => {
   const handleAddNewEmployee = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
 
-  if (employeesError || workforceError || invoicesError) {
+  if (employeesError || workforceError || invoicesError || reconcileDataError) {
     message.error("Error fetching data. Please try again later.");
   }
 

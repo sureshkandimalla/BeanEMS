@@ -146,7 +146,7 @@ useEffect(() => {
       ) : (
         <Card>
           <Tabs
-            className="bean-home-tabs"
+            className="project-home-tabs"
             onChange={setActiveKey}
             items={items}
             tabBarExtraContent={
