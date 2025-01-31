@@ -45,6 +45,13 @@ const ProjectList = ({ projectsList, isCollapsed }) => {
   const getColumnsDefList = (isSortable) => {
     var columns = [
       {
+        headerName: "Project Id",
+        field: "projectId",
+        sortable: isSortable,
+        editable: false,
+        filter: "agTextColumnFilter",
+      },
+      {
         headerName: "Project Name",
         field: "projectName",
         cellRenderer: (params) => {
@@ -74,6 +81,13 @@ const ProjectList = ({ projectsList, isCollapsed }) => {
             </Link>
           );
         },
+        sortable: isSortable,
+        editable: false,
+        filter: "agTextColumnFilter",
+      },
+      {
+        headerName: "Status",
+        field: "status",
         sortable: isSortable,
         editable: false,
         filter: "agTextColumnFilter",
@@ -131,13 +145,6 @@ const ProjectList = ({ projectsList, isCollapsed }) => {
         filter: "agTextColumnFilter",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
-      },
-      {
-        headerName: "Project Id",
-        field: "projectId",
-        sortable: isSortable,
-        editable: false,
-        filter: "agTextColumnFilter",
       },
       {
         headerName: "Client",
