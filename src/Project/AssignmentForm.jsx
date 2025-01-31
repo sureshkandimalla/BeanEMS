@@ -22,7 +22,13 @@ const AssignmentForm = ({ onClose }) => {
   const [employees, setEmployeesData] = useState([]);
   const [vendors, setVendorsData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const assignmentTypes = ["Employee", "Referral", "Commission"];
+  
+  const assignmentTypes = [
+    { label: "EMPLOYEE PAY", value: "EMP_PAY" },
+    { label: "REFERRAL", value: "EMP_REF" },
+    { label: "COMMISSION", value: "EMP_COMM" },
+  ];
+  const assignmentTaxTypes = ["W2", "1099", "C2C"];
 
   const projectId = localStorage.getItem("projectId");
   const projectName = localStorage.getItem("projectName");
@@ -86,6 +92,12 @@ const AssignmentForm = ({ onClose }) => {
     setGeneralDetails((prevDetails) => ({
       ...prevDetails,
       assignmentType: value,
+    }));
+  };
+  const handleAssignmentTaxChange = (value) => {
+    setGeneralDetails((prevDetails) => ({
+      ...prevDetails,
+      assignmentTaxType: value,
     }));
   };
 
@@ -189,10 +201,17 @@ const AssignmentForm = ({ onClose }) => {
       <h3 className="header">Onboard Project(s)</h3>
       <Card className="employee-onboard-card">
         <Form form={form}>
+        <Row gutter={30}>
+            <Col span={10} className="form-row">
+            <Form.Item label="Project Name" name="projectName">
+                <span>{projectName || "N/A"}</span>
+              </Form.Item>
+              </Col>
+              </Row>
           <Row gutter={30}>
-            <Col span={8} className="form-row">
+            <Col span={10} className="form-row">
               <Form.Item
-                label="Employee"
+                label="Assignment for :"
                 name="employeeId"
                 rules={[
                   { required: true, message: "Please select an employee" },
@@ -218,9 +237,7 @@ const AssignmentForm = ({ onClose }) => {
                   ))}
                 </Select>
               </Form.Item>
-              <Form.Item label="Project Name" name="projectName">
-                <span>{projectName || "N/A"}</span>
-              </Form.Item>
+              
             </Col>
 
             {/* <Col span={8} className='form-row'>
@@ -259,7 +276,7 @@ const AssignmentForm = ({ onClose }) => {
               </Form.Item>
             </Col> */}
 
-            <Col span={8} className="form-row">
+            <Col span={10} className="form-row">
               <Form.Item label="AssignmentType" name="assignmentType">
                 <Select
                   showSearch
@@ -272,9 +289,27 @@ const AssignmentForm = ({ onClose }) => {
                   }
                 >
                   {assignmentTypes.map((assign) => (
-                    <Option key={assign} value={assign}>
-                      {assign}
+                    <Option key={assign.label} value={assign.value}>
+                      {assign.key}
                     </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={10} className="form-row">
+              <Form.Item label="AssignmentTaxType" name="assignmentTaxType">
+                <Select
+                  showSearch
+                  value={generalDetails.assignmentTaxType}
+                  onChange={handleAssignmentTaxChange}
+                  filterOption={(input, option) =>
+                    option?.children
+                      ?.toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                >
+                  {assignmentTaxTypes.map((assignTax) => (
+                    <Option key={assignTax} value={assignTax}></Option>
                   ))}
                 </Select>
               </Form.Item>

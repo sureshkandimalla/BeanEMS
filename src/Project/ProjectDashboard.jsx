@@ -11,7 +11,7 @@ import ProjectList from "./ProjectsList";
 
 const ProjectDashboard = () => {
   const [rowData, setRowData] = useState();
-  const [activeKey, setActiveKey] = useState("1"); // State for active tab
+  const [activeKey, setActiveKey] = useState("2"); // State for active tab
   const projectsSize = rowData ? rowData.length : 0;
   const thisMonthData = [50000, 43000, 60000, 70000, 55000];
   const lastMonthData = [25000, 28000, 20000, 15000, 50000];
@@ -40,14 +40,15 @@ const ProjectDashboard = () => {
   const items = [
     {
       key: "1",
-      label: "All",
-      children: <ProjectList projectsList={rowData} />,
-    },
-    {
-      key: "2",
       label: "Active",
       children: <ProjectList projectsList={processedData?.active} />,
     },
+    {
+      key: "2",
+      label: "All",
+      children: <ProjectList projectsList={rowData} />,
+    },
+    
   ];
 
 useEffect(() => {
