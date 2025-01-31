@@ -1,108 +1,22 @@
-
-.bean-home-tabs {
-  padding: 0 10px;
-  margin-bottom: 10px;
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+  .project-List-grid {
+    min-height: 400px;
+    max-height: calc(100vh - 150px);
+  }
+  
+  input {
+    padding: 6px;
+  }
 }
 
-.project-home-tabs{
-  padding: 0 1rem;
-  margin-bottom: 1rem; 
-  display: flex;
-  height: 500px;
-  flex-direction: column;
-}
+@media screen and (max-width: 480px) {
+  .project-List-grid {
+    min-height: 300px;
+    max-height: calc(100vh - 100px);
+  }
 
-.modify-columns-icon {
-  cursor: pointer;
-}
-
-.container {
-  display: flex;
-  background-color: #f2f2f2;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 10px;
-}
-
-input {
-  padding: 8px;
-  margin-bottom: 0px;
-}
-
-.custom-tooltip {
-  color: red; /* Set the color to red */
-}
-
-.billingCard .ant-card-body {
-  padding: 0px 15px 0px 0px !important;
-}
-
-.billingCard {
-  margin-right: 15px;
-  padding-bottom: 0px;
-  height: 300px;
-}
-
-.totalworkForceCard1 {
-  padding-left: 0px;
-  padding-bottom: 8px;
-  height: 300px;
-  margin-right: 15px;
-}
-.invoiceStatusCard1 {
-  padding: 0px 15px 0px 0px !important;
-}
-.invoiceStatusCard1 {
-  margin-right: 15px;
-  height: 300px;
-  margin-right: 15px;
-}
-.pie-chart-container {
-  /* width: 400px; */
-  height: 400px;
-}
-
-.project-grid-wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-  min-height: 300px;
-  max-height: calc(100vh - 250px);
-  transition: max-height 0.3s ease-in-out;
-  overflow: auto;
-}
-
-.project-List-grid{
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-  transition: flex 0.3s ease-in-out;
-  height: 100%;
-  width: 100%;
-  min-height: 500px; /* Give it a visible height */
-  max-height: calc(100vh - 200px);
-}
-
-.bean-home-tabs {
-  height: 500px;
-}
-
-.ag-cell-centered {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.ag-header-cell-label {
-  justify-content: center;
-}
-
-.ag-theme-alpine {
-  width: 100%;
-  height: 100%;
-  min-height: 300px; /* Prevents the grid from collapsing */
-  flex-grow: 1; /* Ensures grid expands inside parent */
-  overflow: hidden;
+  input {
+    padding: 5px;
+  }
 }

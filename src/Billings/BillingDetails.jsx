@@ -132,8 +132,8 @@ const BillingDetails = ({ url }) => {
 
     return rowData.filter((row) =>
       Object.values(row).some((value) =>
-        String(value).toLowerCase().includes(searchText.toLowerCase()),
-      ),
+        String(value).toLowerCase().includes(searchText.toLowerCase())
+      )
     );
   };
 
@@ -142,12 +142,12 @@ const BillingDetails = ({ url }) => {
       console.log(rowData);
       setPinnedBottomRowData([
         {
-          billType: "Total",         
+          billType: "Total",
           hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
           total: rowData.reduce((sum, row) => sum + (row.total || 0), 0),
           billPaidAmount: rowData.reduce(
             (sum, row) => sum + (row.billPaidAmount || 0),
-            0,
+            0
           ), // Summing billRate values
         },
       ]);

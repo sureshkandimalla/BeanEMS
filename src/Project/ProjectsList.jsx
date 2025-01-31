@@ -4,17 +4,17 @@ import { Link } from "react-router-dom";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import "./ProjectGrid.css";
+import "./ProjectList.css";
 
-const ProjectList = ({ projectsList }) => {
+const ProjectList = ({ projectsList, isCollapsed }) => {
   console.log(projectsList);
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
 
   useEffect(() => {
-    setRowData(projectsList);
-  }, []);
+    setRowData((prevState) => (projectsList ? [...projectsList] : prevState));
+  }, [projectsList]);
 
   useEffect(() => {
     if (rowData && rowData.length > 0) {
@@ -184,6 +184,7 @@ const ProjectList = ({ projectsList }) => {
 
   const filterData = () => {
     if (!searchText) {
+      console.log(rowData)
       return rowData;
     }
 
@@ -194,7 +195,7 @@ const ProjectList = ({ projectsList }) => {
     );
   };
   return (
-    <div className="ag-theme-alpine project-List-grid" style={{ height: "100%", minHeight: "400px" }}>
+    <div className="ag-theme-alpine project-List-grid">
       <div class="container">
         <input
           type="text"
@@ -203,7 +204,7 @@ const ProjectList = ({ projectsList }) => {
           onChange={handleSearchInputChange}
         />
       </div>
-      <div className="project-grid-wrapper" style={{ flex: 1 }}>
+      <div className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           rowData={filterData()}
           columnDefs={getColumnsDefList(true)}
@@ -212,8 +213,7 @@ const ProjectList = ({ projectsList }) => {
             minWidth: 180,
             resizable: true,
             filter: false,
-            floatingFilter: false,
-            cellClass: "ag-cell-centered",
+            floatingFilter: false,            
             headerClass: "ag-header-cell",
           }}
           hiddenByDefault={false}
@@ -242,8 +242,8 @@ const ProjectList = ({ projectsList }) => {
           sortable={true}
           defaultToolPanel="columns"
           pagination={true}
-          paginationPageSize={10}
-          paginationPageSizeSelector={[10, 20, 50, 100]}
+          paginationPageSize={100}
+          paginationPageSizeSelector={[50, 100]}
           domLayout="normal"
           pinnedBottomRowData={pinnedBottomRowData}
         />

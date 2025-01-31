@@ -1,0 +1,26 @@
+  .project-home-tabs{
+    padding: 0 1rem;
+    margin-bottom: 1rem; 
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+  }
+
+.project-c {
+    flex-grow: 1;
+    /* min-width: 68%; */
+    width: 100%;
+}
+  
+@media screen and (max-width: 1024px) {
+    .project-c {
+      min-width: 80%;
+    }
+}
+  
+@media screen and (max-width: 768px) {
+    .project-c {
+      min-width: 100%;
+    }
+}
+  
