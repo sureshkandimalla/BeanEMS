@@ -7,10 +7,9 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./WorkForceList.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 
-const WorkForceReconcileList = ({ employees, isCollapsed  }) => {
+const WorkForceReconcileList = ({ employees, isCollapsed  }) => {  
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState();
-  const [gridApi, setGridApi] = useState(null);
   const columnsList = [
     "First Name",
     "Last Name",
@@ -188,7 +187,9 @@ const WorkForceReconcileList = ({ employees, isCollapsed  }) => {
           pagination={true}
           paginationPageSize={100}
           paginationPageSizeSelector={[20, 50, 100]}
-          domLayout="normal"
+          domLayout="normal"            
+          enableBrowserTooltips={true} 
+          popupParent={document.body}   
         />
       </div>
     </div>

@@ -207,6 +207,7 @@ const ProjectList = ({ projectsList, isCollapsed }) => {
       <div className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           rowData={filterData()}
+          enableFilter={true}
           columnDefs={getColumnsDefList(true)}
           defaultColDef={{
             flex: 1,
@@ -246,6 +247,8 @@ const ProjectList = ({ projectsList, isCollapsed }) => {
           paginationPageSizeSelector={[50, 100]}
           domLayout="normal"
           pinnedBottomRowData={pinnedBottomRowData}
+          enableBrowserTooltips={true} 
+          popupParent={document.body}
         />
       </div>
     </div>

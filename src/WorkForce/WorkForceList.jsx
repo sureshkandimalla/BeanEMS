@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , useCallback, useRef} from "react";
 import { AgGridReact } from "@ag-grid-community/react";
+import { Button } from "antd";
 import { Link } from "react-router-dom";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./WorkForceList.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import { FileExcelOutlined } from "@ant-design/icons";
+
 
 const WorkForceList = ({ employees, isCollapsed  }) => {
+  const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState();
   const [gridApi, setGridApi] = useState(null);
@@ -34,6 +38,33 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
     setRowData(employees);
   }, []);
 
+  const excelStyles = [
+      {
+        id: "cell",
+        alignment: {
+          vertical: "Center",
+        },
+      },         
+      {
+        id: "darkGreyBackground",
+        interior: {
+          color: "#CEDBC7",
+          pattern: "Solid",
+        },
+        font: {
+          fontName: "Calibri Light",
+          color: "#006400",
+        },
+      },
+      {
+        id: "blueUnderline",
+        font: {
+          fontName: "Calibri Light",    
+          color: "#0000EE",     
+        },
+      }
+    ];
+
   const getColumnsDefList = (columnsList, isSortable) => {
     let columns = columnsList.map((column) => {
       let fieldValue = column.split(" ").join("");
@@ -43,7 +74,7 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
         fieldValue.toLowerCase() === "dob"
       ) {
         fieldValue = fieldValue.toLowerCase();
-      }
+      }     
 
       let updatedColumn = column === "DOB" ? "Date of Birth" : column;
       updatedColumn = column;
@@ -92,11 +123,20 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
         field: fieldValue,
         sortable: isSortable,
         editable: true,        
-       headerClass: "ag-header-cell" ,
+        headerClass: "ag-header-cell" ,
         filter: columnFilter,
         minWidth: autoWidth,
         suppressSizeToFit: true,
         tooltipValueGetter: (params) => params.value,
+        cellClassRules: {
+          darkGreyBackground: (params) => {
+            return params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 0;
+          },
+          blueUnderline: (params) => {
+            console.log(params.colDef)
+            return params.colDef.field === "emailId";
+          }
+        },      
         cellRenderer: (params) => {
           if (column === "First Name" || column === "Last Name") {
             return (
@@ -118,6 +158,12 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
   const handleSearchInputChange = (event) => {
     setSearchText(event.target.value);
   };
+
+  const onBtnExportDataAsExcel = useCallback(() => {
+    if (gridRef.current && gridRef.current.api) { 
+      gridRef.current.api.exportDataAsExcel();
+    }
+  }, []);
 
   const filterData = () => {
     if (!searchText) {
@@ -147,9 +193,19 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
           value={searchText}
           onChange={handleSearchInputChange}
         />
+         <Button 
+      type="default" 
+      icon={<FileExcelOutlined />} 
+      onClick={onBtnExportDataAsExcel}
+      style={{ marginLeft: "10px" }}
+    >
+      Export to Excel
+    </Button>
       </div>
+      
       <div  className={`ag-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
+          ref={gridRef}
           rowData={filterData()}
           frameworkComponents={{ customTooltip: CustomTooltip }}
           columnDefs={getColumnsDefList(columnsList, true, false)}
@@ -184,7 +240,9 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
           paginationPageSize={100}
           paginationPageSizeSelector={[20, 50, 100]}
           domLayout="normal"            
-          enableBrowserTooltips={true}                   
+          enableBrowserTooltips={true} 
+          popupParent={document.body} 
+          excelStyles={excelStyles}                 
         />
       </div>
     </div>

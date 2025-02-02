@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo,useCallback, useRef } from "react";
 import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { QueryClient, useQuery } from "@tanstack/react-query";
@@ -11,7 +11,8 @@ import PieCharts from "../PieCharts/PieCharts";
 import "../WorkForce/WorkForce.css"
 
 // Utility functions for API calls
-const fetchEmployees = async () => {
+const fetchEmployees = async () => {  
+
   const response = await fetch(
    "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getAllEmployees",
   
@@ -21,7 +22,7 @@ const fetchEmployees = async () => {
 const fetchReconcileRecords = async () => {
 const response = await fetch(
   "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/reconcile/getReconcileRecords",
- );
+ ); 
  return response.json();
 };
 
@@ -258,8 +259,8 @@ const WorkForceContent = () => {
       items={items}
       tabBarExtraContent={
         <Button type="primary" onClick={handleAddNewEmployee}>
-          <PlusOutlined /> Add New Employee
-        </Button>
+        <PlusOutlined /> Add New Employee
+      </Button>
       }
     />
   </Card>

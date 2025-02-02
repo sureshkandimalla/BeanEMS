@@ -90,3 +90,13 @@
       min-height: 200px; /* Prevents too much space usage */
   }
 }
+
+.darkGreyBackground {
+  background-color: rgb(206, 219, 199)
+}
+
+.blueUnderline {
+  color: blue !important;
+  text-decoration: underline !important;
+  cursor: pointer;
+}
