@@ -1,0 +1,37 @@
+.ant-picker {
+    width: 100%;
+  }
+  
+  .bean-home-tabs {
+    padding: 0 10px;
+    margin-bottom: 10px;
+  }
+  
+  .modify-columns-icon {
+    cursor: pointer;
+  }
+  
+  .container {
+    display: flex;
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+  }
+  
+  input {
+    padding: 8px;
+    margin-bottom: 0px;
+  }
+  
+  .ag-cell-centered {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .ag-header-cell-label {
+    justify-content: center;
+  }
+  
