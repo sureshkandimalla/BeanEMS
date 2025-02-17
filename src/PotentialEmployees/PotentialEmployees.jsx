@@ -31,17 +31,22 @@ const PotentialEmployees = () => {
     return [
       { headerName: "First Name", field: "firstName", editable: true },
       { headerName: "Last Name", field: "lastName", editable: true },
+      { headerName: "Gender", field: "gender", editable: true },
+      { headerName: "Company", field: "company", editable: true },
+      { headerName: "Visa Type", field: "visaType", editable: true },
+      { headerName: "Year", field: "year", editable: true },
+      { headerName: "Status", field: "status", editable: true },
+      { headerName: "Current Location", field: "currentLocation", editable: true },
+      { headerName: "Referred By", field: "referredBy", editable: true },
+
+
       { headerName: "Email", field: "emailId", editable: true },
       { headerName: "Phone", field: "phone", editable: true },
       { headerName: "DOB", field: "dob", editable: true },
-      { headerName: "Company", field: "company", editable: true },
-      { headerName: "Referred By", field: "referredBy", editable: true },
-      { headerName: "Gender", field: "gender", editable: true },
-      { headerName: "Year", field: "year", editable: true },
-      { headerName: "Status", field: "status", editable: true },
+     
+      
       { headerName: "Primary Skills", field: "primarySkills", editable: true },
       { headerName: "Secondary Skills", field: "secondarySkills", editable: true },
-      { headerName: "Current Location", field: "currentLocation", editable: true },
       { headerName: "Work Country", field: "workCountry", editable: true },
       { headerName: "Start Date", field: "startDate", editable: true },
       { headerName: "End Date", field: "endDate", editable: true },
@@ -105,7 +110,7 @@ const PotentialEmployees = () => {
 
   return (
     <div className="ag-theme-alpine employee-List-grid">
-      <Drawer title="Vendor Onboarding" placement="right" size="large" onClose={handleCloseDrawer} open={open}>
+      <Drawer title="Prospect Onboarding" placement="right" size="large" onClose={handleCloseDrawer} open={open}>
         <NewPotentialEmployee onClose={handleCloseDrawer} />
       </Drawer>
 
