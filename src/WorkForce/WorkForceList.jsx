@@ -48,12 +48,12 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
       {
         id: "darkGreyBackground",
         interior: {
-          color: "#CEDBC7",
+          color: "#E7E4EC",
           pattern: "Solid",
         },
         font: {
           fontName: "Calibri Light",
-          color: "#006400",
+          color: "#000000",
         },
       },
       {
@@ -62,7 +62,8 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
           fontName: "Calibri Light",    
           color: "#0000EE",     
         },
-      }
+      },
+      
     ];
 
   const getColumnsDefList = (columnsList, isSortable) => {
@@ -212,7 +213,7 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
           defaultColDef={{
             flex: 1,
             resizable: true,
-            filter: true,
+            filter: true           
           }}
           hiddenByDefault={false}
           sideBar={{

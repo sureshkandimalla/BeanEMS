@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect,useCallback, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { Button, Drawer, notification } from "antd";
-import { PlusOutlined, SaveOutlined } from "@ant-design/icons";
+import { PlusOutlined, SaveOutlined, FileExcelOutlined  } from "@ant-design/icons";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import NewPotentialEmployee from "./NewPotentialEmployee";
+import "./PotentialEmployees.css";
 
 const PotentialEmployees = () => {
   const [searchText, setSearchText] = useState("");
@@ -26,32 +27,154 @@ const PotentialEmployees = () => {
       .catch((error) => console.error("Error fetching data:", error));
   };
 
+  const excelStyles = [
+    {
+      id: "cell",
+      alignment: {
+        vertical: "Center",
+      },
+    },         
+    {
+      id: "darkGreyBackground",
+      interior: {
+        color: "#E7E4EC",
+        pattern: "Solid",
+      },
+      font: {
+        fontName: "Calibri Light",
+        color: "#006400",
+      },
+    },
+    {
+      id: "blueUnderline",
+      font: {
+        fontName: "Calibri Light",    
+        color: "#0000EE",     
+      },
+    }
+  ];
+
   // Define editable columns
   const getColumnsDefList = () => {
-    return [
-      { headerName: "First Name", field: "firstName", editable: true },
-      { headerName: "Last Name", field: "lastName", editable: true },
-      { headerName: "Gender", field: "gender", editable: true },
-      { headerName: "Company", field: "company", editable: true },
-      { headerName: "Visa Type", field: "visaType", editable: true },
-      { headerName: "Year", field: "year", editable: true },
-      { headerName: "Status", field: "status", editable: true },
-      { headerName: "Current Location", field: "currentLocation", editable: true },
-      { headerName: "Referred By", field: "referredBy", editable: true },
-
-
-      { headerName: "Email", field: "emailId", editable: true },
-      { headerName: "Phone", field: "phone", editable: true },
-      { headerName: "DOB", field: "dob", editable: true },
-     
-      
-      { headerName: "Primary Skills", field: "primarySkills", editable: true },
-      { headerName: "Secondary Skills", field: "secondarySkills", editable: true },
-      { headerName: "Work Country", field: "workCountry", editable: true },
-      { headerName: "Start Date", field: "startDate", editable: true },
-      { headerName: "End Date", field: "endDate", editable: true },
+    var columns = [
+      { 
+        headerName: "First Name", 
+        field: "firstName", 
+        editable: true,
+        filter: "agSetColumnFilter",      
+        floatingFilter: false
+      },
+      { 
+        headerName: "Last Name", 
+        field: "lastName", 
+        editable: true, 
+        filter: "agSetColumnFilter"
+      },
+      { 
+        headerName: "Gender", 
+        field: "gender", 
+        editable: true, 
+        filter: "agSetColumnFilter"
+      },
+      { 
+        headerName: "Company", 
+        field: "company", 
+        editable: true, 
+        filter: "agSetColumnFilter",
+        cellEditor: "agSelectCellEditor", // Enables dropdown selection
+        cellEditorParams: {
+          values: ["Bean", "Code9", "IDA"] // Dropdown options
+        }
+      },
+      { 
+        headerName: "Visa Type", 
+        field: "visaType", 
+        editable: true, 
+        filter: "agSetColumnFilter",
+        cellEditor: "agSelectCellEditor", // Enables dropdown selection
+        cellEditorParams: {
+          values: ["H1B-Cap", "H1B-Transfer"] // Dropdown options
+        }
+      },
+      { 
+        headerName: "Year", 
+        field: "year", 
+        editable: true, 
+        filter: "agTextColumnFilter"
+      },
+      { 
+        headerName: "Status", 
+        field: "status", 
+        editable: true, 
+        filter: "agSetColumnFilter"
+      },
+      { 
+        headerName: "Current Location", 
+        field: "currentLocation", 
+        editable: true, 
+        filter: "agSetColumnFilter"
+      },
+      { 
+        headerName: "Referred By", 
+        field: "referredBy", 
+        editable: true, 
+        filter: "agTextColumnFilter" 
+      },
+      { 
+        headerName: "Email", 
+        field: "emailId", 
+        editable: true, 
+        filter: "agTextColumnFilter" ,
+        cellClassRules: {
+          blueUnderline: (params) => params.colDef.field === "emailId"
+        }
+      },
+      { 
+        headerName: "Phone", 
+        field: "phone", 
+        editable: true, 
+        filter: "agSetColumnFilter" 
+      },
+      { 
+        headerName: "DOB", 
+        field: "dob", 
+        editable: true, 
+        filter: "agDateColumnFilter" 
+      },
+      { 
+        headerName: "Primary Skills", 
+        field: "primarySkills", 
+        editable: true, 
+        filter: "agTextColumnFilter" 
+      },
+      { 
+        headerName: "Secondary Skills", 
+        field: "secondarySkills", 
+        editable: true, 
+        filter: "agTextColumnFilter" 
+      },
+      { 
+        headerName: "Work Country", 
+        field: "workCountry", 
+        editable: true, 
+        filter: "agSetColumnFilter" 
+      },
+      { 
+        headerName: "Start Date", 
+        field: "startDate", 
+        editable: true, 
+        filter: "agDateColumnFilter" 
+      },
+      { 
+        headerName: "End Date", 
+        field: "endDate", 
+        editable: true, 
+        filter: "agDateColumnFilter" 
+      },
     ];
-  };
+    return columns;
+};
+
 
   // Capture edited rows
   const onCellEditingStopped = (event) => {
@@ -102,15 +225,28 @@ const PotentialEmployees = () => {
     );
   };
 
-  // Close drawer and refresh data if submitted
+   const onBtnExportDataAsExcel = useCallback(() => {
+      if (gridRef.current && gridRef.current.api) { 
+        gridRef.current.api.exportDataAsExcel();
+      }
+    }, []);
+  
   const handleCloseDrawer = (action) => {
     setOpen(false);
     if (action === "submit") fetchPotentialEmployees();
   };
 
   return (
-    <div className="ag-theme-alpine employee-List-grid">
-      <Drawer title="Prospect Onboarding" placement="right" size="large" onClose={handleCloseDrawer} open={open}>
+    <div
+        style={{
+          height: "100vh", 
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", 
+        }}
+      >
+    <div className="ag-theme-alpine project-List-grid">
+      <Drawer title="Vendor Onboarding" placement="right" size="large" onClose={handleCloseDrawer} open={open}>
         <NewPotentialEmployee onClose={handleCloseDrawer} />
       </Drawer>
 
@@ -124,33 +260,71 @@ const PotentialEmployees = () => {
         />
 
         <div>
+        <Button 
+      type="default" 
+      icon={<FileExcelOutlined />} 
+      onClick={onBtnExportDataAsExcel}
+      style={{ marginRight: "10px" }}
+    >
+      Export to Excel
+    </Button>
           <Button type="primary" onClick={() => setOpen(true)} style={{ marginRight: "10px" }}>
             <PlusOutlined /> Add New Employee
           </Button>
-          <Button type="primary" icon={<SaveOutlined />} onClick={saveUpdatedRows} disabled={updatedRows.length === 0}>
+          <Button type="primary" ghost  icon={<SaveOutlined />} onClick={saveUpdatedRows} disabled={updatedRows.length === 0}>
             Save Changes
           </Button>
         </div>
       </div>
-
+      <div className= "project-grid-wrapper">
       <AgGridReact
         ref={gridRef}
         rowData={filterData()}
         columnDefs={getColumnsDefList()}
-        domLayout="autoHeight"
-        pagination={true}
+        domLayout="normal"
+        pagination={true}        
         paginationPageSize={100}
         paginationPageSizeSelector={[100,200, 300]}
-        onCellEditingStopped={onCellEditingStopped} // Capture edited cell
+        onCellEditingStopped={onCellEditingStopped} 
         defaultColDef={{
           flex: 1,
           minWidth: 150,
           resizable: true,
-          sortable: true,
-          filter: false,
+          filter: false,      
           floatingFilter: false,
-        }}        
+          cellClassRules: {
+            darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 0,
+          }        
+        }}
+        hiddenByDefault={false}
+        rowGroupPanelShow="never"
+        pivotPanelShow="always"
+          sideBar={{
+            toolPanels: [
+              {
+                id: "columns",
+                labelDefault: "Columns",
+                labelKey: "columns",
+                iconKey: "columns",
+                toolPanel: "agColumnsToolPanel",
+                toolPanelParams: {
+                  suppressRowGroups: true,
+                  suppressValues: true,
+                  suppressPivots: false,
+                  suppressPivotMode: true,
+                  suppressColumnFilter: true,
+                  suppressColumnSelectAll: true,
+                  suppressColumnExpandAll: true,
+                },
+              },
+            ],
+          }}
+        enableBrowserTooltips={true} 
+        popupParent={document.body}  
+        excelStyles={excelStyles}       
       />
+      </div>
+    </div>
     </div>
   );
 };
