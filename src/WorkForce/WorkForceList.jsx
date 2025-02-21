@@ -14,7 +14,6 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
   const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState();
-  const [gridApi, setGridApi] = useState(null);
   const columnsList = [
     "First Name",
     "Last Name",

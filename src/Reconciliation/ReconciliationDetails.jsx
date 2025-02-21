@@ -162,12 +162,22 @@ export default function ReconciliationDetails({ employeeId }) {
       ],
     },
     getDetailRowData: (params) => {
+      console.log(params)
       params.successCallback(params.data.expenseRecords);
     },
   };
 
   return (
-    <div className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
+    <div
+        style={{
+          height: "100vh", 
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", 
+        }}
+      >
+    <div className="ag-theme-alpine project-List-grid">
+      <div className= "project-grid-wrapper">
       <AgGridReact
         rowData={rowData}
         columnDefs={columnDefs}
@@ -177,6 +187,8 @@ export default function ReconciliationDetails({ employeeId }) {
         getRowStyle={getRowStyle}
         animateRows={true}
       />
+      </div>
+    </div>
     </div>
   );
 }

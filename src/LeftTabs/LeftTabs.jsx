@@ -32,7 +32,8 @@ const leftTabNames = [
   getItem("Invoice", "invoicedetails", <FileTextOutlined />),
   getItem("Projects", "projects", <ProjectOutlined />),
   getItem("Potential Employees", "potentialEmployees", <UserOutlined />),
-  getItem("Option 8", "8", <SettingOutlined />),
+  getItem("VisaDetails", "visaEmployees", <UsergroupAddOutlined />),
+
 ];
 const LeftTabs = () => {
   const [collapsed, setCollapsed] = useState(true);
