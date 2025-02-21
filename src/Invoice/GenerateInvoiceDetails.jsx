@@ -34,7 +34,7 @@ const GenerateInvoiceDetails = () => {
   const gridRef = useRef();
 
   useEffect(() => {
-    if (!isInitialRender.current) {
+    if (isInitialRender.current) {
       fetchData();
     } else {
       isInitialRender.current = false;

@@ -93,7 +93,7 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
       }
       let autoWidth = 0;
       if (column == "Visa") {
-        autoWidth = 100;
+        autoWidth = 110;
       } else if (
         column == "Status" ||
         column == "StartDate" ||
