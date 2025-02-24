@@ -1,6 +1,6 @@
 import React, { useState, useEffect,useCallback, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { Button, Drawer, notification } from "antd";
+import { Button, Drawer,Card, notification } from "antd";
 import { PlusOutlined, SaveOutlined, FileExcelOutlined  } from "@ant-design/icons";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
@@ -74,7 +74,10 @@ const PotentialEmployees = () => {
         headerName: "Gender", 
         field: "gender", 
         editable: true, 
-        filter: "agSetColumnFilter"
+        cellEditor: "agSelectCellEditor", // Enables dropdown selection
+        cellEditorParams: {
+          values: ["Male", "Female"] // Dropdown options
+        }
       },
       { 
         headerName: "Company", 
@@ -93,7 +96,7 @@ const PotentialEmployees = () => {
         filter: "agSetColumnFilter",
         cellEditor: "agSelectCellEditor", // Enables dropdown selection
         cellEditorParams: {
-          values: ["H1B-Cap", "H1B-Transfer"] // Dropdown options
+          values: ["Cap", "H1B-Transfer"] // Dropdown options
         }
       },
       { 
@@ -106,13 +109,20 @@ const PotentialEmployees = () => {
         headerName: "Status", 
         field: "status", 
         editable: true, 
-        filter: "agSetColumnFilter"
+        cellEditor: "agSelectCellEditor", // Enables dropdown selection
+        cellEditorParams: {
+          values: ["Submitted","Waiting on 129 Approval","Petition Approved",
+            "Yet to Book Slot"," Visa Slot Booked", "221G","In USA","Visa Not Needed","Visa Approved"] // Dropdown options
+        }
       },
       { 
         headerName: "Current Location", 
         field: "currentLocation", 
         editable: true, 
-        filter: "agSetColumnFilter"
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: {
+          values: ["UK", "India", "NZ", "USA"] // Dropdown options
+        }
       },
       { 
         headerName: "Referred By", 
@@ -246,6 +256,7 @@ const PotentialEmployees = () => {
         }}
       >
     <div className="ag-theme-alpine project-List-grid">
+    <Card className="employeeTableCard" style={{ height: "100%" }}>
       <Drawer title="Vendor Onboarding" placement="right" size="large" onClose={handleCloseDrawer} open={open}>
         <NewPotentialEmployee onClose={handleCloseDrawer} />
       </Drawer>
@@ -276,7 +287,7 @@ const PotentialEmployees = () => {
           </Button>
         </div>
       </div>
-      <div className= "project-grid-wrapper">
+      <div className= "pemployee-grid-wrapper">
       <AgGridReact
         ref={gridRef}
         rowData={filterData()}
@@ -293,7 +304,7 @@ const PotentialEmployees = () => {
           filter: false,      
           floatingFilter: false,
           cellClassRules: {
-            darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 0,
+            darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
           }        
         }}
         hiddenByDefault={false}
@@ -324,6 +335,7 @@ const PotentialEmployees = () => {
         excelStyles={excelStyles}       
       />
       </div>
+    </Card>
     </div>
     </div>
   );

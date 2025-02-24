@@ -223,6 +223,9 @@ const ProjectList = ({ projectsList, isCollapsed }) => {
             filter: false,
             floatingFilter: false,            
             headerClass: "ag-header-cell",
+            cellClassRules: {
+              darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+            }
           }}
           hiddenByDefault={false}
           rowGroupPanelShow="never"

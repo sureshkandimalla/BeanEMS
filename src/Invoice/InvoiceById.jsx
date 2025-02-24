@@ -9,8 +9,9 @@ import { PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { Button } from "antd";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import "./InvoiceById.css";
 
-const InvoiceById = ({ url, employeeId }) => {
+const InvoiceById = ({ url, employeeId, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState();
   const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
@@ -174,8 +175,16 @@ const InvoiceById = ({ url, employeeId }) => {
   }, [rowData]);
 
   return (
-    <div className="ag-theme-alpine employee-List-grid">
-      <div className="container">
+    <div
+        style={{
+          height: "100vh", 
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", 
+        }}
+      >
+    <div className="ag-theme-alpine workforce-container">
+      <div class="workforce-search-container">
         <input
           type="text"
           placeholder="Search..."
@@ -191,6 +200,7 @@ const InvoiceById = ({ url, employeeId }) => {
           <PlusOutlined /> Generate Invoice
         </Button>
       </div>
+      <div  className={`invoice-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
         rowData={filterData()}
         columnDefs={getColumnsDefList(true)}
@@ -201,6 +211,9 @@ const InvoiceById = ({ url, employeeId }) => {
           resizable: true,
           filter: true,
           floatingFilter: false,
+          cellClassRules: {
+            darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+          } 
         }}
         sideBar={{
           toolPanels: [
@@ -223,12 +236,18 @@ const InvoiceById = ({ url, employeeId }) => {
           ],
         }}
         sortable={true}
-        defaultToolPanel="columns"
-        pagination={true}
-        paginationPageSize={15}
+        defaultToolPanel="columns"       
+        domLayout="normal"
+        pagination={true}        
+        paginationPageSize={100}
+        paginationPageSizeSelector={[100,200, 300]}
         pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here
         getRowStyle={getRowStyle}
+        enableBrowserTooltips={true} 
+        popupParent={document.body} 
       />
+      </div>
+    </div>
     </div>
   );
 };

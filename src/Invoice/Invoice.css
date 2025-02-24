@@ -34,3 +34,15 @@ input {
 .ag-header-cell-label {
   justify-content: center;
 }
+
+
+.invoice1-grid-wrapper{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 510px;
+  max-height: calc(100vh - 250px);
+  transition: max-height 0.3s ease-in-out;
+  overflow: auto;    
+}

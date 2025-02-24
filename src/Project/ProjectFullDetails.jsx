@@ -3,22 +3,24 @@ import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./ProjectFullDetails.css";
-import ProjectGrid from "./ProjectGrid";
-// import '../WorkForce/WorkForce.css'
-import { Col, Row, Card, Tabs } from "antd";
-import { UserOutlined, MailOutlined, PhoneOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
-import EmployeePersonnelFilePage from "../EmployeeDetailsComponent/EmployeePersonnelFilePage";
 import RevenueCharts from "../RevenueCharts/RevenueCharts";
 import ProjectPersonalFile from "./ProjectPersonalFile";
 import AssignmentDetails from "./AssignmentDetails";
 import WorkOrderDetails from "./WorkOrderDetails";
 import InvoiceById from "../Invoice/InvoiceById";
 import BillingDetails from "../Billings/BillingDetails";
+import { UpOutlined, DownOutlined,CalendarOutlined, DollarOutlined, ProjectOutlined, BankOutlined, UserOutlined } from "@ant-design/icons";
+import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message } from "antd";
 //const style: React.CSSProperties = { background: '#A9A9A9', padding: '8px 0' ,paddingLeft: '8px 0'};
+
+const { Panel } = Collapse;
+
 
 const ProjectFullDetails = () => {
   const isInitialRender = useRef(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
 
   const divStyle = {
     //     height: '95%', // Set the desired height in pixels or any other valid CSS unit
@@ -52,6 +54,7 @@ const ProjectFullDetails = () => {
           );
           const data = await response.json();
           const flattendData = getFlattenedData(data);
+          console.log(flattendData)
           setResponseData(flattendData);
         } catch (error) {
           console.error("Error fetching data:", error);
@@ -90,12 +93,12 @@ const ProjectFullDetails = () => {
       key: 2,
       label: "Assignments",
       title: "Assignments",
-      children: <AssignmentDetails projectId={rowData.projectId} />,
+      children: <AssignmentDetails projectId={rowData.projectId} isCollapsed={isCollapsed} />,
     },
     {
       key: 3,
       label: "WorkOrders",
-      children: <WorkOrderDetails rowData={workOrders} />,
+      children: <WorkOrderDetails rowData={workOrders}  isCollapsed={isCollapsed}/>,
     },
     {
       key: 4,
@@ -104,6 +107,7 @@ const ProjectFullDetails = () => {
         <InvoiceById
           url={`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/getInvoicesForProject?projectId=${rowData.projectId}`}
           employeeId={rowData.employeeId}
+          isCollapsed={isCollapsed}
         />
       ),
     },
@@ -113,120 +117,109 @@ const ProjectFullDetails = () => {
       children: (
         <BillingDetails
           url={`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/bills/getBillsForProject?projectId=${rowData.projectId}`}
+          isCollapsed={isCollapsed}
         />
       ),
     },
   ];
-  const toggleTabs = (e) => {
-    //TODO
+  
+  const handleCollapseChange = () => {
+    setIsCollapsed(!isCollapsed);
   };
 
-  return (
-    <div className="two-parts-container">
-      <div className="part left-part">
-        <Row>
-          <Col span={24}>
-            <Row>
-              <Col span={8}>
-                {/* <Card className='billingCard'> */}
-                <section className="personal-info">
-                  {responseData && (
-                    <Card className="responsive-card" style={{ width: "100%" }}>
-                      <p>
-                        <div>
-                          <span
-                            className="name-span"
-                            style={{
-                              color: "blue",
-                              padding: "5px",
-                              fontSize: "20px",
-                            }}
-                          >
-                            Project : {responseData.projectName}{" "}
-                          </span>
-                          <button
-                            style={{
-                              float: "right",
-                              top: "4",
-                              right: "0",
-                              background: "#ffffff",
-                              border: "none",
-                              cursor: "pointer",
-                            }}
-                            onClick={handleClick}
-                          >
-                            ...
-                          </button>
-                          <br />
-                          <span className="designation-style">
-                            {responseData.customer?.customerName}
-                          </span>
-                          <span
-                            style={{
-                              float: "right",
-                              right: "0",
-                              color: "black",
-                              padding: "5px",
-                              fontSize: "10px",
-                            }}
-                          >
-                            {" "}
-                            {responseData.employeeName}
-                          </span>
-                        </div>
-                      </p>
-                    </Card>
-                  )}
-                  <div className="details-row" style={{ marginTop: "10px" }}>
+  return (  
+      <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* Collapsible Left Section */}
+        <Collapse
+          activeKey={isCollapsed ? "1" : null}
+          onChange={handleCollapseChange}
+          style={{
+            flex: isCollapsed ? "0 0 25%" : "0 0 5%", // Shrinks when collapsed
+            marginBottom: "10px",
+            transition: "flex 0.3s ease-in-out",
+          }}
+        >
+          <Panel
+            header={
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontWeight: "bold" }}>Project Overview</span>
+                <Button
+                  type="text"
+                  icon={isCollapsed ? <UpOutlined /> : <DownOutlined />}
+                  onClick={handleCollapseChange}
+                />
+              </div>
+            }
+            key="1"
+          >
+            <Row gutter={[16, 16]}>
+              <Col xs={24} sm={8}>
+              {responseData && (
+                <Card className="responsive-card" style={{ width: "100%" }}>
+                  <Typography.Text className="name-span" style={{ color: "blue", fontSize: "20px" }}>
+                  <ProjectOutlined style={{ marginRight: 5, color: "#1890ff" }} />
+                  Project: {responseData.projectName}
+                </Typography.Text>
+                <br />
+                <Typography.Text className="designation-style">
+                  <BankOutlined style={{ marginRight: 5, color: "#52c41a" }} />
+                  {responseData.customer?.customerName}
+                </Typography.Text>
+                <Typography.Text
+                  style={{ float: "right", color: "black", fontSize: "10px" }}
+                >
+                  <UserOutlined style={{ marginRight: 5, color: "#faad14" }} />
+                  {responseData.employeeName}
+                </Typography.Text>
+                </Card>
+              )}
+              {/* </Col> */}
+  
+              {/* Bill Rate & Dates
+              <Col xs={24} sm={8}>
+                <Card> */}
+                  <div className="details-row">
                     <div className="field">
-                      <label htmlFor="phone">BillRate</label>
-                      <span className="field-value">{responseData?.wage}</span>
+                    <Typography.Text>
+                      <DollarOutlined style={{ marginRight: 5, color: "#13c2c2" }} />
+                      <b>Bill Rate:</b> {responseData?.wage}
+                    </Typography.Text>
+                  </div>
+                  <div className="field">
+                    <Typography.Text>
+                      <CalendarOutlined style={{ marginRight: 5, color: "#722ed1" }} />
+                      <b>Start Date:</b> {responseData?.startDate}
+                    </Typography.Text>
+                  </div>
+                  <div className="field">
+                    <Typography.Text>
+                      <CalendarOutlined style={{ marginRight: 5, color: "#eb2f96" }} />
+                      <b>End Date:</b> {responseData?.endDate}
+                    </Typography.Text>
                     </div>
                   </div>
-                  <div className="details-row" style={{ marginTop: "10px" }}>
-                    <div className="field">
-                      <label htmlFor="phone">Project Start Date</label>
-                      <span className="field-value">
-                        {responseData?.startDate}
-                      </span>
-                    </div>
-                    <div className="field">
-                      <label htmlFor="phone">Project End Date</label>
-                      <span className="field-value">
-                        {responseData?.endDate}
-                      </span>
-                    </div>
-                  </div>
-                  <hr className="dotted-line" />
-                </section>
               </Col>
-              <Col span={16}>
+  
+              {/* Total Revenue & Chart */}
+              <Col xs={24} sm={16}>
                 <Card className="totalRevenceCard">
-                  <>
-                    <span className="totalRevenueLabel">Total Revenue</span>
-                    <span className="totalRevenueCount">$66,143.00</span>
-                  </>
-                  <RevenueCharts
-                    thisMonthData={thisMonthData}
-                    lastMonthData={lastMonthData}
-                  />
+                  <span className="totalRevenueLabel">Total Revenue</span>
+                  <span className="totalRevenueCount">$66,143.00</span>
+                  <RevenueCharts thisMonthData={thisMonthData} lastMonthData={lastMonthData} />
                 </Card>
               </Col>
             </Row>
-          </Col>
-        </Row>
+          </Panel>
+        </Collapse>
+  
+        {/* Right Section (Tabs) */}
+        <div style={{ flex: "1", overflow: "hidden" }}>
+          <Card className="employeeTableCard" style={{ height: "100%" }}>
+            <Tabs className="bean-home-tabs" defaultActiveKey="2" items={items} />
+          </Card>
+        </div>
       </div>
-      <div className="gap"></div> {/* Gap between the two parts */}
-      <div className="part right-part">
-        <Tabs
-          className="bean-home-tabs"
-          defaultActiveKey="2"
-          onChange={toggleTabs}
-          items={items}
-        ></Tabs>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default ProjectFullDetails;

@@ -103,19 +103,20 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
       ) {
         autoWidth = 145;
       } else {
-        const maxDataLength =
-          rowData && rowData.length > 0
-            ? rowData.reduce((max, row) => {
-                const valueLength = row[fieldValue]
-                  ? row[fieldValue].toString().length
-                  : 0;
-                return Math.max(max, valueLength);
-              }, column.length)
-            : column.length;
+        autoWidth = 170;
+        // const maxDataLength =
+        //   rowData && rowData.length > 0
+        //     ? rowData.reduce((max, row) => {
+        //         const valueLength = row[fieldValue]
+        //           ? row[fieldValue].toString().length
+        //           : 0;
+        //         return Math.max(max, valueLength);
+        //       }, column.length)
+        //     : column.length;
 
-        const charWidth = 8;
-        const maxAllowedWidth = 25 * charWidth;       
-        autoWidth = Math.min(maxDataLength * charWidth + 30, maxAllowedWidth);
+        // const charWidth = 8;
+        // const maxAllowedWidth = 25 * charWidth;       
+        // autoWidth = Math.min(maxDataLength * charWidth + 30, maxAllowedWidth);
       }
 
       return {
@@ -130,7 +131,7 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
         tooltipValueGetter: (params) => params.value,
         cellClassRules: {
           darkGreyBackground: (params) => {
-            return params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 0;
+            return params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1;
           },
           blueUnderline: (params) => {
             console.log(params.colDef)
@@ -203,7 +204,7 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
     </Button>
       </div>
       
-      <div  className={`ag-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
+      <div  className={`workforce-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           ref={gridRef}
           rowData={filterData()}
@@ -212,7 +213,8 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
           defaultColDef={{
             flex: 1,
             resizable: true,
-            filter: true           
+            filter: true ,
+            minWidth: 150,       
           }}
           hiddenByDefault={false}
           sideBar={{

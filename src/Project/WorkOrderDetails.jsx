@@ -7,7 +7,8 @@ import { Button, Drawer } from "antd";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
 import WorkOrderForm from "./WorkOrderForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
-const WorkOrderDetails = ({ rowData }) => {
+import "./WorkOrderDetails.css";
+const WorkOrderDetails = ({ rowData, isCollapsed }) => {
   console.log(rowData);
   //  const [rowData, setRowData] = useState();
   const [responseData, setResponseData] = useState();
@@ -94,8 +95,16 @@ const WorkOrderDetails = ({ rowData }) => {
 
   return (
     <>
-      <div className="ag-theme-alpine employee-List-grid">
-        <div class="container">
+     <div
+        style={{
+          height: "100vh", 
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", 
+        }}
+      >
+    <div className="ag-theme-alpine workforce-container">
+      <div class="workforce-search-container">
           <input
             type="text"
             placeholder="Search..."
@@ -119,16 +128,20 @@ const WorkOrderDetails = ({ rowData }) => {
             <PlusOutlined /> Add New WorkOrder
           </Button>
         </div>
+        <div  className={`workOrder-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           rowData={filterData()}
           columnDefs={getColumnsDefList(true, false)}
-          domLayout="autoHeight"
+          domLayout="normal"
           defaultColDef={{
             flex: 1,
             minWidth: 150,
             resizable: true,
             filter: false,
             floatingFilter: false,
+            cellClassRules: {
+              darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 0,
+            } 
           }}
           hiddenByDefault={false}
           rowGroupPanelShow="never"
@@ -155,9 +168,14 @@ const WorkOrderDetails = ({ rowData }) => {
           }}
           sortable={true}
           defaultToolPanel="columns"
-          pagination={true}
-          paginationPageSize={15}
+          pagination={true}        
+          paginationPageSize={100}
+          paginationPageSizeSelector={[100,200, 300]}
+          enableBrowserTooltips={true} 
+          popupParent={document.body} 
         />
+        </div>
+      </div>
       </div>
     </>
   );

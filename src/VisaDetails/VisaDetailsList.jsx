@@ -22,7 +22,7 @@ export default function VisaDetailsList() {
 
   const fetchData = () => {
     axios
-      .get("http://localhost:8081/api/v1/employees/getAllEmployees")
+      .get("http://localhost:8080/api/v1/employees/getAllEmployees")
       .then((response) => {
         console.log("Raw API Response:", response.data); // Check API response
         const flattenedData = getFlattenedData(response.data);
@@ -131,10 +131,22 @@ export default function VisaDetailsList() {
         { field: "startDate", headerName: "StartDate", filter: true },
         { field: "endDate", headerName: "End Date", filter: true },
       ],
+    domLayout: 'normal', 
+    defaultColDef: {
+      flex: 1,
+      minWidth: 180,
+    }
     },
     getDetailRowData : (params) => {
         console.log("Row Data:", params.data);
         params.successCallback(params.data.visas);          
+    },
+    template: function (params) {
+      return `
+        <div class="project-grid-wrapper">
+          <div ag-grid="params.detailGridOptions"></div>
+        </div>
+      `;
     }
   };
   return (
@@ -159,6 +171,20 @@ export default function VisaDetailsList() {
       <AgGridReact
         rowData={rowData}
         columnDefs={columnDefs}
+        domLayout="normal"
+        pagination={true}        
+        paginationPageSize={100}
+        paginationPageSizeSelector={[100,200, 300]}
+        defaultColDef={{
+          flex: 1,
+          minWidth: 150,
+          resizable: true,
+          filter: false,      
+          floatingFilter: false,
+          cellClassRules: {
+            darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+          }        
+        }}
         masterDetail={true}
         detailCellRendererParams={detailCellRendererParams}       
         animateRows={true}

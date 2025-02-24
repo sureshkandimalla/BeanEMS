@@ -7,8 +7,9 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import "./BillingDetails.css"
 
-const BillingDetails = ({ url }) => {
+const BillingDetails = ({ url, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState();
   const navigate = useNavigate();
@@ -118,7 +119,7 @@ const BillingDetails = ({ url }) => {
   const gridOptions = {
     pagination: true,
     paginationPageSize: 10, // Number of rows to show per page
-    domLayout: "autoHeight",
+    domLayout: "normal",
   };
 
   const handleSearchInputChange = (event) => {
@@ -162,27 +163,41 @@ const BillingDetails = ({ url }) => {
   };
 
   return (
-    <div className="ag-theme-alpine employee-List-grid">
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchText}
-            onChange={handleSearchInputChange}
-          />
-        </div>
-        <div
-          style={{ display: "flex", alignItems: "center", marginTop: "0px" }}
-        ></div>
+    <div
+  style={{
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+  }}
+>
+  <div className="ag-theme-alpine workforce-container">
+    <div
+      className="workforce-search-container"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchText}
+          onChange={handleSearchInputChange}
+        />
       </div>
+      <div style={{ display: "flex", alignItems: "center", marginTop: "0px" }}>
+        {/* Any additional elements can be added here */}
+      </div>
+    </div>
 
+    <div
+      className={`billing-grid-wrapper ${
+        !isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"
+      }`}
+    >
       <AgGridReact
         rowData={filterData()}
         columnDefs={getColumnsDefList(true)}
@@ -191,6 +206,9 @@ const BillingDetails = ({ url }) => {
           minWidth: 150,
           filter: true,
           floatingFilter: false,
+          cellClassRules: {
+            darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+          } 
         }}
         sideBar={{
           toolPanels: [
@@ -214,12 +232,17 @@ const BillingDetails = ({ url }) => {
         }}
         sortable={true}
         defaultToolPanel="columns"
-        pagination={true}
-        paginationPageSize={15}
-        pinnedTopRowData={pinnedBottomRowData} // Set pinned bottom row data here
+        domLayout="normal"
+        pagination={true}        
+        paginationPageSize={100}
+        paginationPageSizeSelector={[100,200, 300]}
+        pinnedTopRowData={pinnedBottomRowData}
         getRowStyle={getRowStyle}
       />
     </div>
+  </div>
+</div>
+
   );
 };
 

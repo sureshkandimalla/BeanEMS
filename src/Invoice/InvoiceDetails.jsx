@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Drawer } from "antd";
+import { Button, Card, Drawer } from "antd";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
@@ -306,7 +306,16 @@ const InvoiceDetails = () => {
   };
 
   return (
+    <div
+    style={{
+      height: "100vh", 
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden", 
+    }}
+  >
     <div className="ag-theme-alpine employee-List-grid">
+    <Card className="employeeTableCard" style={{ height: "100%" }}>
       <Drawer
         title={`Add New Invoice`}
         placement="right"
@@ -363,7 +372,7 @@ const InvoiceDetails = () => {
           </Button>
         </div>
       </div>
-
+      <div className= "invoice1-grid-wrapper">
       <AgGridReact
         rowData={filterData()}
         columnDefs={getColumnsDefList(true)}
@@ -375,7 +384,11 @@ const InvoiceDetails = () => {
           filter: false,
           floatingFilter: false,
           cellClass: "ag-cell-centered",
-          headerClass: "ag-header-cell"
+          headerClass: "ag-header-cell",
+          cellClassRules: {
+            darkGreyBackground: (params) => params.node?.rowIndex !== undefined 
+            && params.node.rowIndex % 2 === 1,
+          } 
         }}
         sideBar={{
           toolPanels: [
@@ -399,8 +412,10 @@ const InvoiceDetails = () => {
         }}
         sortable={true}
         defaultToolPanel="columns"
-        pagination={true}
-        paginationPageSize={15}
+        domLayout="normal"
+        pagination={true}        
+        paginationPageSize={100}
+        paginationPageSizeSelector={[100,200, 300]}
         pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here
         getRowStyle={getRowStyle}
       />
@@ -412,6 +427,9 @@ const InvoiceDetails = () => {
           initialData={Array(30).fill(0)}
         />
       )}
+      </div>
+    </Card>
+    </div>
     </div>
   );
 };

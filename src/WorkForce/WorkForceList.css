@@ -44,36 +44,36 @@
 }
 
 /* 📌 AG Grid Wrapper - Ensures Grid Takes Space */
-.ag-grid-wrapper {
+.workforce-grid-wrapper {
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100% !important;
-  min-height: 300px;
+  min-height: 440px;
   max-height: calc(100vh - 250px);
   transition: max-height 0.3s ease-in-out;
 }
 
 /* 📌 Adjust height dynamically when collapsed */
-.ag-grid-wrapper.ag-grid-collapsed {
+.workforce-grid-wrapper.ag-grid-collapsed {
   max-height: calc(100vh - 300px);
   width: 100%;
 }
 
-.ag-grid-wrapper.ag-grid-expanded {
+.workforce-grid-wrapper.ag-grid-expanded {
   max-height: calc(100vh - 200px);
   width: 100%;
 }
 
 /* 📌 Responsive Grid Wrapper */
 @media screen and (max-width: 1024px) {
-  .ag-grid-wrapper {
+  .workforce-grid-wrapper {
       max-height: calc(100vh - 280px); /* Adjust height for smaller screens */
   }
 }
 
 @media screen and (max-width: 768px) {
-  .ag-grid-wrapper {
+  .workforce-grid-wrapper {
       max-height: calc(100vh - 320px);
   }
 }

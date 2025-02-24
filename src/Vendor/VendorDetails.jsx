@@ -91,7 +91,16 @@ const VendorDetails = () => {
   };
 
   return (
-    <div className="ag-theme-alpine employee-List-grid">
+    <div
+    style={{
+      height: "100vh", 
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden", 
+    }}
+  >
+    <div className="ag-theme-alpine vendor-List-grid">
+     <Card>
       <Drawer
         title={`Vendor Onboarding`}
         placement="right"
@@ -131,18 +140,31 @@ const VendorDetails = () => {
           </Button>
         </div>
       </div>
+      <div className= "vendor-grid-wrapper">
       <AgGridReact
         rowData={filterData()}
         columnDefs={getColumnsDefList(true)}
         gridOptions={gridOptions}
+        domLayout="normal"
+        pagination={true}        
+        paginationPageSize={100}
+        paginationPageSizeSelector={[100,200, 300]}
         defaultColDef={{
           flex: 1,
           minWidth: 150,
           resizable: true,
           filter: false,
           floatingFilter: false,
+          cellClassRules: {
+            darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+          } 
         }}
+        enableBrowserTooltips={true} 
+        popupParent={document.body}  
       />
+      </div>
+      </Card>
+    </div>
     </div>
   );
 };

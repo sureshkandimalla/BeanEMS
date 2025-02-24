@@ -4,13 +4,13 @@ import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Drawer } from "antd";
-import { Link } from "react-router-dom";
 import "./ProjectGrid.css";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
 import AssignmentForm from "./AssignmentForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import "./AssignmentDetails.css"
 
-const AssignmentDetails = ({ projectId }) => {
+const AssignmentDetails = ({ projectId, isCollapsed }) => {
   console.log(projectId);
   //  const [rowData, setRowData] = useState();
   const [rowData, setRowData] = useState();
@@ -125,8 +125,16 @@ const AssignmentDetails = ({ projectId }) => {
 
   return (
     <>
-      <div className="ag-theme-alpine employee-List-grid">
-        <div class="container">
+    <div
+        style={{
+          height: "100vh", 
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", 
+        }}
+      >
+      <div className="ag-theme-alpine workforce-container">
+      <div class="workforce-search-container">
           <input
             type="text"
             placeholder="Search..."
@@ -150,16 +158,19 @@ const AssignmentDetails = ({ projectId }) => {
             <PlusOutlined /> Add New Assignment
           </Button>
         </div>
+        <div  className={`assignment-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           rowData={filterData()}
-          columnDefs={getColumnsDefList(true, false)}
-          domLayout="autoHeight"
+          columnDefs={getColumnsDefList(true, false)}          
           defaultColDef={{
             flex: 1,
             minWidth: 150,
             resizable: true,
             filter: false,
             floatingFilter: false,
+            cellClassRules: {
+              darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+            }
           }}
           hiddenByDefault={false}
           rowGroupPanelShow="never"
@@ -186,9 +197,15 @@ const AssignmentDetails = ({ projectId }) => {
           }}
           sortable={true}
           defaultToolPanel="columns"
-          pagination={true}
-          paginationPageSize={15}
+          domLayout="normal"
+          pagination={true}        
+          paginationPageSize={100}
+          paginationPageSizeSelector={[100,200, 300]}
+          enableBrowserTooltips={true} 
+          popupParent={document.body} 
         />
+        </div>
+      </div>
       </div>
     </>
   );
