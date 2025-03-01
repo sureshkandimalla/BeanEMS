@@ -5,6 +5,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "ag-grid-enterprise";
 import axios from "axios";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import "./ReconciliationDetails.css"
 
 export default function ReconciliationDetails({ employeeId }) {
   const [rowData, setRowData] = useState([]);
@@ -167,15 +168,14 @@ export default function ReconciliationDetails({ employeeId }) {
     },
   };
 
-  return (
+  return ( 
     <div
-        style={{
-          height: "100vh", 
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden", 
-        }}
-      >
+    style={{
+      height: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden",
+    }}> 
     <div className="ag-theme-alpine project-List-grid">
       <div className= "project-grid-wrapper">
       <AgGridReact
@@ -185,10 +185,27 @@ export default function ReconciliationDetails({ employeeId }) {
         detailCellRendererParams={detailCellRendererParams}
         pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here
         getRowStyle={getRowStyle}
+        defaultColDef={{
+          flex: 1,
+          minWidth: 180,
+          resizable: true,
+          filter: false,
+          floatingFilter: false,            
+          headerClass: "ag-header-cell",
+          cellClassRules: {
+            darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+          }
+        }}
+        domLayout="normal"            
+        enableBrowserTooltips={true} 
+        popupParent={document.body}
         animateRows={true}
+        pagination={true}
+        paginationPageSize={100}
+        paginationPageSizeSelector={[20, 50, 100]}
       />
       </div>
-    </div>
-    </div>
+    </div>  
+    </div>  
   );
 }

@@ -95,6 +95,11 @@ const WorkForceReconcileList = ({ employees, isCollapsed  }) => {
         minWidth: autoWidth,
         suppressSizeToFit: true,
         tooltipValueGetter: (params) => params.value,
+        cellClassRules: {
+          darkGreyBackground: (params) => {
+            return params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1;
+          }          
+        },
         cellRenderer: (params) => {
           if (column === "First Name" || column === "Last Name") {
             return (
@@ -152,7 +157,7 @@ const WorkForceReconcileList = ({ employees, isCollapsed  }) => {
           onChange={handleSearchInputChange}
         />
       </div>
-      <div  className={`ag-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
+      <div  className={`ag-workforce-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           rowData={filterData()}
           frameworkComponents={{ customTooltip: CustomTooltip }}

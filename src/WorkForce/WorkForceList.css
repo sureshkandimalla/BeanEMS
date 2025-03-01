@@ -100,3 +100,13 @@
   text-decoration: underline !important;
   cursor: pointer;
 }
+
+.ag-workforce-grid-wrapper{
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100% !important;
+  min-height: 440px;
+  max-height: calc(100vh - 250px);
+  transition: max-height 0.3s ease-in-out;
+}
