@@ -4,7 +4,7 @@ import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
 
-const ProjectGrid = ({ employeeId }) => {
+const ProjectGrid = ({ employeeId, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState();
   const columnDefs = [
@@ -93,8 +93,17 @@ const ProjectGrid = ({ employeeId }) => {
   //     }
   //   };
   return (
-    <div className="ag-theme-alpine employee-List-grid">
-      <div class="container">
+    <>
+     <div
+        style={{
+          height: "100vh", 
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", 
+        }}
+      >
+    <div className="ag-theme-alpine workforce-container">
+      <div class="workforce-search-container">
         <input
           type="text"
           placeholder="Search..."
@@ -102,11 +111,12 @@ const ProjectGrid = ({ employeeId }) => {
           onChange={handleSearchInputChange}
         />
       </div>
+      <div  className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
         rowData={filterData()}
         frameworkComponents={{ customTooltip: CustomTooltip }}
         columnDefs={columnDefs}
-        domLayout="autoHeight"
+        domLayout="normal"
         defaultColDef={{
           flex: 1,
           minWidth: 150,
@@ -144,7 +154,10 @@ const ProjectGrid = ({ employeeId }) => {
         gridOptions
         // Set pinned bottom row data here
       />
+      </div>
     </div>
+    </div>
+    </>
   );
 };
 

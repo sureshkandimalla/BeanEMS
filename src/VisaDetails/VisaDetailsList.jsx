@@ -135,6 +135,7 @@ export default function VisaDetailsList() {
     defaultColDef: {
       flex: 1,
       minWidth: 180,
+      resizable: true
     }
     },
     getDetailRowData : (params) => {
@@ -174,6 +175,7 @@ export default function VisaDetailsList() {
         domLayout="normal"
         pagination={true}        
         paginationPageSize={100}
+        detailRowAutoHeight={true}
         paginationPageSizeSelector={[100,200, 300]}
         defaultColDef={{
           flex: 1,

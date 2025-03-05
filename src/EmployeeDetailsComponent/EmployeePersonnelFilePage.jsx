@@ -64,8 +64,7 @@ const EmployeePersonnelFilePage = () => {
             </div>
           </div>
           <div className="header">
-            <h4 className="header-title-green">Contact Information</h4>
-          </div>
+            <h4 className="header-title-green">Contact Information</h4>          
           <div className="details-row">
             <div className="field">
               <label htmlFor="emailId">Email Address</label>
@@ -75,6 +74,7 @@ const EmployeePersonnelFilePage = () => {
               <label htmlFor="phone">Phone Number</label>
               <span className="field-value">{rowData.phone}</span>
             </div>
+          </div>
           </div>
 
           <div className="header">

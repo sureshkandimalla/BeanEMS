@@ -7,7 +7,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 
-const PayrollDetails = ({ employeeId }) => {
+const PayrollDetails = ({ employeeId, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState();
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
@@ -185,14 +185,24 @@ const PayrollDetails = ({ employeeId }) => {
   };
 
   return (
-    <div className="ag-theme-alpine employee-List-grid">
+    <div
+        style={{
+          height: "100vh", 
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", 
+        }}
+      >
+    <div className="ag-theme-alpine workforce-container">
+       <div class="workforce-search-container">
       <input
         type="text"
         placeholder="Search..."
         value={searchText}
         onChange={handleSearchInputChange}
       />
-
+      </div>
+      <div  className={`assignment-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
         rowData={filterData()}
         columnDefs={getColumnsDefList(true, false, true)}
@@ -225,11 +235,17 @@ const PayrollDetails = ({ employeeId }) => {
         }}
         sortable={true}
         defaultToolPanel="columns"
-        pagination={true}
-        paginationPageSize={15}
+        domLayout="normal"
+        pagination={true}        
+        paginationPageSize={100}
+        paginationPageSizeSelector={[100,200, 300]}
+        enableBrowserTooltips={true} 
+        popupParent={document.body} 
         pinnedTopRowData={pinnedBottomRowData} // Set pinned bottom row data here
         getRowStyle={getRowStyle}
       />
+      </div>
+    </div>
     </div>
   );
 };
