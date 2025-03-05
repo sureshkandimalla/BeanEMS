@@ -147,17 +147,38 @@ body {
 
 .details-row {
   display: flex;
-  flex-basis: 100%;
+  justify-content: space-between; /* Ensures even spacing between sections */
+  gap: 40px; /* Adds space between the sections */
 }
 
-.field {
-  flex: 1 1 25%; /* Each field takes up 25% of the row */
+
+.column-field {
+  flex: 1 1 15%; /* Each field takes up 15% of the row */
   margin-right: 20px;
   font-weight: bold;
   color: grey;
+  display: flex;
+  flex-direction: column; /* Ensures label and value are stacked */
 }
 
-.field:last-child {
+.column-field label {
+  display: block; /* Ensures label is on top */
+  font-weight: bold;
+}
+
+.column-field-value {
+  display: block;
+    font-weight: bold;
+    /* color: grey; */
+    color: #042c54;
+}
+
+.personal-info-1 {
+  border: 1px solid #ccc;  
+  background-color: #f9f9f9;
+  margin-right: 15px;
+}
+.column-field:last-child {
   margin-right: 0;
 }
 

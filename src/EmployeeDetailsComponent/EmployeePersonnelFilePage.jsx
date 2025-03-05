@@ -5,6 +5,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import { Col, Row, Card, Tabs } from "antd";
 import { UserOutlined, MailOutlined, PhoneOutlined } from "@ant-design/icons";
 import { useLocation, useHistory } from "react-router-dom";
+import "./EmployeeFullDetailsComponent.css"
 
 const EmployeePersonnelFilePage = () => {
   const location = useLocation();
@@ -28,126 +29,103 @@ const EmployeePersonnelFilePage = () => {
         <hr className="dotted-line" />
         <div className="employee-details">
           <div className="details-row">
-            <div className="field">
-              <label htmlFor="firstName">First Name</label>
-              <span className="field-value">{rowData.firstName}</span>
-            </div>
-            <div className="field">
-              <label htmlFor="middleName">Middle Name</label>
-              <span className="field-value">{rowData.middleName}</span>
-            </div>
-            <div className="field">
-              <label htmlFor="lastName">Last Name</label>
-              <span className="field-value">{rowData.lastName}</span>
-            </div>
-            <div className="field">
-              <label htmlFor="designation">Designation</label>
-              <span className="field-value">{rowData.designation}</span>
-            </div>
+            {[
+              { label: "First Name", value: rowData.firstName },
+              { label: "Middle Name", value: rowData.middleName },
+              { label: "Last Name", value: rowData.lastName },
+              { label: "Designation", value: rowData.designation },
+              { label: "Gender", value: rowData.gender },
+              { label: "Date of Birth", value: rowData.dob },
+            ].map((item, index) => (
+              <div className="column-field" key={index}>
+                <label>{item.label}</label>
+                <span className="column-field-value">{item.value}</span>
+              </div>
+            ))}
           </div>
+          
           <div className="details-row">
-            <div className="field">
-              <label htmlFor="gender">Gender</label>
-              <span className="field-value">{rowData.gender}</span>
-            </div>
-            <div className="field">
-              <label htmlFor="dob">Date of Birth</label>
-              <span className="field-value">{rowData.dob}</span>
-            </div>
-            <div className="field">
-              <label htmlFor="ethnicity">Ethnicity</label>
-              <span className="field-value">{rowData.ethinicity}</span>
-            </div>
-            <div className="field">
-              <label htmlFor="veteranStatus">Veteran Status</label>
-              <span className="field-value">{rowData.veteranStatus}</span>
-            </div>
-          </div>
-          <div className="header">
-            <h4 className="header-title-green">Contact Information</h4>          
-          <div className="details-row">
-            <div className="field">
-              <label htmlFor="emailId">Email Address</label>
-              <span className="field-value">{rowData.emailId}</span>
-            </div>
-            <div className="field">
-              <label htmlFor="phone">Phone Number</label>
-              <span className="field-value">{rowData.phone}</span>
-            </div>
-          </div>
-          </div>
+  {/* Contact Information */}
+  <div className="column-section">
+    <h4 className="header-title-green">Contact Information</h4>
+    <div className="details-row">
+      {[
+        { label: "Email Address", value: rowData.emailId },
+        { label: "Phone Number", value: rowData.phone },
+      ].map((item, index) => (
+        <div className="column-field" key={index}>
+          <label>{item.label}</label>
+          <span className="column-field-value">{item.value}</span>
+        </div>
+      ))}
+    </div>
+  </div>
 
-          <div className="header">
-            <h4 className="header-title-green">Employment Details</h4>
-          </div>
+  {/* Employment Details */}
+  <div className="column-section">
+    <h4 className="header-title-green">Employment Details</h4>
+    <div className="details-row">
+      {[
+        { label: "Employment Type", value: rowData.employmentType },
+        { label: "Employment Start Date", value: rowData.startDate },
+        { label: "Employment Period", value: rowData.period },
+        { label: "Employment Id", value: rowData.employeeId },
+      ].map((item, index) => (
+        <div className="column-field" key={index}>
+          <label>{item.label}</label>
+          <span className="column-field-value">{item.value}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
           <div className="details-row">
-            <div className="field">
-              <label htmlFor="employmentType">Employment Type</label>
-              <span className="field-value">{rowData.employmentType}</span>
-            </div>
-            <div className="field">
-              <label htmlFor="startDate">Employment Start Date</label>
-              <span className="field-value">{rowData.startDate}</span>
-            </div>
-            <div className="field">
-              <label htmlFor="period">Employment Period</label>
-              <span className="field-value">{rowData.period}</span>
-            </div>
-            <div className="field">
-              <label htmlFor="employeeId">Employment Id</label>
-              <span className="field-value">{rowData.employeeId}</span>
-            </div>
-          </div>
-          <div className="details-row">
-            <div className="field">
+            <div className="column-field">
               <label htmlFor="emailAddress">Billing status</label>
-              <span className="field-value">{rowData.status}</span>{" "}
+              <span className="column-field-value">{rowData.status}</span>
               {/*TODO change status */}
             </div>
-            <div className="field">
+            <div className="column-field">
               <label htmlFor="wage">Wage Rate</label>
-              <span className="field-value">{rowData.wage}</span>
+              <span className="column-field-value">{rowData.wage}</span>
             </div>
-            <div className="field">
+            <div className="column-field">
               <label htmlFor="department">Department</label>
-              <span className="field-value">{rowData.department}</span>
+              <span className="column-field-value">{rowData.department}</span>
             </div>
-            <div className="field">
+            <div className="column-field">
               <label htmlFor="status">Benefit Status</label>
-              <span className="field-value">{rowData.status}</span>
+              <span className="column-field-value">{rowData.status}</span>
             </div>
           </div>
         </div>
-        <hr className="dotted-line" />
+        {/* Address Details */}
         <div className="header">
           <h4 className="header-title-green">Current Home Address</h4>
         </div>
         <div className="details-row">
-          <div className="field">
-            <label htmlFor="addressLine1">Address Line1</label>
-            <span className="field-value">
-              {rowData.address ? rowData.address.address : "NA"}
-            </span>
-          </div>
-          <div className="field">
-            <label htmlFor="addressLine2">Address Line2</label>
-            <span className="field-value">
-              {rowData.address ? rowData.address.addressLine2 : "NA"}
-            </span>
-          </div>
-          <div className="field">
-            <label htmlFor="City">City,State</label>
-            <span className="field-value">
-              {rowData.address ? rowData.address.city : "NA"},
-              {rowData.address ? rowData.address.state : "NA"}
-            </span>
-          </div>
-          <div className="field">
-            <label htmlFor="zipCode">Zip Code</label>
-            <span className="field-value">
-              {rowData.address ? rowData.address.zipCode : "NA"}
-            </span>
-          </div>
+          {[
+            {
+              label: "Address Line 1",
+              value: rowData.address?.address || "NA",
+            },
+            {
+              label: "Address Line 2",
+              value: rowData.address?.addressLine2 || "NA",
+            },
+            {
+              label: "City, State",
+              value: `${rowData.address?.city || "NA"}, ${
+                rowData.address?.state || "NA"
+              }`,
+            },
+            { label: "Zip Code", value: rowData.address?.zipCode || "NA" },
+          ].map((item, index) => (
+            <div className="column-field" key={index}>
+              <label>{item.label}</label>
+              <span className="column-field-value">{item.value}</span>
+            </div>
+          ))}
         </div>
       </section>
     </main>
