@@ -9,7 +9,7 @@ import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 const WorkForceReconcileList = ({ employees, isCollapsed  }) => {  
   const [searchText, setSearchText] = useState("");
-  const [rowData, setRowData] = useState();
+  const [rowData, setRowData] = useState([]);
   const columnsList = [
     "First Name",
     "Last Name",
@@ -27,8 +27,8 @@ const WorkForceReconcileList = ({ employees, isCollapsed  }) => {
   ];
 
   useEffect(() => {
-    setRowData(employees);
-  }, []);
+    setRowData(Array.isArray(employees) ? employees : []);
+  }, [employees]);
 
   const getColumnsDefList = (columnsList, isSortable) => {
     let columns = columnsList.map((column) => {

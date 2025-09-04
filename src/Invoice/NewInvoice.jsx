@@ -3,6 +3,7 @@ import { Tag, Button, Form, Input, Row, Col, Select, Modal, Spin } from "antd";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./Invoice.css";
+import API_ENDPOINTS from "../config";
 
 const NewInvoice = ({ onClose }) => {
   const { Option } = Select;
@@ -43,15 +44,9 @@ const NewInvoice = ({ onClose }) => {
   const fetchEmployeesAndVendors = async () => {
     try {
       const [employeesData, vendorsData, projectsData] = await Promise.all([
-        fetch(
-          "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees",
-        ).then((response) => response.json()),
-        fetch(
-          "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers",
-        ).then((response) => response.json()),
-        fetch(
-          "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects",
-        ).then((response) => response.json()),
+        fetch(API_ENDPOINTS.getEmployees).then((response) => response.json()),
+        fetch(API_ENDPOINTS.getAllCustomers).then((response) => response.json()),
+        fetch(API_ENDPOINTS.getProjects).then((response) => response.json()),
       ]);
       setEmployeesData(getFlattenedData(employeesData));
       setVendorsData(getFlattenedData(vendorsData));
@@ -100,7 +95,7 @@ const NewInvoice = ({ onClose }) => {
         },
       ];
       fetch(
-        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/addInvoices",
+        API_ENDPOINTS.addInvoices,
         {
           method: "POST",
           headers: {
@@ -175,7 +170,7 @@ const NewInvoice = ({ onClose }) => {
     setSelectedEmployeeId(value);
     handleGeneralData(value, "employeeId");
     handleGeneralData(
-      selectedEmployee?.firstName + " " + selectedEmployee?.lastName || "",
+      selectedEmployee?.Name,
       "employeeName",
     );
   };
@@ -244,7 +239,7 @@ const NewInvoice = ({ onClose }) => {
               >
                 {employees.map((employee) => (
                   <Option key={employee.employeeId} value={employee.employeeId}>
-                    {employee.firstName + " " + employee.lastName}
+                    {employee.name}
                   </Option>
                 ))}
               </Select>

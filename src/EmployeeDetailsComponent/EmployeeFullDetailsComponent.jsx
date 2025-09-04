@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import API_ENDPOINTS from "../config";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -29,7 +30,7 @@ const EmployeeFullDetails = () => {
   const thisMonthData = [50000, 43000, 60000, 70000, 55000];
   const lastMonthData = [25000, 28000, 20000, 15000, 50000];
   const location = useLocation();
-  const { rowData } = location.state;
+  const { rowData } = location.state || {};
   console.log(location.state);
   const [responseData, setResponseData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,46 +48,70 @@ const EmployeeFullDetails = () => {
       key: 1,
       label: "PERSONNEL FILE",
       title: "EmployeePersonnelFilePage /",
-      children: <EmployeePersonnelFilePage />,
+      children: (
+        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+          <EmployeePersonnelFilePage />
+        </div>
+      ),
     },
     {
       key: 2,
       label: "PROJECTS",
       title: "Emplyee Projects",
-      children: <ProjectGrid employeeId={rowData.employeeId} />,
+      children: (
+        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+          <ProjectGrid employeeId={rowData.employeeId} />
+        </div>
+      ),
     },
     {
       key: 3,
       label: "INVOICES",
       children: (
-        <InvoiceById
-          url={`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/getInvoicesForEmployee?employeeId=${rowData.employeeId}`}
-          employeeId={rowData.employeeId}
-        />
+        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+          <InvoiceById
+            url={`${API_ENDPOINTS.getInvoicesForEmployee}?employeeId=${rowData.employeeId}`}
+            employeeId={rowData.employeeId}
+          />
+        </div>
       ),
     },
     {
       key: 4,
       label: "PAYROLLS",
-      children: <PayrollDetails employeeId={rowData.employeeId} />,
+      children: (
+        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+          <PayrollDetails employeeId={rowData.employeeId} />
+        </div>
+      ),
     },
     {
       key: 5,
       label: "ADJUSTMENTS",
-      children: <AdjustementDetails employeeId={rowData.employeeId} />,
+      children: (
+        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+          <AdjustementDetails employeeId={rowData.employeeId} />
+        </div>
+      ),
     },
     {
       key: 6,
       label: "RECONCILIATION",
-      children: <ReconciliationDetails employeeId={rowData.employeeId} />,
+      children: (
+        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+          <ReconciliationDetails employeeId={rowData.employeeId} />
+        </div>
+      ),
     },
     {
       key: 7,
       label: "Bills",
       children: (
-        <BillingDetails
-          url={`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/bills/getBillsForEmployee?employeeId=${rowData.employeeId}`}
-        />
+        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+          <BillingDetails
+            url={`${API_ENDPOINTS.getBillsForEmployee}?employeeId=${rowData.employeeId}`}
+          />
+        </div>
       ),
     },
     {

@@ -9,34 +9,24 @@ import WorkForceList from "./WorkForceList";
 import WorkForceReconcileList from "./WorkForceReconcileList"
 import PieCharts from "../PieCharts/PieCharts";
 import "../WorkForce/WorkForce.css"
+import API_ENDPOINTS from "../config";
 
-// Utility functions for API calls
 const fetchEmployees = async () => {  
-
-  const response = await fetch(
-   "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getAllEmployees",
-  
-  );
+  const response = await fetch(API_ENDPOINTS.getAllEmployees);
   return response.json();
 };
 const fetchReconcileRecords = async () => {
-const response = await fetch(
-  "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/reconcile/getReconcileRecords",
- ); 
- return response.json();
+  const response = await fetch(API_ENDPOINTS.reconcileRecords);
+  return response.json();
 };
 
 const fetchWorkforceChartData = async () => {
-  const response = await fetch(
-    "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/employeesCountByStatus",
-  );
+  const response = await fetch(API_ENDPOINTS.employeesCountByStatus);
   return response.json();
 };
 
 const fetchInvoicesChartData = async () => {
-  const response = await fetch(
-    "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/invoicesCountByStatus",
-  );
+  const response = await fetch(API_ENDPOINTS.invoicesCountByStatus);
   return response.json();
 };
 
@@ -100,8 +90,20 @@ const WorkForceContent = () => {
   };
 
   const processedData = useMemo(() => {
-    console.log(employeeData)
-    if (!Array.isArray(employeeData))  return {};
+    if (!Array.isArray(employeeData)) {
+      return {
+        all: [],
+        usa: [],
+        india: [],
+        active: [],
+        onboarding: [],
+        approved: [],
+        terminated: [],
+        billable: [],
+        fulltime: [],
+        corpData: [],
+      };
+    }
     return {
       all: employeeData,
       usa: employeeData.filter(({ workCountry }) => workCountry === "USA"),
@@ -129,14 +131,18 @@ const WorkForceContent = () => {
       )
     : [];
 
-  const workforceChartLabels =
-    workforceChartData?.map((item) => item.status) || [];
-  const workforceChartValues =
-    workforceChartData?.map((item) => item.count) || [];
-  const invoicesChartLabels =
-    invoicesChartData?.map((item) => item.status) || [];
-  const invoicesChartValues =
-    invoicesChartData?.map((item) => item.count) || [];
+  const workforceChartLabels = Array.isArray(workforceChartData)
+    ? workforceChartData.map((item) => item.status)
+    : [];
+  const workforceChartValues = Array.isArray(workforceChartData)
+    ? workforceChartData.map((item) => item.count)
+    : [];
+  const invoicesChartLabels = Array.isArray(invoicesChartData)
+    ? invoicesChartData.map((item) => item.status)
+    : [];
+  const invoicesChartValues = Array.isArray(invoicesChartData)
+    ? invoicesChartData.map((item) => item.count)
+    : [];
 
   const items = [
     {
@@ -188,7 +194,7 @@ const WorkForceContent = () => {
     {
       key: "10",
       label: "Reconcile",
-      children: <WorkForceReconcileList employees={reconcileData} isCollapsed={isCollapsed} />,
+      children: <WorkForceReconcileList employees={Array.isArray(reconcileData) ? reconcileData : []} isCollapsed={isCollapsed} />,
     },
   ];
 
@@ -233,17 +239,41 @@ const WorkForceContent = () => {
 
       {/* Workforce Status Card */}
       <Col xs={24} sm={8}>
-        <Card className="totalworkForceCard1">
-          <Typography.Text className="invoiceCardTitle">Workforce Status</Typography.Text>
-          {isWorkforceLoading ? <Spin /> : <PieCharts chartData={workforceChartValues} chartLabels={workforceChartLabels} />}
+        <Card className="totalworkForceCard1" style={{ height: 370, minHeight: 370, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+              {isWorkforceLoading ? <Spin /> : <PieCharts chartData={workforceChartValues} chartLabels={workforceChartLabels} />}
+            </div>
+            <div style={{ marginLeft: 40, display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center" }}>
+              <Typography.Text className="invoiceCardTitle" style={{ fontSize: 22, fontWeight: 600, marginBottom: 16 }}>Workforce Status</Typography.Text>
+              {workforceChartLabels.map((label, idx) => (
+                <div key={label} style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+                  <span style={{ width: 18, height: 18, borderRadius: "50%", background: "#E9A94B", display: "inline-block", marginRight: 10 }}></span>
+                  <span style={{ fontSize: 18 }}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </Card>
       </Col>
 
       {/* Invoice Status Card */}
       <Col xs={24} sm={8}>
-        <Card className="invoiceStatusCard1">
-          <Typography.Text className="invoiceCardTitle">Invoice Status</Typography.Text>
-          {isInvoicesLoading ? <Spin /> : <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />}
+        <Card className="invoiceStatusCard1" style={{ height: 370, minHeight: 370, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+              {isInvoicesLoading ? <Spin /> : <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />}
+            </div>
+            <div style={{ marginLeft: 40, display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center" }}>
+              <Typography.Text className="invoiceCardTitle" style={{ fontSize: 22, fontWeight: 600, marginBottom: 16 }}>Invoice Status</Typography.Text>
+              {invoicesChartLabels.map((label, idx) => (
+                <div key={label} style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
+                  <span style={{ width: 18, height: 18, borderRadius: "50%", background: "#E9A94B", display: "inline-block", marginRight: 10 }}></span>
+                  <span style={{ fontSize: 18 }}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </Card>
       </Col>
     </Row>

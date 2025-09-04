@@ -6,20 +6,31 @@ import logo from "../pages/bean-logo.png";
 //import bglogo from "../pages/bg_image1.jpg";  // ✅ Import Background Image
 
 const Login = () => {
-  const { login } = useContext(AuthContext);
+  const { user, login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleLoginSuccess = (response) => {
-    login(response); // Save user session
-    navigate("/dashboard"); // Redirect to Dashboard
-  };
+  // If user is present, redirect to dashboard automatically
+  React.useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
 
+  // For local/dev, show a message or nothing
+  if (user) {
+    return null; // Already logged in, skip login UI
+  }
+
+  // If you want to keep GoogleLogin for production, you can use an env check here
   return (
     <div>
       <div style={styles.loginBox}>
         <div style={styles.googleLogin}>
           <GoogleLogin
-            onSuccess={handleLoginSuccess}
+            onSuccess={response => {
+              login(response);
+              navigate("/dashboard");
+            }}
             onError={() => console.log("Login Failed")}
             theme="outline"
             size="large"

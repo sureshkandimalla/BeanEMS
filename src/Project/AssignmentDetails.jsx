@@ -1,3 +1,4 @@
+import API_ENDPOINTS from "../config";
 import React, { useState, useEffect, useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
@@ -13,7 +14,7 @@ import "./AssignmentDetails.css"
 const AssignmentDetails = ({ projectId, isCollapsed }) => {
   console.log(projectId);
   //  const [rowData, setRowData] = useState();
-  const [rowData, setRowData] = useState();
+  const [rowData, setRowData] = useState([]);
   const [searchText, setSearchText] = useState("");
 
   const addNewProject = () => {
@@ -29,9 +30,7 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          `http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/assignmentsForProject?projectId=${projectId}`,
-        );
+        const response = await fetch(API_ENDPOINTS.assignmentsForProject(projectId));
         const data = await response.json();
         const flattendData = getFlattenedData(data);
         setRowData(flattendData);

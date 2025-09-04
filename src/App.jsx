@@ -1,4 +1,5 @@
 import React from "react";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import {
   BrowserRouter as Router,
   Route,
@@ -19,7 +20,6 @@ import ProjectDashboard from "./Project/ProjectDashboard";
 import ProjectOnBoardingForm from "./OnBoardingComponent/ProjectOnBoarding";
 import ProjectFullDetails from "./Project/ProjectFullDetails";
 import GenerateInvoiceDetails from "./Invoice/GenerateInvoiceDetails";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import { AuthProvider } from "./Authentication/Context/AuthContext";
 import Login from "./Authentication/pages/Login";
 import ProtectedRoute from "./Authentication/routes/ProtectedRoute";
@@ -29,7 +29,6 @@ import PotentialEmployees from "./PotentialEmployees/PotentialEmployees";
 import VisaDetailsList from "./VisaDetails/VisaDetailsList.jsx"
 
 const clientId = '206630439236-q0q2np2g72vf5rgodjk4hhv814i3q7ai.apps.googleusercontent.com';
-//const clientId = '357155611063-pdrk7703502da9f33osc2t28jueof67j.apps.googleusercontent.com';
 const { Content } = Layout;
 
 const App = () => {

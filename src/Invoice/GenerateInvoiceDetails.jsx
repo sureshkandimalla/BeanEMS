@@ -13,12 +13,13 @@ import { IconButton } from "@mui/material";
 import EditHoursInvoiceModal from "./EditHoursInvoiceModel";
 import "./GenerateInvoiceDetails.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import API_ENDPOINTS from "../config";
 
 const GenerateInvoiceDetails = () => {
   const location = useLocation();
   const { url, month } = location.state || {};
   const [searchText, setSearchText] = useState("");
-  const [rowData, setRowData] = useState();
+  const [rowData, setRowData] = useState([]);
   const [editingRowData, setEditingRowData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [invalidRows, setInvalidRows] = useState([]); // Track invalid rows
@@ -144,7 +145,7 @@ const GenerateInvoiceDetails = () => {
     ];
 
     fetch(
-      "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/addInvoices",
+      API_ENDPOINTS.addInvoices,
       {
         method: "POST",
         headers: {
@@ -187,7 +188,7 @@ const GenerateInvoiceDetails = () => {
       }));
       console.log(updatedDataToSave);
       fetch(
-        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/addInvoices",
+        API_ENDPOINTS.addInvoices,
         {
           method: "POST",
           headers: {

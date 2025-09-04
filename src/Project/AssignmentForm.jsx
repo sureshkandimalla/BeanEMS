@@ -13,6 +13,7 @@ import {
 } from "antd";
 import moment from "moment";
 import axios from "axios";
+import API_ENDPOINTS from "../config";
 
 const AssignmentForm = ({ onClose }) => {
   const { Option } = Select;
@@ -56,12 +57,8 @@ const AssignmentForm = ({ onClose }) => {
     const fetchEmployeesAndVendors = async () => {
       try {
         const [employeesData, vendorsData] = await Promise.all([
-          fetch(
-            "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees",
-          ).then((response) => response.json()),
-          fetch(
-            "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers",
-          ).then((response) => response.json()),
+          fetch(API_ENDPOINTS.getEmployees).then((response) => response.json()),
+          fetch(API_ENDPOINTS.getAllCustomers).then((response) => response.json()),
         ]);
 
         setEmployeesData(employeesData);

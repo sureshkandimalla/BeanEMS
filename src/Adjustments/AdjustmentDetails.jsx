@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import API_ENDPOINTS from "../config";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Drawer } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
@@ -33,7 +34,7 @@ const AdjustementDetails = ({ employeeId }) => {
     //default status =viewAll
     setRowData([])
     const today = new Date();   
-    axios.get(`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/adjustment/findAdjustmentsByEmployeeId?id=${employeeId}`, {
+    axios.get(`${API_ENDPOINTS.findAdjustmentsByEmployeeId}?id=${employeeId}`, {
       params: {
        // selectedDate: '2023-11-01',//formattedDate,
         //status: 'viewAll'

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import API_ENDPOINTS from "../config";
 import { AgGridReact } from "@ag-grid-community/react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -11,7 +12,7 @@ import "./BillingDetails.css"
 
 const BillingDetails = ({ url, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
-  const [rowData, setRowData] = useState();
+  const [rowData, setRowData] = useState([]);
   const navigate = useNavigate();
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
 

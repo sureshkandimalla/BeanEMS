@@ -6,6 +6,7 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
+import API_ENDPOINTS from "../config";
 import CustomHeader from "../CustomHeader/CustomHeader";
 import "./InvoiceCard.css";
 const { Search } = Input;
@@ -51,7 +52,7 @@ const InvoiceCard = () => {
     const formattedDate = today.toISOString().split("T")[0];
     axios
       .get(
-        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/getAllInvoices",
+        API_ENDPOINTS.getAllInvoices,
         {
           //params: {
           //selectedDate:'2023-11-01',//formattedDate,

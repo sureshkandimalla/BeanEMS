@@ -7,6 +7,7 @@ import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
 import "./ProjectDashboard.css";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
 import ProjectList from "./ProjectsList";
+import API_ENDPOINTS from "../config";
 
 const { Panel } = Collapse;
 
@@ -59,9 +60,7 @@ const ProjectDashboard = () => {
     const fetchData = async () => {
       if (isInitialRender.current) {
         try {
-          const response = await fetch(
-            "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects"
-          );
+          const response = await fetch(API_ENDPOINTS.getProjects);
           const data = await response.json();
           const flattendData = getFlattenedData(data);
           setRowData(flattendData);

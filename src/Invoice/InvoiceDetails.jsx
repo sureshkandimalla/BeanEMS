@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import API_ENDPOINTS from "../config";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Card, Drawer } from "antd";
 import IconButton from "@mui/material/IconButton";
@@ -43,7 +44,7 @@ const InvoiceDetails = () => {
     setRowData([]);
     axios
       .get(
-        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/getAllInvoices",
+        API_ENDPOINTS.getAllInvoices,
         {
           params: {
             // selectedDate: '2023-11-01',//formattedDate,

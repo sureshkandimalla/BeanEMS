@@ -9,16 +9,15 @@ import "./EmployeeProjectForm.scss";
 import Sidebar from "../../Commons/Sidebar/Sidebar";
 import ProjectDashboard from "../EmployeeProjectForm/ProjectDashboard";
 import { useHistory } from "react-router-dom";
+import API_ENDPOINTS from "../config";
 
 const Grid = () => {
-  const [rowData, setRowData] = useState();
+  const [rowData, setRowData] = useState([]);
   const [searchText, setSearchText] = useState("");
   const history = useHistory();
 
   useEffect(() => {
-    fetch(
-      "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects",
-    )
+    fetch(API_ENDPOINTS.getProjects)
       .then((response) => response.json())
       .then((data) => {
         setRowData(getFlattenedData(data));

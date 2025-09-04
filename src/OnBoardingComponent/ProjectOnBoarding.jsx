@@ -17,6 +17,7 @@ import { validateEmail } from "../utils";
 //import Sidebar from '../../Commons/Sidebar/Sidebar';
 //import './EmployeeOnBoarding.scss';
 import moment from "moment";
+import API_ENDPOINTS from "../config";
 //import React, { useState, useEffect } from "react";
 //import { useLocation } from 'react-router-dom'
 
@@ -33,12 +34,8 @@ const ProjectOnBoardingForm = ({ onClose }) => {
   const fetchEmployeesAndVendors = async () => {
     try {
       const [employeesData, vendorsData] = await Promise.all([
-        fetch(
-          "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees",
-        ).then((response) => response.json()),
-        fetch(
-          "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers",
-        ).then((response) => response.json()),
+        fetch(API_ENDPOINTS.getEmployees).then((response) => response.json()),
+        fetch(API_ENDPOINTS.getAllCustomers).then((response) => response.json()),
       ]);
 
       setEmployeesData(getFlattenedData(employeesData));

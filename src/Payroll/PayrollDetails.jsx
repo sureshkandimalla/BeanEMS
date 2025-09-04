@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import API_ENDPOINTS from "../config";
 import { AgGridReact } from "@ag-grid-community/react";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -9,7 +10,7 @@ import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 const PayrollDetails = ({ employeeId }) => {
   const [searchText, setSearchText] = useState("");
-  const [rowData, setRowData] = useState();
+  const [rowData, setRowData] = useState([]);
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
 
   //  const columnsList = ['Customer Id', 'Company Name', 'Email Id', 'Phone', 'Status', 'ein', 'Website','startDate','endDate' ];
@@ -26,7 +27,7 @@ const PayrollDetails = ({ employeeId }) => {
   const fetchData = () => {
     axios
       .get(
-        `http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/payroll/getPayrollsForEmp?employeeId=${employeeId}`,
+        `${API_ENDPOINTS.getPayrollsForEmp}?employeeId=${employeeId}`,
         {
           params: {
             // selectedDate: '2023-11-01',//formattedDate,

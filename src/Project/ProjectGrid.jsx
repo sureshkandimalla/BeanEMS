@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import API_ENDPOINTS from "../config";
 import { createRoot } from "react-dom/client";
 import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
@@ -6,7 +7,7 @@ import "./ProjectGrid.css";
 
 const ProjectGrid = ({ employeeId }) => {
   const [searchText, setSearchText] = useState("");
-  const [rowData, setRowData] = useState();
+  const [rowData, setRowData] = useState([]);
   const columnDefs = [
     {
       headerName: "Employee Name",
@@ -36,9 +37,7 @@ const ProjectGrid = ({ employeeId }) => {
   ];
 
   useEffect(() => {
-    fetch(
-      `http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/projects?employeeId=${employeeId}`,
-    )
+    fetch(API_ENDPOINTS.projectsByEmployeeId(employeeId))
       .then((response) => response.json())
       .then((data) => {
         const transformedData = flattenObject(data);

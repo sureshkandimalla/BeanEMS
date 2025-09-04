@@ -12,6 +12,7 @@ import InvoiceById from "../Invoice/InvoiceById";
 import BillingDetails from "../Billings/BillingDetails";
 import { UpOutlined, DownOutlined,CalendarOutlined, DollarOutlined, ProjectOutlined, BankOutlined, UserOutlined } from "@ant-design/icons";
 import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message } from "antd";
+import API_ENDPOINTS from "../config";
 //const style: React.CSSProperties = { background: '#A9A9A9', padding: '8px 0' ,paddingLeft: '8px 0'};
 
 const { Panel } = Collapse;
@@ -49,9 +50,7 @@ const ProjectFullDetails = () => {
     const fetchData = async () => {
       if (!isInitialRender.current) {
         try {
-          const response = await fetch(
-            `http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/projects/${rowData.projectId}`,
-          );
+          const response = await fetch(API_ENDPOINTS.projectsById(rowData.projectId));
           const data = await response.json();
           const flattendData = getFlattenedData(data);
           console.log(flattendData)

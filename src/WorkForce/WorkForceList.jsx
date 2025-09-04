@@ -15,6 +15,7 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState();
   const columnsList = [
+    "Employee Id",
     "First Name",
     "Last Name",
     "Visa",
@@ -123,8 +124,8 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
         headerName: updatedColumn,
         field: fieldValue,
         sortable: isSortable,
-        editable: true,        
-        headerClass: "ag-header-cell" ,
+        editable: true,
+        headerClass: column === "Employee Id" ? "ag-center-cols" : "ag-header-cell",
         filter: columnFilter,
         minWidth: autoWidth,
         suppressSizeToFit: true,
@@ -134,10 +135,14 @@ const WorkForceList = ({ employees, isCollapsed  }) => {
             return params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1;
           },
           blueUnderline: (params) => {
-            console.log(params.colDef)
             return params.colDef.field === "emailId";
+          },
+          centerAlign: (params) => {
+            return params.colDef.field === "employeeId";
           }
-        },      
+        },
+        cellClass: column === "Employee Id" ? "ag-center-cols" : undefined,
+        cellStyle: column === "Employee Id" ? { textAlign: "center" } : undefined,
         cellRenderer: (params) => {
           if (column === "First Name" || column === "Last Name") {
             return (

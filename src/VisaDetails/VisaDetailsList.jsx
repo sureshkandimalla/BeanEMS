@@ -5,6 +5,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "ag-grid-enterprise";
 import axios from "axios";
+import API_ENDPOINTS from "../config";
 import "./VisaDetailsList.css"
 
 export default function VisaDetailsList() {

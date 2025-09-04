@@ -10,9 +10,10 @@ import InvoiceCard from "../InvoiceCard/InvoiceCard";
 import CurrentEmployeeCard from "../CurrentEmployeeCard/CurrentEmployeeCard";
 import "./Dashboard.css";
 import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
+import API_ENDPOINTS from "../config";
 const Dashboard = () => {
   //addedchangesstart
-  const [rowData, setRowData] = useState();
+  const [rowData, setRowData] = useState([]);
   const [workForceChartData, setWorkForceChartData] = useState([]);
   const [workForceChartLabels, setWorkForceChartLabels] = useState([]);
   const [invoicesChartData, setInvoicesChartData] = useState([]);
@@ -23,9 +24,7 @@ const Dashboard = () => {
     const fetchData = async () => {
       if (!isInitialRender.current) {
         try {
-          const response1 = await fetch(
-            "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/employeesCountByStatus",
-          );
+          const response1 = await fetch(API_ENDPOINTS.employeesCountByStatus);
           const data1 = await response1.json();
 
           // Assuming the response from your API is an array of objects with 'label' and 'value' properties
@@ -38,18 +37,14 @@ const Dashboard = () => {
           setWorkForceChartLabels(labels);
           setWorkForceChartData(chartData);
 
-          const response2 = await fetch(
-            "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/invoicesCountByStatus",
-          );
+          const response2 = await fetch(API_ENDPOINTS.invoicesCountByStatus);
           const data2 = await response2.json();
           const labels2 = data2.map((item) => item.status);
           const chartData2 = data2.map((item) => item.count);
           setInvoicesChartLabels(labels2);
           setInvoicesChartData(chartData2);
 
-          const response3 = await fetch(
-            "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/getProjects",
-          );
+          const response3 = await fetch(API_ENDPOINTS.getProjects);
           const data3 = await response3.json();
           setRowData(data3);
         } catch (error) {
@@ -64,10 +59,10 @@ const Dashboard = () => {
   }, []);
 
   const totalParamCount =
-    workForceChartData[0] +
-    workForceChartData[1] +
-    workForceChartData[2] +
-    workForceChartData[3];
+    (workForceChartData[0] || 0) +
+    (workForceChartData[1] || 0) +
+    (workForceChartData[2] || 0) +
+    (workForceChartData[3] || 0);
   const projectsSize = rowData ? rowData.length : 0;
 
   const [employeeDrawerVisible, setEmployeeDrawerVisible] = useState(false);

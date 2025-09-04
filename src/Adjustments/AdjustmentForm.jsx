@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import API_ENDPOINTS from "../config";
 import axios from "axios";
 import {
   Modal,
@@ -27,7 +28,7 @@ const AdjustmentForm = ({ onClose }) => {
     const fetchEmployeesAndVendors = async () => {
         try {
             const [employeesData, vendorsData] = await Promise.all([
-                fetch('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/getEmployees').then(response => response.json()),
+                fetch(API_ENDPOINTS.getEmployees).then(response => response.json()),
             ]);            
             setEmployeesData(getFlattenedData(employeesData));
         } catch (error) {

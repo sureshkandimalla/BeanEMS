@@ -7,16 +7,15 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./Vendor.css";
 import Newvendor from "./NewVendor";
+import API_ENDPOINTS from "../config";
 
 const VendorDetails = () => {
   const [searchText, setSearchText] = useState("");
-  const [rowData, setRowData] = useState();
+  const [rowData, setRowData] = useState([]);
   //  const columnsList = ['Customer Id', 'Company Name', 'Email Id', 'Phone', 'Status', 'ein', 'Website','startDate','endDate' ];
 
   useEffect(() => {
-    fetch(
-      "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/getAllCustomers"
-    )
+    fetch(API_ENDPOINTS.getAllCustomers)
       .then((response) => response.json())
       .then((data) => {
         setRowData(getFlattenedData(data));

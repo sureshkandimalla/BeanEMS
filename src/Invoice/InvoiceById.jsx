@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import API_ENDPOINTS from "../config";
 import { AgGridReact } from "@ag-grid-community/react";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -13,7 +14,7 @@ import "./InvoiceById.css";
 
 const InvoiceById = ({ url, employeeId, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
-  const [rowData, setRowData] = useState();
+  const [rowData, setRowData] = useState([]);
   const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
   const navigate = useNavigate();
 

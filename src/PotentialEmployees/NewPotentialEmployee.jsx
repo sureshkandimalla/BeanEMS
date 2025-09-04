@@ -12,6 +12,7 @@ import {
   Modal,
 } from "antd";
 import axios from "axios";
+import API_ENDPOINTS from "../config";
 
 const usCountryTelList = [
   { value: "US", label: "US" },

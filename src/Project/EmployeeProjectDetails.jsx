@@ -41,8 +41,8 @@ const TwoPartPage = () => {
   const url = `${apiUrl}${endpoint}/${empId}`;
 
   useEffect(() => {
-    alert(url);
-    fetch(url)
+    alert(API_ENDPOINTS.employeeById(empId));
+    fetch(API_ENDPOINTS.employeeById(empId))
       .then((response) => response.json())
       .then((data) => {
         alert(data.firstName);

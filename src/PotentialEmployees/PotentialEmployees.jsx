@@ -7,6 +7,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import NewPotentialEmployee from "./NewPotentialEmployee";
 import "./PotentialEmployees.css";
+import API_ENDPOINTS from "../config";
 
 const PotentialEmployees = () => {
   const [searchText, setSearchText] = useState("");
@@ -21,7 +22,7 @@ const PotentialEmployees = () => {
   }, []);
 
   const fetchPotentialEmployees = () => {
-    fetch("http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/visa/getAllPotentialEmployees")
+    fetch(API_ENDPOINTS.getAllPotentialEmployees)
       .then((response) => response.json())
       .then((data) => setRowData(data))
       .catch((error) => console.error("Error fetching data:", error));
@@ -207,7 +208,7 @@ const PotentialEmployees = () => {
     }
 
     try {
-      const response = await fetch("http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/visa/savePotentialEmployees", {
+      const response = await fetch(API_ENDPOINTS.savePotentialEmployees, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedRows),

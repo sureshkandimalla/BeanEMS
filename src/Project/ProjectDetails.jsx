@@ -60,7 +60,7 @@ const TwoPartPage = () => {
   const url = `${projectsApiUrl}/${projectId}`;
   // alert(projectId);
   useEffect(() => {
-    fetch(url)
+    fetch(API_ENDPOINTS.projectsById(projectId))
       .then((response) => response.json())
       .then((data) => {
         //alert(data.projectName);
