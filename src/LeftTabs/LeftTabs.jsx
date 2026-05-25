@@ -25,15 +25,15 @@ function getItem(tabName, key, icon, children, type) {
 }
 //Left Tab names
 const leftTabNames = [
-  getItem("Dashboard", "dashboard", <ProfileOutlined />),
-  getItem("Work Force", "workforce", <UserOutlined />),
-  getItem("Employee Onboarding", "employeeonboard", <UsergroupAddOutlined />),
-  getItem("Vendor", "vendordetails", <BlockOutlined />),
-  getItem("Invoice", "invoicedetails", <FileTextOutlined />),
-  getItem("Projects", "projects", <ProjectOutlined />),
-  getItem("Potential Employees", "potentialEmployees", <UserOutlined />),
-  getItem("VisaDetails", "visaEmployees", <UsergroupAddOutlined />),
-
+  getItem("Dashboard", "/dashboard", <ProfileOutlined />),
+  getItem("Work Force", "/workforce", <UserOutlined />),
+  getItem("Employee Onboarding", "/employeeonboard", <UsergroupAddOutlined />),
+  getItem("Vendor", "/vendordetails", <BlockOutlined />),
+  getItem("Invoice", "/invoicedetails", <FileTextOutlined />),
+  getItem("Projects", "/projects", <ProjectOutlined />),
+  getItem("Potential Employees", "/potentialEmployees", <UserOutlined />),
+  getItem("Visa Employees", "/visaEmployees", <UsergroupAddOutlined />),
+  getItem("Payroll Summary", "/payrollsummary", <BoxPlotOutlined />),
 ];
 const LeftTabs = () => {
   const [collapsed, setCollapsed] = useState(true);

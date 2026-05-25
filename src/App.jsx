@@ -26,8 +26,9 @@ import ProtectedRoute from "./Authentication/routes/ProtectedRoute";
 import AuthLayout from "./Layouts/AuthLayout";
 import MainLayout from "./Layouts/MainLayout";
 import PotentialEmployees from "./PotentialEmployees/PotentialEmployees";
-import VisaDetailsList from "./VisaDetails/VisaDetailsList.jsx"
-
+import VisaEmployees from "./VisaDetails/VisaEmployees.jsx"
+import AdjustmentDetails from "./Adjustments/AdjustmentDetails";
+import PayrollSummary from "./Payroll/PayrollSummary";
 const clientId = '206630439236-q0q2np2g72vf5rgodjk4hhv814i3q7ai.apps.googleusercontent.com';
 const { Content } = Layout;
 
@@ -35,7 +36,7 @@ const App = () => {
   return (
     <GoogleOAuthProvider clientId={clientId}>
       <AuthProvider>
-        <Router>
+        <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Routes>
             {/* Authentication Layout (No Header, No Sidebar) */}
             <Route element={<AuthLayout />}>
@@ -54,6 +55,7 @@ const App = () => {
               <Route path="/employeeonboard" element={<EmployeeOnboard />} />
               <Route path="/vendordetails" element={<VendorDetails />} />
               <Route path="/invoicedetails" element={<InvoiceDetails />} />
+              <Route path="/payrollsummary" element={<PayrollSummary />} />
               <Route
                 path="/employeeFullDetails"
                 element={<EmployeeFullDetailsComponent />}
@@ -81,7 +83,15 @@ const App = () => {
               />
                <Route
                 path="/visaEmployees"
-                element={<VisaDetailsList />}
+                element={<VisaEmployees />}
+              />
+              <Route
+                path="/adjustmentDetails"
+                element={<AdjustmentDetails />}
+              />
+              <Route
+                path="/payrollsummary"
+                element={<PayrollSummary />}
               />
 
               {/* Redirect unknown routes to Dashboard */}
