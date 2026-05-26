@@ -1,5 +1,13 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap");
-/* body,*{font-family: 'Poppins' !important;} */
+
+html, body, #root {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
 .headerLogo img {
   height: 42px;
   vertical-align: middle;
@@ -84,4 +92,60 @@ button.ant-btn.ant-btn-default:focus {
 
 .ant-drawer-title {
   font-size: 24px !important;
+}
+
+/* AG Grid common styles are in src/styles/ag-grid-common.css */
+
+/* ── Global layout: two-parts pages (EmployeeFullDetails, etc.) ── */
+.two-parts-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 70px);
+  overflow: hidden;
+}
+
+.part.left-part {
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.gap {
+  height: 6px;
+  flex-shrink: 0;
+}
+
+.part.right-part {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ant Design Tabs — fill remaining height */
+.part.right-part .bean-home-tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.part.right-part .bean-home-tabs .ant-tabs-content-holder {
+  flex: 1;
+  overflow: hidden;
+}
+
+.part.right-part .bean-home-tabs .ant-tabs-content {
+  height: 100%;
+  overflow: hidden;
+}
+
+.part.right-part .bean-home-tabs .ant-tabs-tabpane {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* AG Grid / table wrappers — used in every tab pane */
+.employee-List-grid {
+  height: 100%;
+  overflow: hidden;
 }

@@ -1,0 +1,22 @@
+/* LeftTabs icon colors — scoped strictly to .left-tab-icon, no global overrides */
+
+.left-tab-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.left-tab-icon.icon-dashboard    { color: #1677ff; background: #e6f4ff; }
+.left-tab-icon.icon-workforce    { color: #52c41a; background: #f6ffed; }
+.left-tab-icon.icon-onboarding   { color: #722ed1; background: #f9f0ff; }
+.left-tab-icon.icon-vendor       { color: #fa8c16; background: #fff7e6; }
+.left-tab-icon.icon-invoice      { color: #13c2c2; background: #e6fffb; }
+.left-tab-icon.icon-payroll      { color: #eb2f96; background: #fff0f6; }
+.left-tab-icon.icon-projects     { color: #2f54eb; background: #f0f5ff; }
+.left-tab-icon.icon-potential    { color: #fa541c; background: #fff2e8; }
+.left-tab-icon.icon-visa         { color: #08979c; background: #e6fffb; }
+.left-tab-icon.icon-adjustments  { color: #d4b106; background: #feffe6; }

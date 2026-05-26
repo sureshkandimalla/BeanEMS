@@ -5,7 +5,6 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./EmployeeFullDetailsComponent.css";
 import ProjectGrid from "../Project/ProjectGrid";
-// import '../WorkForce/WorkForce.css'
 import { Col, Row, Card, Tabs } from "antd";
 import { UserOutlined, MailOutlined, PhoneOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
@@ -17,6 +16,7 @@ import AdjustementDetails from "../Adjustments/AdjustmentDetails";
 import ReconciliationDetails from "../Reconciliation/ReconciliationDetails";
 import InvoiceById from "../Invoice/InvoiceById";
 import BillingDetails from "../Billings/BillingDetails";
+import PassportController from "../Passport/PassportController";
 
 const EmployeeFullDetails = () => {
   const divStyle = {
@@ -49,7 +49,7 @@ const EmployeeFullDetails = () => {
       label: "PERSONNEL FILE",
       title: "EmployeePersonnelFilePage /",
       children: (
-        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+        <div className="employee-List-grid" style={{ height: "100%" }}>
           <EmployeePersonnelFilePage />
         </div>
       ),
@@ -59,7 +59,7 @@ const EmployeeFullDetails = () => {
       label: "PROJECTS",
       title: "Emplyee Projects",
       children: (
-        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+        <div className="employee-List-grid" style={{ height: "100%" }}>
           <ProjectGrid employeeId={rowData.employeeId} />
         </div>
       ),
@@ -68,7 +68,7 @@ const EmployeeFullDetails = () => {
       key: 3,
       label: "INVOICES",
       children: (
-        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+        <div className="employee-List-grid" style={{ height: "100%" }}>
           <InvoiceById
             url={`${API_ENDPOINTS.getInvoicesForEmployee}?employeeId=${rowData.employeeId}`}
             employeeId={rowData.employeeId}
@@ -80,7 +80,7 @@ const EmployeeFullDetails = () => {
       key: 4,
       label: "PAYROLLS",
       children: (
-        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+        <div className="employee-List-grid" style={{ height: "100%" }}>
           <PayrollDetails employeeId={rowData.employeeId} />
         </div>
       ),
@@ -89,7 +89,7 @@ const EmployeeFullDetails = () => {
       key: 5,
       label: "ADJUSTMENTS",
       children: (
-        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+        <div className="employee-List-grid" style={{ height: "100%" }}>
           <AdjustementDetails employeeId={rowData.employeeId} />
         </div>
       ),
@@ -98,7 +98,7 @@ const EmployeeFullDetails = () => {
       key: 6,
       label: "RECONCILIATION",
       children: (
-        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+        <div className="employee-List-grid" style={{ height: "100%" }}>
           <ReconciliationDetails employeeId={rowData.employeeId} />
         </div>
       ),
@@ -107,7 +107,7 @@ const EmployeeFullDetails = () => {
       key: 7,
       label: "Bills",
       children: (
-        <div className="employee-List-grid" style={{ minHeight: 440 }}>
+        <div className="employee-List-grid" style={{ height: "100%" }}>
           <BillingDetails
             url={`${API_ENDPOINTS.getBillsForEmployee}?employeeId=${rowData.employeeId}`}
           />
@@ -153,8 +153,7 @@ const EmployeeFullDetails = () => {
               <Col span={8}>
                 {/* <Card className='billingCard'> */}
                 <section className="personal-info">
-                  {responseData && (
-                    <Card className="responsive-card" style={{ width: "100%" }}>
+                  {responseData && (                      <Card className="responsive-card" style={{ width: "100%" }}>
                       <p>
                         <div>
                           <span
@@ -168,19 +167,18 @@ const EmployeeFullDetails = () => {
                             <UserOutlined style={{ marginRight: "14px" }} />{" "}
                             {responseData.firstName} {responseData.lastName}
                           </span>
-                          <button
-                            style={{
-                              float: "right",
-                              top: "4",
-                              right: "0",
-                              background: "#ffffff",
-                              border: "none",
-                              cursor: "pointer",
-                            }}
-                            onClick={handleClick}
-                          >
-                            ...
-                          </button>
+                          <div style={{ float: "right", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <button
+                              style={{
+                                background: "#ffffff",
+                                border: "none",
+                                cursor: "pointer",
+                              }}
+                              onClick={handleClick}
+                            >
+                              ...
+                            </button>
+                          </div>
                           <br />
                           <span className="designation-style">
                             {responseData.designation}
@@ -254,10 +252,10 @@ const EmployeeFullDetails = () => {
                     </div>
                   </div>
                   <hr className="dotted-line" />
-                  <div class="labelArrow" onclick="toggleContent()">
-                    Document Alerts <span class="arrow">&#9660;</span>
+                  <div className="labelArrow" onClick={toggleContent}>
+                    Document Alerts <span className="arrow">&#9660;</span>
                   </div>
-                  <div class="content" id="content">
+                  <div className="content" id="content">
                     Content here
                   </div>
                 </section>
@@ -272,6 +270,13 @@ const EmployeeFullDetails = () => {
                     thisMonthData={thisMonthData}
                     lastMonthData={lastMonthData}
                   />
+                  <div style={{ marginTop: "12px", textAlign: "right" }}>
+                    <PassportController
+                      showTrigger
+                      triggerLabel="Add Passport"
+                      employeeData={responseData}
+                    />
+                  </div>
                 </Card>
               </Col>
             </Row>

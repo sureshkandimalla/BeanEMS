@@ -89,14 +89,7 @@ const ProjectDashboard = () => {
 
   return (
     <>
-      <div
-        style={{
-          height: "100vh", // Full viewport height
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden", // Prevents unwanted scroll
-        }}
-      >
+      <div className="project-dashboard-outer">
         {/* Collapsible Section (Takes 30% Height) */}
         <Collapse
           onChange={handleCollapseChange}

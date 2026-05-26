@@ -1,19 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import API_ENDPOINTS from "../config";
-import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Card, Row, Col, Collapse } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
 import axios from "axios";
-import "ag-grid-enterprise";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import ReactApexChart from "react-apexcharts";
+import PayrollDetails from "./PayrollDetails";
 
 const { Panel } = Collapse;
 
-const PayrollSummary = () => {
-  const [searchText, setSearchText] = useState("");
+const PayrollSummary = ({ employeeId }) => {
   const [rowData, setRowData] = useState([]);
   const [chartData, setChartData] = useState({
     departments: [],
@@ -26,20 +21,19 @@ const PayrollSummary = () => {
     checkDateTotals: { checkDates: [], totalExpenses: [], netPay: [], taxWithheld: [], employerLiability: [] },
   });
   const [checkDateOffset, setCheckDateOffset] = useState(0);
-  const isInitialRender = useRef(true);
-  const gridRef = useRef(null);
+  const [chartsOpen, setChartsOpen] = useState(true);
 
   useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-      fetchData();
-    }
-  }, []);
+    fetchData();
+  }, [employeeId]);
 
   const fetchData = () => {
     setRowData([]);
+    const endpoint = employeeId
+      ? API_ENDPOINTS.getPayrollsForEmp(employeeId)
+      : API_ENDPOINTS.getPayrollSummaryAll;
     axios
-      .get(API_ENDPOINTS.getPayrollSummaryAll)
+      .get(endpoint)
       .then((response) => {
         const data = response.data || [];
         setRowData(data);
@@ -97,27 +91,6 @@ const PayrollSummary = () => {
     setChartData({ departments, netPayByDept, hoursByDept, statusLabels, statusCounts, totalNetPay, totalHours, checkDateTotals });
   };
 
-
-
-  const getRowStyle = (params) => {
-    if (params.node.rowPinned) {
-      return { backgroundColor: "#d3f4ff", fontWeight: "bold" };
-    }
-    return null;
-  };
-
-  const formatDate = (params) => {
-    if (!params.value) return "";
-    const date = new Date(params.value);
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  };
-
-  const handleExport = () => {
-    if (gridRef.current?.api) {
-      gridRef.current.api.exportDataAsExcel({ fileName: "payroll_summary.xlsx" });
-    }
-  };
-
   // Chart configs
   const allCheckDates = chartData.checkDateTotals.checkDates;
   const visibleCount = 6;
@@ -168,57 +141,12 @@ const PayrollSummary = () => {
     title: { text: "Payroll Status", align: "center", style: { fontSize: "13px" } },
   };
 
-  const getColumnsDefList = () => [
-    {
-      headerName: "Payroll Summary Id",
-      field: "payrollSummaryId",
-      sortable: true,
-      minWidth: 160,
-      valueFormatter: (params) => params.node.rowPinned === "top" ? "Total" : params.value,
-    },
-    { headerName: "Employee Id", field: "employeeId", sortable: true },
-    { headerName: "Employee Name", field: "employeeName", sortable: true, minWidth: 180, pinned: "left" },
-    { headerName: "Department", field: "department", sortable: true },
-    { headerName: "Pay Check Date", field: "checkDate", sortable: true, valueFormatter: formatDate },
-    { headerName: "Pay Cycle Start", field: "payPeriodStartDate", sortable: true, valueFormatter: formatDate },
-    { headerName: "Pay Cycle End", field: "payPeriodEndDate", sortable: true, valueFormatter: formatDate },
-    { headerName: "Hours", field: "hours", sortable: true },
-    { headerName: "Total Paid", field: "totalPaid", sortable: true, valueFormatter: (params) => formatCurrency(params.value) },
-    { headerName: "Net Pay", field: "netPay", sortable: true, valueFormatter: (params) => formatCurrency(params.value) },
-    { headerName: "Tax Withheld", field: "taxWithheld", sortable: true, valueFormatter: (params) => formatCurrency(params.value) },
-    { headerName: "Deductions", field: "deductions", sortable: true, valueFormatter: (params) => formatCurrency(params.value) },
-    { headerName: "Employer Liability", field: "employerLiability", sortable: true, valueFormatter: (params) => formatCurrency(params.value) },
-    { headerName: "Pay Period", field: "payPeriodId", sortable: true },
-    { headerName: "Status", field: "status", sortable: true },
-  ];
-
-  const handleSearchInputChange = (event) => setSearchText(event.target.value);
-
-  const filterData = () => {
-    if (!searchText) return rowData;
-    return rowData.filter((row) =>
-      Object.values(row).some((value) =>
-        String(value).toLowerCase().includes(searchText.toLowerCase())
-      )
-    );
-  };
-
-  const filteredData = filterData();
-
-  const pinnedTopRowData = filteredData.length > 0
-    ? [{
-        payrollSummaryId: "Total",
-        totalPaid: filteredData.reduce((sum, row) => sum + (row.totalPaid || 0), 0),
-        hours: filteredData.reduce((sum, row) => sum + (row.hours || 0), 0),
-        taxWithheld: filteredData.reduce((sum, row) => sum + (row.taxWithheld || 0), 0),
-        deductions: filteredData.reduce((sum, row) => sum + (row.deductions || 0), 0),
-        netPay: filteredData.reduce((sum, row) => sum + (row.netPay || 0), 0),
-        employerLiability: filteredData.reduce((sum, row) => sum + (row.employerLiability || 0), 0),
-      }]
-    : [];
+  if (employeeId) {
+    return <PayrollDetails rowData={rowData} onRefresh={fetchData} />;
+  }
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "auto" }}>
+    <div style={{ display: "flex", flexDirection: "column", overflow: "auto", paddingBottom: 16 }}>
 
       {/* Summary KPI Cards */}
       <Row gutter={16} style={{ margin: "12px 12px 0" }}>
@@ -250,6 +178,8 @@ const PayrollSummary = () => {
 
       {/* Charts Row */}
       <Collapse
+        defaultActiveKey={["charts"]}
+        onChange={(keys) => setChartsOpen(keys.includes("charts"))}
         style={{ margin: "12px 12px 0", transition: "all 0.3s ease-in-out" }}
       >
         <Panel header="Payroll Overview Charts" key="charts">
@@ -308,73 +238,12 @@ const PayrollSummary = () => {
       </Collapse>
 
       {/* Grid Section */}
-      <div className="ag-theme-alpine employee-List-grid" style={{ flex: 1, margin: "12px" }}>
-        <Card className="employeeTableCard" style={{ height: "100%" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchText}
-                onChange={handleSearchInputChange}
-              />
-              <Button style={{ marginLeft: "12px" }} type="primary" className="button-vendor" onClick={fetchData}>
-                Refresh
-              </Button>
-              <Button style={{ marginLeft: "8px" }} icon={<DownloadOutlined />} onClick={handleExport}>
-                Export Excel
-              </Button>
-            </div>
-          </div>
-
-          <div style={{ height: "calc(100vh - 320px)", minHeight: 300, width: "100%" }}>
-            <AgGridReact
-              ref={gridRef}
-              rowData={filteredData}
-              columnDefs={getColumnsDefList()}
-              defaultColDef={{
-                flex: 1,
-                minWidth: 150,
-                resizable: true,
-                filter: false,
-                floatingFilter: false,
-                cellClass: "ag-cell-centered",
-                headerClass: "ag-header-cell",
-                cellClassRules: {
-                  darkGreyBackground: (params) =>
-                    params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
-                },
-              }}
-              sideBar={{
-                toolPanels: [
-                  {
-                    id: "columns",
-                    labelDefault: "Columns",
-                    labelKey: "columns",
-                    iconKey: "columns",
-                    toolPanel: "agColumnsToolPanel",
-                    toolPanelParams: {
-                      suppressRowGroups: false,
-                      suppressValues: true,
-                      suppressPivots: false,
-                      suppressPivotMode: true,
-                      suppressColumnFilter: true,
-                      suppressColumnSelectAll: true,
-                      suppressColumnExpandAll: true,
-                    },
-                  },
-                ],
-              }}
-              sortable={true}
-              domLayout="normal"
-              pagination={true}
-              paginationPageSize={100}
-              paginationPageSizeSelector={[100, 200, 300]}
-              pinnedTopRowData={pinnedTopRowData}
-              getRowStyle={getRowStyle}
-            />
-          </div>
-        </Card>
+      <div style={{ flex: 1, minHeight: 0, margin: "8px 12px 12px" }}>
+        <PayrollDetails
+          rowData={rowData}
+          onRefresh={fetchData}
+          gridHeight={chartsOpen ? "calc(100vh - 820px)" : "calc(100vh - 500px)"}
+        />
       </div>
     </div>
   );

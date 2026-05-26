@@ -5,6 +5,9 @@ body {
   font-family: sans-serif;
 }
 
+/* Layout rules (.two-parts-container, .employee-List-grid, tabs, etc.)
+   are defined globally in src/index.css */
+
 .personnel-file-page {
   display: flex;
   flex-direction: column;

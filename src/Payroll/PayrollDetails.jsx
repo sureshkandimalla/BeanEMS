@@ -1,236 +1,256 @@
-import React, { useState, useEffect, useRef } from "react";
-import API_ENDPOINTS from "../config";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
+import { Button, Card } from "antd";
+import { DownloadOutlined } from "@ant-design/icons";
 import axios from "axios";
+import API_ENDPOINTS from "../config";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 
-const PayrollDetails = ({ employeeId }) => {
+const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, gridHeight = "calc(100vh - 500px)" }) => {
   const [searchText, setSearchText] = useState("");
-  const [rowData, setRowData] = useState([]);
-  const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
+  const [internalRowData, setInternalRowData] = useState([]);
+  const gridRef = useRef(null);
 
-  //  const columnsList = ['Customer Id', 'Company Name', 'Email Id', 'Phone', 'Status', 'ein', 'Website','startDate','endDate' ];
-  const isInitialRender = useRef(true);
+  const rowData = employeeId ? internalRowData : (externalRowData || []);
 
   useEffect(() => {
-    if (isInitialRender.current) {
+    if (employeeId) {
       fetchData();
-    } else {
-      isInitialRender.current = false;
     }
-  }, []);
+  }, [employeeId]);
 
   const fetchData = () => {
     axios
-      .get(
-        `${API_ENDPOINTS.getPayrollsForEmp}?employeeId=${employeeId}`,
-        {
-          params: {
-            // selectedDate: '2023-11-01',//formattedDate,
-            //status: 'viewAll'
-          },
-        },
-      )
-      .then((response) => {
-        console.log(response.data);
-        setRowData(getFlattenedData(response.data));
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+      .get(API_ENDPOINTS.getPayrollsForEmp(employeeId))
+      .then((response) => setInternalRowData(response.data || []))
+      .catch((error) => console.error("Error fetching payroll:", error));
   };
 
-  const getFlattenedData = (data) => {
-    let updatedData = data.map((dataObj) => {
-      //return { ...dataObj, ...dataObj.employeeAddress[0], ...dataObj.employeeAssignments[0] }
-      return { ...dataObj };
+  const formatDate = (params) => {
+    if (!params.value) return "";
+    const date = new Date(params.value);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
-    return updatedData || [];
   };
 
-  const getColumnsDefList = (isSortable, isEditable, hasFilter) => {
-    var columns = [
+  const columnDefs = useMemo(
+    () => [
       {
-        headerName: "PayCheckId",
-        field: "payCheckId",
-        sortable: isSortable,
-        valueFormatter: (params) => {
-          // Check if this row is the pinned bottom row and show "Total"
-          return params.node.rowPinned === "bottom" ? "Total" : params.value;
-        },
+        headerName: "Payroll Summary Id",
+        field: "payrollSummaryId",
+        sortable: true,
+        minWidth: 160,
+        hide: true,
+        valueFormatter: (params) =>
+          params.node.rowPinned === "top" ? "Total" : params.value,
+      },
+      { headerName: "Employee Id", field: "employeeId", sortable: true, hide: true },
+      {
+        headerName: "Employee Name",
+        field: "employeeName",
+        sortable: true,
+        minWidth: 180,
+        pinned: "left",
+      },
+      { headerName: "Department", field: "department", sortable: true },
+      {
+        headerName: "Pay Check Date",
+        field: "checkDate",
+        sortable: true,
+        valueFormatter: formatDate,
       },
       {
-        headerName: "PayCycleStartDate",
-        field: "payCycleStartDate",
-        sortable: isSortable,
-        valueFormatter: (params) => {
-          if (!params.value) return ""; // Handle empty or undefined values
-          const date = new Date(params.value);
-          return date.toLocaleDateString("en-US", {
-            month: "short", // Short month format (e.g., Mar)
-            day: "numeric", // Numeric day format
-            year: "numeric", // Full year format
-          });
-        },
+        headerName: "Pay Cycle Start",
+        field: "payPeriodStartDate",
+        sortable: true,
+        valueFormatter: formatDate,
       },
       {
-        headerName: "PayCycleEndDate",
-        field: "payCycleEndDate",
-        sortable: isSortable,
-        valueFormatter: (params) => {
-          if (!params.value) return ""; // Handle empty or undefined values
-          const date = new Date(params.value);
-          return date.toLocaleDateString("en-US", {
-            month: "short", // Short month format (e.g., Mar)
-            day: "numeric", // Numeric day format
-            year: "numeric", // Full year format
-          });
-        },
+        headerName: "Pay Cycle End",
+        field: "payPeriodEndDate",
+        sortable: true,
+        valueFormatter: formatDate,
       },
-      { headerName: "Hours", field: "hours", sortable: isSortable },
+      { headerName: "Hours", field: "hours", sortable: true },
       {
-        headerName: "TotalPaid",
+        headerName: "Total Paid",
         field: "totalPaid",
-        sortable: isSortable,
-        valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
-      },
-      {
-        headerName: "NetPay",
-        field: "netPay",
-        sortable: isSortable,
+        sortable: true,
         valueFormatter: (params) => formatCurrency(params.value),
       },
       {
-        headerName: "TaxWithheld",
+        headerName: "Net Pay",
+        field: "netPay",
+        sortable: true,
+        valueFormatter: (params) => formatCurrency(params.value),
+      },
+      {
+        headerName: "Tax Withheld",
         field: "taxWithheld",
-        sortable: isSortable,
-        valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
+        sortable: true,
+        valueFormatter: (params) => formatCurrency(params.value),
       },
       {
         headerName: "Deductions",
         field: "deductions",
-        sortable: isSortable,
+        sortable: true,
         valueFormatter: (params) => formatCurrency(params.value),
       },
       {
-        headerName: "EmployerLiability",
+        headerName: "Employer Liability",
         field: "employerLiability",
-        sortable: isSortable,
+        sortable: true,
         valueFormatter: (params) => formatCurrency(params.value),
       },
-    ];
-    return columns;
-  };
+      { headerName: "Pay Period", field: "payPeriodId", sortable: true, hide: true },
+      { headerName: "Status", field: "status", sortable: true },
+    ],
+    [],
+  );
 
-  const gridOptions = {
-    pagination: true,
-    paginationPageSize: 10, // Number of rows to show per page
-    domLayout: "autoHeight",
-  };
-
-  const handleSearchInputChange = (event) => {
-    setSearchText(event.target.value);
-  };
-
-  const filterData = () => {
-    if (!searchText) {
-      return rowData;
-    }
-
-    return rowData.filter((row) =>
-      Object.values(row).some((value) =>
-        String(value).toLowerCase().includes(searchText.toLowerCase()),
-      ),
-    );
-  };
+  const pinnedTopRowData = useMemo(() =>
+    rowData.length > 0
+      ? [
+          {
+            payrollSummaryId: "Total",
+            totalPaid: rowData.reduce((sum, row) => sum + (row.totalPaid || 0), 0),
+            hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
+            taxWithheld: rowData.reduce((sum, row) => sum + (row.taxWithheld || 0), 0),
+            deductions: rowData.reduce((sum, row) => sum + (row.deductions || 0), 0),
+            netPay: rowData.reduce((sum, row) => sum + (row.netPay || 0), 0),
+            employerLiability: rowData.reduce((sum, row) => sum + (row.employerLiability || 0), 0),
+          },
+        ]
+      : [],
+  [rowData]);
 
   useEffect(() => {
-    if (rowData && rowData.length > 0) {
-      console.log(rowData);
-      setPinnedBottomRowData([
-        {
-          payrollId: "Total",
-          totalPaid: rowData.reduce(
-            (sum, row) => sum + (row.totalPaid || 0),
-            0,
-          ),
-          hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
-          taxWithheld: rowData.reduce(
-            (sum, row) => sum + (row.taxWithheld || 0),
-            0,
-          ),
-          deductions: rowData.reduce(
-            (sum, row) => sum + (row.deductions || 0),
-            0,
-          ), // Summing billRate values
-          netPay: rowData.reduce((sum, row) => sum + (row.netPay || 0), 0),
-          employerLiability: rowData.reduce(
-            (sum, row) => sum + (row.employerLiability || 0),
-            0,
-          ),
-        },
-      ]);
-      console.log(pinnedBottomRowData);
+    if (gridRef.current?.api && pinnedTopRowData.length > 0) {
+      gridRef.current.api.setGridOption("pinnedTopRowData", pinnedTopRowData);
     }
-  }, [rowData]);
+  }, [pinnedTopRowData]);
+
+  const handleExport = () => {
+    if (gridRef.current?.api) {
+      gridRef.current.api.exportDataAsExcel({
+        fileName: "payroll_summary.xlsx",
+      });
+    }
+  };
 
   const getRowStyle = (params) => {
     if (params.node.rowPinned) {
-      return { backgroundColor: "#d3f4ff", fontWeight: "bold" }; // Custom inline style for pinned rows
+      return { backgroundColor: "#d3f4ff", fontWeight: "bold" };
     }
     return null;
   };
 
   return (
-    <div className="ag-theme-alpine employee-List-grid">
-      <input
-        type="text"
-        placeholder="Search..."
-        value={searchText}
-        onChange={handleSearchInputChange}
-      />
+    <div
+      className="ag-theme-alpine employee-List-grid"
+      style={{ flex: 1, height: "100%", overflow: "hidden" }}
+    >
+      <Card className="employeeTableCard" style={{ height: "100%", overflow: "hidden" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 8,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+            />
+            {(onRefresh || employeeId) && (
+              <Button
+                style={{ marginLeft: "12px" }}
+                type="primary"
+                className="button-vendor"
+                onClick={employeeId ? fetchData : onRefresh}
+              >
+                Refresh
+              </Button>
+            )}
+            <Button
+              style={{ marginLeft: "8px" }}
+              icon={<DownloadOutlined />}
+              onClick={handleExport}
+            >
+              Export Excel
+            </Button>
+          </div>
+        </div>
 
-      <AgGridReact
-        rowData={filterData()}
-        columnDefs={getColumnsDefList(true, false, true)}
-        gridOptions={gridOptions}
-        defaultColDef={{
-          flex: 1,
-          minWidth: 150,
-          resizable: true,
-          filter: true,
-        }}
-        sideBar={{
-          toolPanels: [
-            {
-              id: "columns",
-              labelDefault: "Columns",
-              labelKey: "columns",
-              iconKey: "columns",
-              toolPanel: "agColumnsToolPanel",
-              toolPanelParams: {
-                suppressRowGroups: false,
-                suppressValues: true,
-                suppressPivots: false,
-                suppressPivotMode: true,
-                suppressColumnFilter: true,
-                suppressColumnSelectAll: true,
-                suppressColumnExpandAll: true,
+        <div
+          style={{
+            height: gridHeight,
+            minHeight: 300,
+            width: "100%",
+            overflow: "hidden",
+            transition: "height 0.3s ease-in-out",
+          }}
+        >
+          <AgGridReact
+            ref={gridRef}
+            rowData={rowData}
+            quickFilterText={searchText}
+            columnDefs={columnDefs}
+            pinnedTopRowData={pinnedTopRowData}
+            defaultColDef={{
+              flex: 1,
+              minWidth: 150,
+              resizable: true,
+              filter: true,
+              floatingFilter: false,
+              cellClass: "ag-cell-centered",
+              headerClass: "ag-header-cell",
+              cellClassRules: {
+                darkGreyBackground: (params) =>
+                  params.node?.rowIndex !== undefined &&
+                  params.node.rowIndex % 2 === 1,
               },
-            },
-          ],
-        }}
-        sortable={true}
-        defaultToolPanel="columns"
-        pagination={true}
-        paginationPageSize={15}
-        pinnedTopRowData={pinnedBottomRowData} // Set pinned bottom row data here
-        getRowStyle={getRowStyle}
-      />
+            }}
+            sideBar={{
+              toolPanels: [
+                {
+                  id: "columns",
+                  labelDefault: "Columns",
+                  labelKey: "columns",
+                  iconKey: "columns",
+                  toolPanel: "agColumnsToolPanel",
+                  toolPanelParams: {
+                    suppressRowGroups: false,
+                    suppressValues: true,
+                    suppressPivots: false,
+                    suppressPivotMode: true,
+                    suppressColumnFilter: true,
+                    suppressColumnSelectAll: true,
+                    suppressColumnExpandAll: true,
+                  },
+                },
+              ],
+            }}
+            sortable={true}
+            domLayout="normal"
+            pagination={true}
+            paginationPageSize={100}
+            paginationPageSizeSelector={[100, 200, 300]}
+            getRowStyle={getRowStyle}
+            popupParent={document.body}
+          />
+        </div>
+      </Card>
     </div>
   );
 };

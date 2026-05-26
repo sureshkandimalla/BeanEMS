@@ -97,6 +97,7 @@ export const API_ENDPOINTS = {
   assignments: `${API_BASE_URL}/assignments`,
   saveOnBoardProject: `${API_BASE_URL}/saveOnBoardProject`,
   getPayrollSummaryAll: `${API_BASE_URL}/payrollsummary/getAll`,
+  getPayrollsForEmp: (employeeId) => `${API_BASE_URL}/payrollsummary/getByEmployeeId/${employeeId}`,
   createLCA: `${API_BASE_URL}/lca/createLCA`,
   getAllLCAs: `${API_BASE_URL}/lca`,
   saveLCA: `${API_BASE_URL}/lca/save`,
