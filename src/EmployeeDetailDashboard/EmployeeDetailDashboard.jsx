@@ -1,5 +1,5 @@
 // src/Dashboard/Dashboard.js
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, Card, Row, Col, Button, Flex, Drawer, Space, Tag } from "antd";
 import { DesktopOutlined, RiseOutlined, PlusOutlined } from "@ant-design/icons";
 import Newemployee from "../Newemployee/Newemployee";
@@ -19,38 +19,33 @@ const Dashboard = () => {
   const [workForceChartLabels, setWorkForceChartLabels] = useState([]);
   const [invoicesChartData, setInvoicesChartData] = useState([]);
   const [invoicesChartLabels, setInvoicesChartLabels] = useState([]);
-  const isInitialRender = useRef(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!isInitialRender.current) {
-        try {
-          const response1 = await fetch(API_ENDPOINTS.employeesCountByStatus);
-          const data1 = await response1.json();
+      try {
+        const response1 = await fetch(API_ENDPOINTS.employeesCountByStatus);
+        const data1 = await response1.json();
 
-          // Assuming the response from your API is an array of objects with 'label' and 'value' properties
-          const labels = data1.map((item) => item.status);
-          const chartData = data1.map((item) => item.count);
-          setWorkForceChartLabels(labels);
-          setWorkForceChartData(chartData);
+        // Assuming the response from your API is an array of objects with 'label' and 'value' properties
+        const labels = data1.map((item) => item.status);
+        const chartData = data1.map((item) => item.count);
+        setWorkForceChartLabels(labels);
+        setWorkForceChartData(chartData);
 
-          const response2 = await fetch(API_ENDPOINTS.invoicesCountByStatus);
-          const data2 = await response2.json();
-          const labels2 = data2.map((item) => item.status);
-          const chartData2 = data2.map((item) => item.count);
-          console.log(labels2);
-          console.log(chartData2);
-          setInvoicesChartLabels(labels2);
-          setInvoicesChartData(chartData2);
+        const response2 = await fetch(API_ENDPOINTS.invoicesCountByStatus);
+        const data2 = await response2.json();
+        const labels2 = data2.map((item) => item.status);
+        const chartData2 = data2.map((item) => item.count);
+        console.log(labels2);
+        console.log(chartData2);
+        setInvoicesChartLabels(labels2);
+        setInvoicesChartData(chartData2);
 
-          const response3 = await fetch(API_ENDPOINTS.getProjects);
-          const data3 = await response3.json();
-          setRowData(data3);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      } else {
-        isInitialRender.current = false;
+        const response3 = await fetch(API_ENDPOINTS.getProjects);
+        const data3 = await response3.json();
+        setRowData(data3);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
     };
 

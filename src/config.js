@@ -68,7 +68,7 @@ export const visaStatusList = [
 // src/config.js
 // Centralized config for API endpoints
 
-const API_BASE_URL = "http://localhost:8080/api/v1";
+export const API_BASE_URL = "http://localhost:8080/api/v1";
 
 export const API_ENDPOINTS = {
   saveEmployees: `${API_BASE_URL}/employees/saveEmployees`,
@@ -81,6 +81,7 @@ export const API_ENDPOINTS = {
   assignmentsForProject: (projectId) => `${API_BASE_URL}/assignmentsForProject?projectId=${projectId}`,
   projectsById: (projectId) => `${API_BASE_URL}/projects/${projectId}`,
   employeeById: (employeeId) => `${API_BASE_URL}/employees/employee/${employeeId}`,
+  updateEmployee: (employeeId) => `${API_BASE_URL}/employees/${employeeId}`,
   projectsByEmployeeId: (employeeId) => `${API_BASE_URL}/projects?employeeId=${employeeId}`,
   getAllPotentialEmployees: `${API_BASE_URL}/visa/getAllPotentialEmployees`,
   savePotentialEmployees: `${API_BASE_URL}/visa/savePotentialEmployees`,
@@ -92,8 +93,7 @@ export const API_ENDPOINTS = {
   saveOnBoardDetailsVendor: `${API_BASE_URL}/customers/saveOnBoardDetails`,
   getInvoicesForProject: (projectId) => `${API_BASE_URL}/invoice/getInvoicesForProject?projectId=${projectId}`,
   getInvoicesForEmployee: `${API_BASE_URL}/invoice/getInvoicesForEmployee`,
-  getBillsForProject: (projectId) => `${API_BASE_URL}/billing/billsForProject?projectId=${projectId}`,
-  activeProjectsForInvoiceByEmployee: (employeeId) => `${API_BASE_URL}/projects/activeProjectsForInvoice?employeeId=${employeeId}`,
+  getBillsForProject: (projectId) => `${API_BASE_URL}/bills/getBillsForProject?projectId=${projectId}`,
   assignments: `${API_BASE_URL}/assignments`,
   saveOnBoardProject: `${API_BASE_URL}/saveOnBoardProject`,
   getPayrollSummaryAll: `${API_BASE_URL}/payrollsummary/getAll`,
@@ -115,6 +115,12 @@ export const API_ENDPOINTS = {
   getPassportById: (id) => `${API_BASE_URL}/passport/${id}`,
   getPassportsByEmployee: (employeeId) => `${API_BASE_URL}/passport/employee/${employeeId}`,
   deletePassport: (id) => `${API_BASE_URL}/passport/${id}`,
+  employeesListByStatus: `${API_BASE_URL}/employees/employeesListByStatus`,
+  addAdjustment: `${API_BASE_URL}/adjustment/addAdjustment`,
+  saveWage: `${API_BASE_URL}/wages/wage`,
+  createPotentialEmployee: `${API_BASE_URL}/visa/potentialEmployees`,
+  activeProjects: (endDate, selectedDate) => `${API_BASE_URL}/activeProjects?endDate=${endDate}&selectedDate=${selectedDate}`,
+  activeProjectsForInvoiceByEmployee: (employeeId) => `${API_BASE_URL}/activeProjectsForInvoiceByEmployee?employeeId=${employeeId}`,
 };
 
 export const employeeTypeOptions = [

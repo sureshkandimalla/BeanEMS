@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Button, Drawer } from "antd";
 import "./ProjectGrid.css";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
@@ -27,19 +27,19 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
 
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(API_ENDPOINTS.assignmentsForProject(projectId));
-        const data = await response.json();
-        const flattendData = getFlattenedData(data);
-        setRowData(flattendData);
-        console.log(flattendData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.assignmentsForProject(projectId));
+      const data = await response.json();
+      const flattendData = getFlattenedData(data);
+      setRowData(flattendData);
+      console.log(flattendData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -133,7 +133,15 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
         }}
       >
       <div className="ag-theme-alpine workforce-container">
-      <div class="workforce-search-container">
+      <div className="workforce-search-container">
+          <Button
+            type="default"
+            icon={<ReloadOutlined />}
+            onClick={fetchData}
+            style={{ marginRight: "10px" }}
+          >
+            Refresh
+          </Button>
           <input
             type="text"
             placeholder="Search..."

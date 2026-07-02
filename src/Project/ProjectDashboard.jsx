@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import "@ag-grid-community/styles/ag-grid.css";
 import { DesktopOutlined, RiseOutlined, PlusOutlined } from "@ant-design/icons";
 import RevenueCharts from "../RevenueCharts/RevenueCharts";
@@ -19,8 +19,6 @@ const ProjectDashboard = () => {
   const lastMonthData = [25000, 28000, 20000, 15000, 50000];
   const [isEmployeesLoading, setEmployeeLoading] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const isInitialRender = useRef(true);
 
   const addNewProject = () => {
     setOpen(true);
@@ -43,40 +41,6 @@ const ProjectDashboard = () => {
     };
   }, [rowData]);
 
-  const items = [
-    {
-      key: "1",
-      label: "Active",
-      children: <ProjectList projectsList={processedData?.active} isCollapsed={isCollapsed}  />,
-    },
-    {
-      key: "2",
-      label: "All",
-      children: <ProjectList projectsList={rowData} isCollapsed={isCollapsed}  />,
-    },
-  ];
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (isInitialRender.current) {
-        try {
-          const response = await fetch(API_ENDPOINTS.getProjects);
-          const data = await response.json();
-          const flattendData = getFlattenedData(data);
-          setRowData(flattendData);
-          setEmployeeLoading(false);
-          console.log(flattendData);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      } else {
-        isInitialRender.current = false;
-      }
-    };
-
-    fetchData();
-  }, []);
-
   const getFlattenedData = (data) => {
     let updatedData = data.map((dataObj) => {
       return { ...dataObj };
@@ -86,6 +50,36 @@ const ProjectDashboard = () => {
     console.log(updatedData);
     return updatedData || [];
   };
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.getProjects);
+      const data = await response.json();
+      const flattendData = getFlattenedData(data);
+      setRowData(flattendData);
+      setEmployeeLoading(false);
+      console.log(flattendData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const items = [
+    {
+      key: "1",
+      label: "Active",
+      children: <ProjectList projectsList={processedData?.active} isCollapsed={isCollapsed} onRefresh={fetchData} />,
+    },
+    {
+      key: "2",
+      label: "All",
+      children: <ProjectList projectsList={rowData} isCollapsed={isCollapsed} onRefresh={fetchData} />,
+    },
+  ];
 
   return (
     <>

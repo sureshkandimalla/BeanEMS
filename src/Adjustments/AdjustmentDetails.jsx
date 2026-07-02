@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import API_ENDPOINTS from "../config";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Drawer } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -13,6 +13,7 @@ import AdjustmentForm from "./AdjustmentForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 const AdjustementDetails = ({ employeeId }) => {
+  const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [rowData, setRowData] = useState();
@@ -158,41 +159,54 @@ const AdjustementDetails = ({ employeeId }) => {
       >
         <AdjustmentForm onClose={onClose} />
       </Drawer>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchText}
-            onChange={handleSearchInputChange}
-          />
-          <Button
-            style={{ marginLeft: "20px" }}
-            type="primary"
-            className="button-vendor"
-            onClick={addNewInvoice}
-          >
-            <PlusOutlined /> Add New Adjustment
-          </Button>
-        </div>
-        <div
-          style={{ display: "flex", alignItems: "center", marginTop: "0px" }}
-        ></div>
+      <div className="workforce-search-container">
+        <Button
+          type="default"
+          icon={<ReloadOutlined />}
+          onClick={fetchData}
+          style={{ marginRight: "10px" }}
+        >
+          Refresh
+        </Button>
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchText}
+          onChange={handleSearchInputChange}
+        />
+        <Button
+          style={{ marginLeft: "20px" }}
+          type="primary"
+          className="button-vendor"
+          onClick={addNewInvoice}
+        >
+          <PlusOutlined /> Add New Adjustment
+        </Button>
       </div>
 
       <AgGridReact
+        ref={gridRef}
+        onGridReady={(params) => {
+          try {
+            gridRef.current = params.api;
+            setTimeout(() => {
+              try { params.api.sizeColumnsToFit(); } catch (e) {}
+              try { params.api.refreshView(); } catch (e) {}
+            }, 0);
+          } catch (e) {}
+        }}
+        rowHeight={48}
         rowData={filterData()}
         columnDefs={getColumnsDefList(true)}
         gridOptions={gridOptions}
         defaultColDef={{
+          flex: 1,
+          minWidth: 150,
+          resizable: true,
           filter: true,
-          floatingFilter: false,
+          cellClassRules: {
+            darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+          },
         }}
         sideBar={{
           toolPanels: [
@@ -203,7 +217,7 @@ const AdjustementDetails = ({ employeeId }) => {
               iconKey: "columns",
               toolPanel: "agColumnsToolPanel",
               toolPanelParams: {
-                suppressRowGroups: false,
+                suppressRowGroups: true,
                 suppressValues: true,
                 suppressPivots: false,
                 suppressPivotMode: true,
@@ -215,11 +229,12 @@ const AdjustementDetails = ({ employeeId }) => {
           ],
         }}
         sortable={true}
-        defaultToolPanel="columns"
         pagination={true}
         paginationPageSize={15}
         pinnedTopRowData={pinnedBottomRowData} // Set pinned bottom row data here
         getRowStyle={getRowStyle}
+        enableBrowserTooltips={true}
+        popupParent={document.body}
       />
     </div>
   );

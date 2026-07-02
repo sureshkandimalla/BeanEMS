@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "@ag-grid-community/react";
+import { Button } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "ag-grid-enterprise";
 import axios from "axios";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import API_ENDPOINTS from "../config";
 import "./ReconciliationDetails.css"
 
 export default function ReconciliationDetails({ employeeId }) {
+  const gridRef = useRef(null);
   const [rowData, setRowData] = useState([]);
   const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
   
@@ -25,7 +29,7 @@ export default function ReconciliationDetails({ employeeId }) {
   const fetchData = () => {
     axios
       .get(
-        `http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/reconcile/getReconcileRecords/${employeeId}`,
+        `${API_ENDPOINTS.reconcileRecords}/${employeeId}`,
         {
           params: {
             // selectedDate: '2023-11-01',//formattedDate,
@@ -177,8 +181,29 @@ export default function ReconciliationDetails({ employeeId }) {
       overflow: "hidden",
     }}> 
     <div className="ag-theme-alpine project-List-grid">
+      <div className="workforce-search-container">
+        <Button
+          type="default"
+          icon={<ReloadOutlined />}
+          onClick={fetchData}
+          style={{ marginRight: "10px" }}
+        >
+          Refresh
+        </Button>
+      </div>
       <div className= "project-grid-wrapper">
       <AgGridReact
+        ref={gridRef}
+        onGridReady={(params) => {
+          try {
+            gridRef.current = params.api;
+            setTimeout(() => {
+              try { params.api.sizeColumnsToFit(); } catch (e) {}
+              try { params.api.refreshView(); } catch (e) {}
+            }, 0);
+          } catch (e) {}
+        }}
+        rowHeight={48}
         rowData={rowData}
         columnDefs={columnDefs}
         masterDetail={true}
@@ -189,15 +214,34 @@ export default function ReconciliationDetails({ employeeId }) {
           flex: 1,
           minWidth: 180,
           resizable: true,
-          filter: false,
-          floatingFilter: false,            
+          filter: true,
           headerClass: "ag-header-cell",
           cellClassRules: {
             darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
           }
         }}
-        domLayout="normal"            
-        enableBrowserTooltips={true} 
+        sideBar={{
+          toolPanels: [
+            {
+              id: "columns",
+              labelDefault: "Columns",
+              labelKey: "columns",
+              iconKey: "columns",
+              toolPanel: "agColumnsToolPanel",
+              toolPanelParams: {
+                suppressRowGroups: true,
+                suppressValues: true,
+                suppressPivots: false,
+                suppressPivotMode: true,
+                suppressColumnFilter: true,
+                suppressColumnSelectAll: true,
+                suppressColumnExpandAll: true,
+              },
+            },
+          ],
+        }}
+        domLayout="normal"
+        enableBrowserTooltips={true}
         popupParent={document.body}
         animateRows={true}
         pagination={true}

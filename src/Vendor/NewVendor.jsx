@@ -68,7 +68,7 @@ const NewVendor = () => {
   const handleFormSubmit = (generalDetails) => {
     axios
       .post(
-        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/customers/saveOnBoardDetails",
+        API_ENDPOINTS.saveOnBoardDetailsVendor,
         generalDetails,
       )
       .then((response) => {

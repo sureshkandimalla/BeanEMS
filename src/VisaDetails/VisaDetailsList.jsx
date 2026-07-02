@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Card, Form, message } from "antd";
-import { FileExcelOutlined } from "@ant-design/icons";
+import { FileExcelOutlined, ReloadOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -316,8 +316,8 @@ export default function VisaDetailsList({ preloadedData }) {
   };
 
   const onBtnExportDataAsExcel = useCallback(() => {
-    if (gridRef.current && gridRef.current.api) {
-      gridRef.current.api.exportDataAsExcel();
+    if (gridRef.current) {
+      gridRef.current.exportDataAsExcel();
     }
   }, []);
 
@@ -652,6 +652,14 @@ export default function VisaDetailsList({ preloadedData }) {
       <Card className="employeeTableCard" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
         <div className="ag-theme-alpine workforce-container">
           <div className="workforce-search-container">
+            <Button
+              type="default"
+              icon={<ReloadOutlined />}
+              onClick={fetchData}
+              style={{ marginRight: "10px" }}
+            >
+              Refresh
+            </Button>
             <input
               type="text"
               placeholder="Search..."
@@ -666,13 +674,6 @@ export default function VisaDetailsList({ preloadedData }) {
             >
               Export to Excel
             </Button>
-            <Button
-              type="default"
-              onClick={fetchData}
-              style={{ marginLeft: "10px" }}
-            >
-              Refresh
-            </Button>
             {hasPendingChanges && (
               <Button
                 type="primary"
@@ -686,20 +687,29 @@ export default function VisaDetailsList({ preloadedData }) {
           <div className="ag-grid-wrapper">
             <AgGridReact
               ref={gridRef}
+              onGridReady={(params) => {
+                try {
+                  gridRef.current = params.api;
+                  setTimeout(() => {
+                    try { params.api.sizeColumnsToFit(); } catch (e) {}
+                    try { params.api.refreshView(); } catch (e) {}
+                  }, 0);
+                } catch (e) {}
+              }}
+              rowHeight={48}
               rowData={filterData()}
               columnDefs={columnDefs}
               domLayout="normal"
               pagination={true}
               paginationPageSize={100}
-              paginationPageSizeSelector={[20, 50, 100]}              defaultColDef={{
-                minWidth: 100,
+              paginationPageSizeSelector={[20, 50, 100]}
+              defaultColDef={{
+                flex: 1,
+                minWidth: 150,
                 resizable: true,
                 filter: true,
                 tooltipShowDelay: 0,
               }}
-              autoSizeStrategy={{ type: "fitCellContents" }}
-              onFirstDataRendered={(params) => params.api.autoSizeAllColumns()}
-
               sideBar={{
                 toolPanels: [
                   {
@@ -711,12 +721,14 @@ export default function VisaDetailsList({ preloadedData }) {
                     toolPanelParams: {
                       suppressRowGroups: true,
                       suppressValues: true,
-                      suppressPivots: true,
+                      suppressPivots: false,
                       suppressPivotMode: true,
+                      suppressColumnFilter: true,
+                      suppressColumnSelectAll: true,
+                      suppressColumnExpandAll: true,
                     },
                   },
                 ],
-                defaultToolPanel: "",
               }}
               masterDetail={true}
               detailCellRendererParams={detailCellRendererParams}
@@ -731,6 +743,7 @@ export default function VisaDetailsList({ preloadedData }) {
               }}
               animateRows={true}
               enableBrowserTooltips={true}
+              popupParent={document.body}
               excelStyles={excelStyles}
             />
           </div>

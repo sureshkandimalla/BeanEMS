@@ -2,13 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Button, Drawer } from "antd";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
 import WorkOrderForm from "./WorkOrderForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import "./WorkOrderDetails.css";
-const WorkOrderDetails = ({ rowData, isCollapsed }) => {
+const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
   console.log(rowData);
   //  const [rowData, setRowData] = useState();
   const [responseData, setResponseData] = useState();
@@ -104,7 +104,15 @@ const WorkOrderDetails = ({ rowData, isCollapsed }) => {
         }}
       >
     <div className="ag-theme-alpine workforce-container">
-      <div class="workforce-search-container">
+      <div className="workforce-search-container">
+          <Button
+            type="default"
+            icon={<ReloadOutlined />}
+            onClick={onRefresh}
+            style={{ marginRight: "10px" }}
+          >
+            Refresh
+          </Button>
           <input
             type="text"
             placeholder="Search..."

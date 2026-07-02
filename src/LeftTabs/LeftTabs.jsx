@@ -13,13 +13,14 @@ import {
   ProjectOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
+import { Link, useLocation } from "react-router-dom";
 import ProjectDashboard from "../Project/ProjectDashboard";
 function getItem(tabName, key, icon, children, type) {
   return {
     key,
     icon,
     children,
-    label: <a href={key}>{tabName}</a>,
+    label: <Link to={key}>{tabName}</Link>,
     type,
   };
 }
@@ -37,6 +38,7 @@ const leftTabNames = [
 ];
 const LeftTabs = () => {
   const [collapsed, setCollapsed] = useState(true);
+  const location = useLocation();
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);
   };
@@ -54,8 +56,7 @@ const LeftTabs = () => {
       </Button> */}
       <Menu
         mode="inline"
-        defaultSelectedKeys={["1"]}
-        defaultOpenKeys={["sub1"]}
+        selectedKeys={[location.pathname]}
         style={{
           height: "100%",
           borderRight: 0,

@@ -14,7 +14,7 @@ import {
 } from "antd";
 import "./Newemployee.css";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import API_ENDPOINTS, { companyList } from "../config";
 
 const onFinish = (values) => {
   console.log("Success:", values);
@@ -25,8 +25,8 @@ const onFinishFailed = (errorInfo) => {
 const usCountryTelList = [
   //TODO later get from db/api call
   {
-    value: "US",
-    label: "US",
+    value: "USA",
+    label: "USA",
   },
   {
     value: "IN",
@@ -102,9 +102,8 @@ const workAuthorizationList = [
   },
 ];
 
-const Newemployee = () => {
+const Newemployee = ({ onClose }) => {
   const [form] = Form.useForm();
-  const navigate = useNavigate();
   const [generalDetails, setGeneralDetails] = useState({
     firstName: "",
     lastName: "",
@@ -122,6 +121,7 @@ const Newemployee = () => {
     employmentType: "",
     taxTerms: "",
     status: "",
+    companyName: "",
     location: "",
     workAuthorization: "",
     startDate: "",
@@ -140,7 +140,8 @@ const Newemployee = () => {
       !generalDetails.gender ||
       !generalDetails.ssn ||
       !generalDetails.phoneNumber ||
-      !generalDetails.designation
+      !generalDetails.designation ||
+      !generalDetails.companyName
     ) {
       alert("Please fill in all mandatory fields");
       return;
@@ -150,7 +151,7 @@ const Newemployee = () => {
   const handleFormSubmit = (generalDetails) => {
     axios
       .post(
-        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/saveOnBoardDetails",
+        API_ENDPOINTS.saveOnBoardDetails,
         generalDetails,
       )
       .then((response) => {
@@ -158,7 +159,7 @@ const Newemployee = () => {
           // Display success message
           Modal.success({
             content: "Data saved successfully",
-            onOk: () => navigate("http://localhost:4000/"),
+            onOk: () => onClose && onClose("submit"),
           });
         } else {
           // Handle other cases
@@ -446,7 +447,7 @@ const Newemployee = () => {
               ]}
             >
               <Select
-                defaultValue="us"
+                placeholder="Select Country"
                 options={usCountryTelList}
                 onChange={(value) => handleGeneralData(value, "country")}
                 value={generalDetails.country}
@@ -507,6 +508,25 @@ const Newemployee = () => {
                 options={workingStatusList}
                 onChange={(value) => handleGeneralData(value, "status")}
                 value={generalDetails.status}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Company"
+              name="companyName"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select a company",
+                },
+              ]}
+            >
+              <Select
+                placeholder="Select Company"
+                options={companyList}
+                onChange={(value) => handleGeneralData(value, "companyName")}
+                value={generalDetails.companyName}
               />
             </Form.Item>
           </Col>

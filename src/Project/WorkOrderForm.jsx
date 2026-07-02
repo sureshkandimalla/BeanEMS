@@ -13,6 +13,7 @@ import {
 } from "antd";
 import moment from "moment";
 import axios from "axios";
+import API_ENDPOINTS from "../config";
 
 const WorkOrderForm = ({ onClose }) => {
   const { Option } = Select;
@@ -66,7 +67,7 @@ const WorkOrderForm = ({ onClose }) => {
     console.log(data);
     axios
       .post(
-        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/wages/wage",
+        API_ENDPOINTS.saveWage,
         data,
         {
           headers: {

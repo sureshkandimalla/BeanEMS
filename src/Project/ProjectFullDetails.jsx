@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -19,7 +19,6 @@ const { Panel } = Collapse;
 
 
 const ProjectFullDetails = () => {
-  const isInitialRender = useRef(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
 
@@ -46,26 +45,6 @@ const ProjectFullDetails = () => {
   const [workOrders, setWorkOrders] = useState([]);
   const [assignments, setAssignments] = useState([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!isInitialRender.current) {
-        try {
-          const response = await fetch(API_ENDPOINTS.projectsById(rowData.projectId));
-          const data = await response.json();
-          const flattendData = getFlattenedData(data);
-          console.log(flattendData)
-          setResponseData(flattendData);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        }
-      } else {
-        isInitialRender.current = false;
-      }
-    };
-
-    fetchData();
-  }, []);
-
   const getFlattenedData = (data) => {
     setAssignments(data.assignments);
     setWorkOrders(data.billRates);
@@ -78,6 +57,22 @@ const ProjectFullDetails = () => {
       ...(data.billRates ? data.billRates[0] : {}),
     };
   };
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.projectsById(rowData.projectId));
+      const data = await response.json();
+      const flattendData = getFlattenedData(data);
+      console.log(flattendData)
+      setResponseData(flattendData);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const { TabPane } = Tabs;
   //const history = useHistory();
@@ -97,14 +92,14 @@ const ProjectFullDetails = () => {
     {
       key: 3,
       label: "WorkOrders",
-      children: <WorkOrderDetails rowData={workOrders}  isCollapsed={isCollapsed}/>,
+      children: <WorkOrderDetails rowData={workOrders} isCollapsed={isCollapsed} onRefresh={fetchData} />,
     },
     {
       key: 4,
       label: "Invoices",
       children: (
         <InvoiceById
-          url={`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/getInvoicesForProject?projectId=${rowData.projectId}`}
+          url={API_ENDPOINTS.getInvoicesForProject(rowData.projectId)}
           employeeId={rowData.employeeId}
           isCollapsed={isCollapsed}
         />
@@ -115,7 +110,7 @@ const ProjectFullDetails = () => {
       label: "BillingDetails",
       children: (
         <BillingDetails
-          url={`http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/bills/getBillsForProject?projectId=${rowData.projectId}`}
+          url={API_ENDPOINTS.getBillsForProject(rowData.projectId)}
           isCollapsed={isCollapsed}
         />
       ),

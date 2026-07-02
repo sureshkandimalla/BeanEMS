@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import API_ENDPOINTS from "../config";
 import { AgGridReact } from "@ag-grid-community/react";
+import { Button } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -11,6 +13,7 @@ import { formatCurrency } from "../Utils/CurrencyFormatter";
 import "./BillingDetails.css"
 
 const BillingDetails = ({ url, isCollapsed }) => {
+  const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
   const navigate = useNavigate();
@@ -173,25 +176,21 @@ const BillingDetails = ({ url, isCollapsed }) => {
   }}
 >
   <div className="ag-theme-alpine workforce-container">
-    <div
-      className="workforce-search-container"
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center" }}>
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchText}
-          onChange={handleSearchInputChange}
-        />
-      </div>
-      <div style={{ display: "flex", alignItems: "center", marginTop: "0px" }}>
-        {/* Any additional elements can be added here */}
-      </div>
+    <div className="workforce-search-container">
+      <Button
+        type="default"
+        icon={<ReloadOutlined />}
+        onClick={fetchData}
+        style={{ marginRight: "10px" }}
+      >
+        Refresh
+      </Button>
+      <input
+        type="text"
+        placeholder="Search..."
+        value={searchText}
+        onChange={handleSearchInputChange}
+      />
     </div>
 
     <div
@@ -200,16 +199,28 @@ const BillingDetails = ({ url, isCollapsed }) => {
       }`}
     >
       <AgGridReact
+        ref={gridRef}
+        onGridReady={(params) => {
+          try {
+            gridRef.current = params.api;
+            setTimeout(() => {
+              try { params.api.sizeColumnsToFit(); } catch (e) {}
+              try { params.api.refreshView(); } catch (e) {}
+            }, 0);
+          } catch (e) {}
+        }}
+        rowHeight={48}
         rowData={filterData()}
         columnDefs={getColumnsDefList(true)}
         gridOptions={gridOptions}
         defaultColDef={{
+          flex: 1,
           minWidth: 150,
+          resizable: true,
           filter: true,
-          floatingFilter: false,
           cellClassRules: {
             darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
-          } 
+          }
         }}
         sideBar={{
           toolPanels: [
@@ -220,7 +231,7 @@ const BillingDetails = ({ url, isCollapsed }) => {
               iconKey: "columns",
               toolPanel: "agColumnsToolPanel",
               toolPanelParams: {
-                suppressRowGroups: false,
+                suppressRowGroups: true,
                 suppressValues: true,
                 suppressPivots: false,
                 suppressPivotMode: true,
@@ -232,13 +243,14 @@ const BillingDetails = ({ url, isCollapsed }) => {
           ],
         }}
         sortable={true}
-        defaultToolPanel="columns"
         domLayout="normal"
-        pagination={true}        
+        pagination={true}
         paginationPageSize={100}
-        paginationPageSizeSelector={[100,200, 300]}
+        paginationPageSizeSelector={[20, 50, 100]}
         pinnedTopRowData={pinnedBottomRowData}
         getRowStyle={getRowStyle}
+        enableBrowserTooltips={true}
+        popupParent={document.body}
       />
     </div>
   </div>

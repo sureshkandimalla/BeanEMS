@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -362,21 +363,21 @@ const GenerateInvoiceDetails = () => {
           <div>Loading...</div> // Display loading indicator
         ) : (
           <>
-            <div
-              className="container"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
+            <div className="workforce-search-container">
               <div style={{ display: "flex", alignItems: "center" }}>
+                <Button
+                  type="default"
+                  icon={<ReloadOutlined />}
+                  onClick={fetchData}
+                  style={{ marginRight: "10px" }}
+                >
+                  Refresh
+                </Button>
                 <input
                   type="text"
                   placeholder="Search..."
                   value={searchText}
                   onChange={handleSearchInputChange}
-                  style={{ marginRight: "10px" }} // Add space between input and Search button
                 />
               </div>
               <Button key="save" type="primary" onClick={handleSave}>
@@ -385,6 +386,17 @@ const GenerateInvoiceDetails = () => {
             </div>
 
             <AgGridReact
+              ref={gridRef}
+              onGridReady={(params) => {
+                try {
+                  gridRef.current = params.api;
+                  setTimeout(() => {
+                    try { params.api.sizeColumnsToFit(); } catch (e) {}
+                    try { params.api.refreshView(); } catch (e) {}
+                  }, 0);
+                } catch (e) {}
+              }}
+              rowHeight={48}
               rowData={filterData()}
               columnDefs={getColumnsDefList(true)}
               gridOptions={gridOptions}
@@ -392,10 +404,11 @@ const GenerateInvoiceDetails = () => {
                 flex: 1,
                 minWidth: 150,
                 resizable: true,
-                filter: false,
-                floatingFilter: false,
+                filter: true,
+                cellClassRules: {
+                  darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+                },
               }}
-              ref={gridRef}
               sideBar={{
                 toolPanels: [
                   {
@@ -405,7 +418,7 @@ const GenerateInvoiceDetails = () => {
                     iconKey: "columns",
                     toolPanel: "agColumnsToolPanel",
                     toolPanelParams: {
-                      suppressRowGroups: false,
+                      suppressRowGroups: true,
                       suppressValues: true,
                       suppressPivots: false,
                       suppressPivotMode: true,
@@ -418,9 +431,10 @@ const GenerateInvoiceDetails = () => {
               }}
               rowClassRules={rowClassRules}
               sortable={true}
-              defaultToolPanel="columns"
               pagination={true}
               paginationPageSize={15}
+              enableBrowserTooltips={true}
+              popupParent={document.body}
             />
 
             {isModalOpen && (

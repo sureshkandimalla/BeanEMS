@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
+import { Button } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
@@ -7,7 +9,8 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./WorkForceList.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 
-const WorkForceReconcileList = ({ employees, isCollapsed  }) => {  
+const WorkForceReconcileList = ({ employees, isCollapsed, onRefresh }) => {
+  const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
   const columnsList = [
@@ -85,14 +88,18 @@ const WorkForceReconcileList = ({ employees, isCollapsed  }) => {
         autoWidth = Math.min(maxDataLength * charWidth + 30, maxAllowedWidth);
       }
 
+      const isPinnedColumn = column === "First Name" || column === "Last Name";
+
       return {
         headerName: updatedColumn,
         field: fieldValue,
         sortable: isSortable,
-        editable: true,        
+        editable: true,
         headerClass: "ag-header-cell",
         filter: columnFilter,
         minWidth: autoWidth,
+        pinned: isPinnedColumn ? "left" : undefined,
+        lockPinned: isPinnedColumn,
         suppressSizeToFit: true,
         tooltipValueGetter: (params) => params.value,
         cellClassRules: {
@@ -147,9 +154,43 @@ const WorkForceReconcileList = ({ employees, isCollapsed  }) => {
       </div>
     );
   };
+
+  const reconcileColumnDefs = useMemo(() => {
+    return [
+      {
+        headerName: "#",
+        valueGetter: (params) => params.node.rowIndex + 1,
+        width: 60,
+        minWidth: 60,
+        maxWidth: 60,
+        pinned: "left",
+        lockPosition: true,
+        suppressMovable: true,
+        sortable: false,
+        filter: false,
+        editable: false,
+        suppressSizeToFit: true,
+        cellStyle: { textAlign: "center", fontWeight: 500 },
+        headerClass: "ag-center-cols",
+        cellClassRules: {
+          darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+        },
+      },
+      ...getColumnsDefList(columnsList, true, false),
+    ];
+  }, [rowData]);
+
   return (
     <div className="ag-theme-alpine workforce-container">
-      <div class="workforce-search-container">
+      <div className="workforce-search-container">
+        <Button
+          type="default"
+          icon={<ReloadOutlined />}
+          onClick={onRefresh}
+          style={{ marginRight: "10px" }}
+        >
+          Refresh
+        </Button>
         <input
           type="text"
           placeholder="Search..."
@@ -159,9 +200,20 @@ const WorkForceReconcileList = ({ employees, isCollapsed  }) => {
       </div>
       <div  className={`ag-workforce-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
+          ref={gridRef}
+          onGridReady={(params) => {
+            try {
+              gridRef.current = params.api;
+              setTimeout(() => {
+                try { params.api.sizeColumnsToFit(); } catch (e) {}
+                try { params.api.refreshView(); } catch (e) {}
+              }, 0);
+            } catch (e) {}
+          }}
+          rowHeight={48}
           rowData={filterData()}
           frameworkComponents={{ customTooltip: CustomTooltip }}
-          columnDefs={getColumnsDefList(columnsList, true, false)}
+          columnDefs={reconcileColumnDefs}
           defaultColDef={{
             flex: 1,
             resizable: true,

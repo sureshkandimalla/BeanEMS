@@ -69,7 +69,7 @@ const NewPotentialEmployee = ({ onClose}) => {
   const handleFormSubmit = (generalDetails) => {
     axios
       .post(
-        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/visa/potentialEmployees",
+        API_ENDPOINTS.createPotentialEmployee,
         generalDetails
       )
       .then((response) => {

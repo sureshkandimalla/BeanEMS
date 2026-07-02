@@ -127,7 +127,7 @@ const AssignmentForm = ({ onClose }) => {
   const handleFormSubmit = (data) => {
     axios
       .post(
-        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/assignments",
+        API_ENDPOINTS.assignments,
         data,
         {
           headers: {

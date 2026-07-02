@@ -1,7 +1,7 @@
 import React, { useState, useEffect,useCallback, useRef } from "react";
-import { AgGridReact } from "ag-grid-react";
+import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Drawer,Card, notification } from "antd";
-import { PlusOutlined, SaveOutlined, FileExcelOutlined  } from "@ant-design/icons";
+import { PlusOutlined, SaveOutlined, FileExcelOutlined, ReloadOutlined  } from "@ant-design/icons";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -237,8 +237,8 @@ const PotentialEmployees = () => {
   };
 
    const onBtnExportDataAsExcel = useCallback(() => {
-      if (gridRef.current && gridRef.current.api) { 
-        gridRef.current.api.exportDataAsExcel();
+      if (gridRef.current) {
+        gridRef.current.exportDataAsExcel();
       }
     }, []);
   
@@ -262,13 +262,20 @@ const PotentialEmployees = () => {
         <NewPotentialEmployee onClose={handleCloseDrawer} />
       </Drawer>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+      <div className="workforce-search-container">
+        <Button
+          type="default"
+          icon={<ReloadOutlined />}
+          onClick={fetchPotentialEmployees}
+          style={{ marginRight: "10px" }}
+        >
+          Refresh
+        </Button>
         <input
           type="text"
           placeholder="Search..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          style={{ marginRight: "5px", padding: "5px", borderRadius: "4px", border: "1px solid #ccc" }}
         />
 
         <div>
@@ -283,14 +290,26 @@ const PotentialEmployees = () => {
           <Button type="primary" onClick={() => setOpen(true)} style={{ marginRight: "10px" }}>
             <PlusOutlined /> Add New Employee
           </Button>
-          <Button type="primary" ghost  icon={<SaveOutlined />} onClick={saveUpdatedRows} disabled={updatedRows.length === 0}>
-            Save Changes
-          </Button>
+          {updatedRows.length > 0 && (
+            <Button type="primary" ghost icon={<SaveOutlined />} onClick={saveUpdatedRows}>
+              Save Changes
+            </Button>
+          )}
         </div>
       </div>
       <div className= "pemployee-grid-wrapper">
       <AgGridReact
         ref={gridRef}
+        onGridReady={(params) => {
+          try {
+            gridRef.current = params.api;
+            setTimeout(() => {
+              try { params.api.sizeColumnsToFit(); } catch (e) {}
+              try { params.api.refreshView(); } catch (e) {}
+            }, 0);
+          } catch (e) {}
+        }}
+        rowHeight={48}
         rowData={filterData()}
         columnDefs={getColumnsDefList()}
         domLayout="normal"

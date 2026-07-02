@@ -1,8 +1,8 @@
 // InvoiceCard.js
 import React, { useState, useEffect, useRef } from "react";
-import { Row, Input, Space, Radio } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
-import { AgGridReact } from "ag-grid-react";
+import { Row, Input, Space, Radio, Button } from "antd";
+import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
+import { AgGridReact } from "@ag-grid-community/react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
@@ -15,7 +15,6 @@ const InvoiceCard = () => {
   const gridApi = useRef(null);
   const [rowData, setRowData] = useState([]);
   const [invoiceStatus, setInvoiceStatus] = useState("viewAll");
-  const isInitialRender = useRef(true);
   const [searchText, setSearchText] = useState("");
   const columnsList = [
     "Invoice Id",
@@ -39,11 +38,7 @@ const InvoiceCard = () => {
   };
 
   useEffect(() => {
-    if (!isInitialRender.current) {
-      fetchData();
-    } else {
-      isInitialRender.current = false;
-    }
+    fetchData();
   }, [invoiceStatus]);
 
   const fetchData = () => {
@@ -149,6 +144,13 @@ const InvoiceCard = () => {
             <Radio.Button value="overdue">Over Due</Radio.Button>
           </Radio.Group>
           <Space>
+            <Button
+              type="default"
+              icon={<ReloadOutlined />}
+              onClick={fetchData}
+            >
+              Refresh
+            </Button>
             <Space.Compact size="large">
               <Input
                 addonBefore={<SearchOutlined />}
@@ -162,6 +164,17 @@ const InvoiceCard = () => {
       </div>
       <div className="ag-theme-alpine employee-List-grid">
         <AgGridReact
+          ref={gridApi}
+          onGridReady={(params) => {
+            try {
+              gridApi.current = params.api;
+              setTimeout(() => {
+                try { params.api.sizeColumnsToFit(); } catch (e) {}
+                try { params.api.refreshView(); } catch (e) {}
+              }, 0);
+            } catch (e) {}
+          }}
+          rowHeight={48}
           rowData={filterData()}
           frameworkComponents={{ customTooltip: CustomTooltip }}
           columnDefs={getColumnsDefList(columnsList, true, false)}
@@ -170,8 +183,10 @@ const InvoiceCard = () => {
             flex: 1,
             minWidth: 150,
             resizable: true,
-            filter: false,
-            floatingFilter: false,
+            filter: true,
+            cellClassRules: {
+              darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+            },
           }}
           hiddenByDefault={false}
           rowGroupPanelShow="always"
@@ -197,9 +212,11 @@ const InvoiceCard = () => {
             ],
           }}
           sortable={true}
-          defaultToolPanel="columns"
           pagination={true}
           paginationPageSize={8}
+          paginationPageSizeSelector={[8, 20, 50]}
+          enableBrowserTooltips={true}
+          popupParent={document.body}
         />
       </div>
     </>

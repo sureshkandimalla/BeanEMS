@@ -63,3 +63,28 @@ input {
   height: 100%;
   width: 100%;
 }
+
+.darkGreyBackground {
+  background-color: hsl(255, 19%, 92%)
+}
+
+.blueUnderline {
+  color: blue !important;
+  text-decoration: underline !important;
+  cursor: pointer;
+}
+
+.workforce-search-container {
+  padding: 10px;
+  background-color: #f2f2f2;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.workforce-search-container input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}

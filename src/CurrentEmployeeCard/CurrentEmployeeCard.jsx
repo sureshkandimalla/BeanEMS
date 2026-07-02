@@ -1,16 +1,16 @@
 import React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Avatar, List, Row, Input, Space, Radio, Pagination } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import "./CurrentEmployeeCard.css";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import API_ENDPOINTS from "../config";
 const { Search } = Input;
 
 const CurrentEmployeeCard = () => {
   const [respdata, setRespdata] = useState([]);
   const [empStatus, setEmpStatus] = useState("onBoarding");
-  const isInitialRender = useRef(true);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
   const totalItems = respdata.length;
@@ -21,16 +21,12 @@ const CurrentEmployeeCard = () => {
   };
 
   useEffect(() => {
-    if (!isInitialRender.current) {
-      fetchData();
-    } else {
-      isInitialRender.current = false;
-    }
+    fetchData();
   }, [empStatus]);
 
   const fetchData = () => {
     //default status =onBoarding
-    axios.get('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/employees/employeesListByStatus', {
+    axios.get(API_ENDPOINTS.employeesListByStatus, {
       params: {
         status: empStatus
       }

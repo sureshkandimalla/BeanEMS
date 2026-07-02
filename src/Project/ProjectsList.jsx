@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
+import { Button } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./ProjectList.css";
 
-const ProjectList = ({ projectsList, isCollapsed }) => {
+const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   console.log(projectsList);
+  const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
@@ -203,7 +206,15 @@ const ProjectList = ({ projectsList, isCollapsed }) => {
   };
   return (
     <div className="ag-theme-alpine project-List-grid">
-      <div class="container">
+      <div className="workforce-search-container">
+        <Button
+          type="default"
+          icon={<ReloadOutlined />}
+          onClick={onRefresh}
+          style={{ marginRight: "10px" }}
+        >
+          Refresh
+        </Button>
         <input
           type="text"
           placeholder="Search..."
@@ -213,6 +224,17 @@ const ProjectList = ({ projectsList, isCollapsed }) => {
       </div>
       <div className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
+          ref={gridRef}
+          onGridReady={(params) => {
+            try {
+              gridRef.current = params.api;
+              setTimeout(() => {
+                try { params.api.sizeColumnsToFit(); } catch (e) {}
+                try { params.api.refreshView(); } catch (e) {}
+              }, 0);
+            } catch (e) {}
+          }}
+          rowHeight={48}
           rowData={filterData()}
           enableFilter={true}
           columnDefs={getColumnsDefList(true)}
@@ -220,8 +242,7 @@ const ProjectList = ({ projectsList, isCollapsed }) => {
             flex: 1,
             minWidth: 180,
             resizable: true,
-            filter: false,
-            floatingFilter: false,            
+            filter: true,
             headerClass: "ag-header-cell",
             cellClassRules: {
               darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
@@ -239,7 +260,7 @@ const ProjectList = ({ projectsList, isCollapsed }) => {
                 iconKey: "columns",
                 toolPanel: "agColumnsToolPanel",
                 toolPanelParams: {
-                  suppressRowGroups: false,
+                  suppressRowGroups: true,
                   suppressValues: true,
                   suppressPivots: false,
                   suppressPivotMode: true,
@@ -251,13 +272,12 @@ const ProjectList = ({ projectsList, isCollapsed }) => {
             ],
           }}
           sortable={true}
-          defaultToolPanel="columns"
           pagination={true}
           paginationPageSize={100}
-          paginationPageSizeSelector={[50, 100]}
+          paginationPageSizeSelector={[20, 50, 100]}
           domLayout="normal"
           pinnedBottomRowData={pinnedBottomRowData}
-          enableBrowserTooltips={true} 
+          enableBrowserTooltips={true}
           popupParent={document.body}
         />
       </div>

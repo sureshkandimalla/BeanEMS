@@ -70,7 +70,7 @@ const AdjustmentForm = ({ onClose }) => {
   const handleFormSubmit = (generalDetails) => {
     //api should be called here
 
-        axios.post('http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/adjustment/addAdjustment', generalDetails, {
+        axios.post(API_ENDPOINTS.addAdjustment, generalDetails, {
             headers: {
                 'Content-Type': 'application/json'
             }

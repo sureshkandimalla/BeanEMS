@@ -42,6 +42,7 @@ const WorkForceContent = () => {
     data: reconcileData,
     isLoading: isreconcileDatasLoading,
     error: reconcileDataError,
+    refetch: refetchReconcileData,
   } = useQuery({
     queryKey: ["reconcileData"],
     queryFn: fetchReconcileRecords,
@@ -53,6 +54,7 @@ const WorkForceContent = () => {
     data: employeeData,
     isLoading: isEmployeesLoading,
     error: employeesError,
+    refetch: refetchEmployees,
   } = useQuery({
     queryKey: ["employees"],
     queryFn: fetchEmployees,
@@ -106,8 +108,8 @@ const WorkForceContent = () => {
     }
     return {
       all: employeeData,
-      usa: employeeData.filter(({ workCountry }) => workCountry === "USA"),
-      india: employeeData.filter(({ workCountry }) => workCountry === "India"),
+      usa: employeeData.filter(({ workCountry }) => ["USA", "US"].includes((workCountry || "").toUpperCase())),
+      india: employeeData.filter(({ workCountry }) => ["INDIA", "IN"].includes((workCountry || "").toUpperCase())),
       active: employeeData.filter(({ status }) => status === "Active"),
       onboarding: employeeData.filter(({ status }) => status === "Onboarding"),
       approved: employeeData.filter(({ status }) => status === "Approved"),
@@ -148,58 +150,61 @@ const WorkForceContent = () => {
     {
       key: "0",
       label: "USA",
-      children: <WorkForceList employees={processedData.usa} isCollapsed={isCollapsed}  />,
+      children: <WorkForceList employees={processedData.usa} isCollapsed={isCollapsed} onRefresh={refetchEmployees} />,
     },
     // { key: '1', label: 'USA', children: <WorkForceList employees={processedData.usa} /> },
     {
       key: "2",
       label: "India",
-      children: <WorkForceList employees={processedData.india}  isCollapsed={isCollapsed} />,
+      children: <WorkForceList employees={processedData.india} isCollapsed={isCollapsed} onRefresh={refetchEmployees} />,
     },
     {
       key: "3",
       label: "Billable Employees",
-      children: <WorkForceList employees={processedData.billable} isCollapsed={isCollapsed}  />,
+      children: <WorkForceList employees={processedData.billable} isCollapsed={isCollapsed} onRefresh={refetchEmployees} />,
     },
     {
       key: "4",
       label: "Workforce",
-      children: <WorkForceList employees={paginatedData}  isCollapsed={isCollapsed} />,
+      children: <WorkForceList employees={paginatedData} isCollapsed={isCollapsed} onRefresh={refetchEmployees} />,
     },
     {
       key: "5",
       label: "Active Employees",
-      children: <WorkForceList employees={processedData.active} isCollapsed={isCollapsed}  />,
+      children: <WorkForceList employees={processedData.active} isCollapsed={isCollapsed} onRefresh={refetchEmployees} />,
     },
     {
       key: "6",
       label: "Onboarding",
-      children: <WorkForceList employees={processedData.onboarding} isCollapsed={isCollapsed}  />,
+      children: <WorkForceList employees={processedData.onboarding} isCollapsed={isCollapsed} onRefresh={refetchEmployees} />,
     },
     {
       key: "7",
       label: "Fulltime",
-      children: <WorkForceList employees={processedData.terminated} isCollapsed={isCollapsed} />,
+      children: <WorkForceList employees={processedData.terminated} isCollapsed={isCollapsed} onRefresh={refetchEmployees} />,
     },
     {
       key: "8",
       label: "Corp to Corp",
-      children: <WorkForceList employees={processedData.terminated} isCollapsed={isCollapsed} />,
+      children: <WorkForceList employees={processedData.terminated} isCollapsed={isCollapsed} onRefresh={refetchEmployees} />,
     },
     {
       key: "9",
       label: "Terminated",
-      children: <WorkForceList employees={processedData.terminated} isCollapsed={isCollapsed} />,
+      children: <WorkForceList employees={processedData.terminated} isCollapsed={isCollapsed} onRefresh={refetchEmployees} />,
     },
     {
       key: "10",
       label: "Reconcile",
-      children: <WorkForceReconcileList employees={Array.isArray(reconcileData) ? reconcileData : []} isCollapsed={isCollapsed} />,
+      children: <WorkForceReconcileList employees={Array.isArray(reconcileData) ? reconcileData : []} isCollapsed={isCollapsed} onRefresh={refetchReconcileData} />,
     },
   ];
 
   const handleAddNewEmployee = () => setOpen(true);
-  const handleDrawerClose = () => setOpen(false);
+  const handleDrawerClose = (action) => {
+    setOpen(false);
+    if (action === "submit") refetchEmployees();
+  };
 
   if (employeesError || workforceError || invoicesError || reconcileDataError) {
     message.error("Error fetching data. Please try again later.");
@@ -209,7 +214,7 @@ const WorkForceContent = () => {
     <>
     {/* Drawer for Adding Employee */}
     <Drawer title="Employee Onboarding" placement="right" size="large" onClose={handleDrawerClose} open={open}>
-        <Newemployee />
+        <Newemployee onClose={handleDrawerClose} />
       </Drawer>
 
     <div style={{
@@ -285,7 +290,7 @@ const WorkForceContent = () => {
   <Card className="employeeTableCard" style={{ height: "100%" }}>
     <Tabs
       className="bean-home-tabs"
-      defaultActiveKey="1"
+      defaultActiveKey="4"
       items={items}
       tabBarExtraContent={
         <Button type="primary" onClick={handleAddNewEmployee}>

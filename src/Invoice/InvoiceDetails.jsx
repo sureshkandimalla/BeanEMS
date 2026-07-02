@@ -7,7 +7,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -22,6 +22,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 const InvoiceDetails = () => {
+  const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [rowData, setRowData] = useState();
@@ -75,7 +76,7 @@ const InvoiceDetails = () => {
     // Call the PUT API to update the row
     axios
       .put(
-        `http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/invoice/invoices/${updatedRow.invoiceId}`,
+        API_ENDPOINTS.invoiceById(updatedRow.invoiceId),
         updatedRow,
       )
       .then((response) => {
@@ -293,7 +294,7 @@ const InvoiceDetails = () => {
     // Any additional logic can go here
     navigate("/generateInvoice", {
       state: {
-        url: `http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/activeProjects?endDate=${encodedEndDate}&selectedDate=${encodedFormatSelectedDate}`,
+        url: API_ENDPOINTS.activeProjects(encodedEndDate, encodedFormatSelectedDate),
         month: month,
       },
     });
@@ -326,14 +327,16 @@ const InvoiceDetails = () => {
       >
         <NewInvoice onClose={onClose} />
       </Drawer>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
+      <div className="workforce-search-container" style={{ gap: "32px" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
+          <Button
+            type="default"
+            icon={<ReloadOutlined />}
+            onClick={fetchData}
+            style={{ marginRight: "10px" }}
+          >
+            Refresh
+          </Button>
           <input
             type="text"
             placeholder="Search..."
@@ -349,10 +352,8 @@ const InvoiceDetails = () => {
             <PlusOutlined /> Add New Invoice
           </Button>
         </div>
-        <div
-          style={{ display: "flex", alignItems: "center", marginTop: "0px" }}
-        >
-          <label style={{ marginTop: "5px" }}>Invoice Date: &nbsp;</label>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <label style={{ marginBottom: 0 }}>Invoice Date:&nbsp;</label>
           <DatePicker
             className="left-panel"
             selected={selectedDate}
@@ -375,6 +376,17 @@ const InvoiceDetails = () => {
       </div>
       <div className= "invoice1-grid-wrapper">
       <AgGridReact
+        ref={gridRef}
+        onGridReady={(params) => {
+          try {
+            gridRef.current = params.api;
+            setTimeout(() => {
+              try { params.api.sizeColumnsToFit(); } catch (e) {}
+              try { params.api.refreshView(); } catch (e) {}
+            }, 0);
+          } catch (e) {}
+        }}
+        rowHeight={48}
         rowData={filterData()}
         columnDefs={getColumnsDefList(true)}
         gridOptions={gridOptions}
@@ -382,14 +394,13 @@ const InvoiceDetails = () => {
           flex: 1,
           minWidth: 150,
           resizable: true,
-          filter: false,
-          floatingFilter: false,
+          filter: true,
           cellClass: "ag-cell-centered",
           headerClass: "ag-header-cell",
           cellClassRules: {
-            darkGreyBackground: (params) => params.node?.rowIndex !== undefined 
+            darkGreyBackground: (params) => params.node?.rowIndex !== undefined
             && params.node.rowIndex % 2 === 1,
-          } 
+          }
         }}
         sideBar={{
           toolPanels: [
@@ -400,7 +411,7 @@ const InvoiceDetails = () => {
               iconKey: "columns",
               toolPanel: "agColumnsToolPanel",
               toolPanelParams: {
-                suppressRowGroups: false,
+                suppressRowGroups: true,
                 suppressValues: true,
                 suppressPivots: false,
                 suppressPivotMode: true,
@@ -412,13 +423,14 @@ const InvoiceDetails = () => {
           ],
         }}
         sortable={true}
-        defaultToolPanel="columns"
         domLayout="normal"
-        pagination={true}        
+        pagination={true}
         paginationPageSize={100}
-        paginationPageSizeSelector={[100,200, 300]}
+        paginationPageSizeSelector={[20, 50, 100]}
         pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here
         getRowStyle={getRowStyle}
+        enableBrowserTooltips={true}
+        popupParent={document.body}
       />
       {isTimesheetOpen && (
         <MonthlyTimesheetDialog

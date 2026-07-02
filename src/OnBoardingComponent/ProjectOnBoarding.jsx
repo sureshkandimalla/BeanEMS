@@ -99,7 +99,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
 
     axios
       .post(
-        "http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/saveOnBoardProject",
+        API_ENDPOINTS.saveOnBoardProject,
         generalDetails,
         {
           headers: {

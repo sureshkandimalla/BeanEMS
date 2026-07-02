@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Card } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
+import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
 import "ag-grid-enterprise";
@@ -166,22 +166,22 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, gridH
           }}
         >
           <div style={{ display: "flex", alignItems: "center" }}>
+            {(onRefresh || employeeId) && (
+              <Button
+                style={{ marginRight: "10px" }}
+                type="default"
+                icon={<ReloadOutlined />}
+                onClick={employeeId ? fetchData : onRefresh}
+              >
+                Refresh
+              </Button>
+            )}
             <input
               type="text"
               placeholder="Search..."
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
             />
-            {(onRefresh || employeeId) && (
-              <Button
-                style={{ marginLeft: "12px" }}
-                type="primary"
-                className="button-vendor"
-                onClick={employeeId ? fetchData : onRefresh}
-              >
-                Refresh
-              </Button>
-            )}
             <Button
               style={{ marginLeft: "8px" }}
               icon={<DownloadOutlined />}
@@ -203,6 +203,7 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, gridH
         >
           <AgGridReact
             ref={gridRef}
+            rowHeight={48}
             rowData={rowData}
             quickFilterText={searchText}
             columnDefs={columnDefs}

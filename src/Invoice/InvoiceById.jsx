@@ -6,7 +6,7 @@ import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "react-datepicker/dist/react-datepicker.css";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { Button } from "antd";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
@@ -151,7 +151,7 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
     // Any additional logic can go here
     navigate("/generateInvoice", {
       state: {
-        url: `http://beanservices.us-east-1.elasticbeanstalk.com/api/v1/activeProjectsForInvoiceByEmployee?employeeId=${employeeId}`,
+        url: API_ENDPOINTS.activeProjectsForInvoiceByEmployee(employeeId),
       },
     });
   };
@@ -185,7 +185,15 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
         }}
       >
     <div className="ag-theme-alpine workforce-container">
-      <div class="workforce-search-container">
+      <div className="workforce-search-container">
+        <Button
+          type="default"
+          icon={<ReloadOutlined />}
+          onClick={fetchData}
+          style={{ marginRight: "10px" }}
+        >
+          Refresh
+        </Button>
         <input
           type="text"
           placeholder="Search..."
