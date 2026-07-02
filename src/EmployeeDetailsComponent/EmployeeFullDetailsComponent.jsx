@@ -5,8 +5,6 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./EmployeeFullDetailsComponent.css";
 import ProjectGrid from "../Project/ProjectGrid";
-import { Col, Row, Card, Tabs } from "antd";
-import { UserOutlined, MailOutlined, PhoneOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import EmployeePersonnelFilePage from "../EmployeeDetailsComponent/EmployeePersonnelFilePage";
 import RevenueCharts from "../RevenueCharts/RevenueCharts";
@@ -17,8 +15,13 @@ import ReconciliationDetails from "../Reconciliation/ReconciliationDetails";
 import InvoiceById from "../Invoice/InvoiceById";
 import BillingDetails from "../Billings/BillingDetails";
 import PassportController from "../Passport/PassportController";
+import { UpOutlined, DownOutlined,CalendarOutlined, DollarOutlined,MailOutlined,PhoneOutlined, UserOutlined } from "@ant-design/icons";
+import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message } from "antd";
+
+const { Panel } = Collapse;
 
 const EmployeeFullDetails = () => {
+  const [isCollapsed, setIsCollapsed] = useState(false);  
   const divStyle = {
     border: "1px solid #ccc",
     padding: "20px",
@@ -60,7 +63,7 @@ const EmployeeFullDetails = () => {
       title: "Emplyee Projects",
       children: (
         <div className="employee-List-grid" style={{ height: "100%" }}>
-          <ProjectGrid employeeId={rowData.employeeId} />
+          <ProjectGrid employeeId={rowData.employeeId} isCollapsed={isCollapsed} />
         </div>
       ),
     },
@@ -72,6 +75,7 @@ const EmployeeFullDetails = () => {
           <InvoiceById
             url={`${API_ENDPOINTS.getInvoicesForEmployee}?employeeId=${rowData.employeeId}`}
             employeeId={rowData.employeeId}
+            isCollapsed={isCollapsed}
           />
         </div>
       ),
@@ -81,7 +85,7 @@ const EmployeeFullDetails = () => {
       label: "PAYROLLS",
       children: (
         <div className="employee-List-grid" style={{ height: "100%" }}>
-          <PayrollDetails employeeId={rowData.employeeId} />
+          <PayrollDetails employeeId={rowData.employeeId} isCollapsed={isCollapsed} />
         </div>
       ),
     },
@@ -90,7 +94,7 @@ const EmployeeFullDetails = () => {
       label: "ADJUSTMENTS",
       children: (
         <div className="employee-List-grid" style={{ height: "100%" }}>
-          <AdjustementDetails employeeId={rowData.employeeId} />
+          <AdjustementDetails employeeId={rowData.employeeId} isCollapsed={isCollapsed} />
         </div>
       ),
     },
@@ -99,7 +103,7 @@ const EmployeeFullDetails = () => {
       label: "RECONCILIATION",
       children: (
         <div className="employee-List-grid" style={{ height: "100%" }}>
-          <ReconciliationDetails employeeId={rowData.employeeId} />
+          <ReconciliationDetails employeeId={rowData.employeeId} isCollapsed={isCollapsed} />
         </div>
       ),
     },
@@ -110,6 +114,7 @@ const EmployeeFullDetails = () => {
         <div className="employee-List-grid" style={{ height: "100%" }}>
           <BillingDetails
             url={`${API_ENDPOINTS.getBillsForEmployee}?employeeId=${rowData.employeeId}`}
+            isCollapsed={isCollapsed}
           />
         </div>
       ),
@@ -141,136 +146,68 @@ const EmployeeFullDetails = () => {
     //TODO
   };
 
+  const handleCollapseChange = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   function toggleContent() {
     alert("toogle");
   }
   return (
-    <div className="two-parts-container">
-      <div className="part left-part">
-        <Row>
-          <Col span={24}>
-            <Row>
-              <Col span={8}>
-                {/* <Card className='billingCard'> */}
-                <section className="personal-info">
-                  {responseData && (                      <Card className="responsive-card" style={{ width: "100%" }}>
-                      <p>
-                        <div>
-                          <span
-                            className="name-span"
-                            style={{
-                              color: "blue",
-                              padding: "5px",
-                              fontSize: "20px",
-                            }}
-                          >
-                            <UserOutlined style={{ marginRight: "14px" }} />{" "}
-                            {responseData.firstName} {responseData.lastName}
-                          </span>
-                          <div style={{ float: "right", display: "flex", alignItems: "center", gap: "8px" }}>
-                            <button
-                              style={{
-                                background: "#ffffff",
-                                border: "none",
-                                cursor: "pointer",
-                              }}
-                              onClick={handleClick}
-                            >
-                              ...
-                            </button>
-                          </div>
-                          <br />
-                          <span className="designation-style">
-                            {responseData.designation}
-                          </span>
-                          <span
-                            style={{
-                              float: "right",
-                              right: "0",
-                              color: "black",
-                              padding: "5px",
-                              fontSize: "10px",
-                            }}
-                          >
-                            {" "}
-                            {responseData.employmentType}
-                          </span>
-                        </div>
-                        <div>
-                          <span
-                            style={{
-                              color: "black",
-                              padding: "5px",
-                              fontSize: "12px",
-                            }}
-                          >
-                            {" "}
-                            <MailOutlined /> {responseData.emailId}
-                          </span>
-                          <span
-                            style={{
-                              color: "black",
-                              padding: "5px",
-                              fontSize: "12px",
-                            }}
-                          >
-                            {" "}
-                            <PhoneOutlined /> {responseData.phone}{" "}
-                          </span>
-                        </div>
-                      </p>
-                    </Card>
-                  )}
-
-                  <div className="details-row" style={{ marginTop: "10px" }}>
-                    <div className="field">
-                      <label htmlFor="emailId">Work Authorization Type</label>
-                      <span className="field-value">{rowData.visa}</span>
-                    </div>
-                    <div className="field">
-                      <label htmlFor="phone">Tax Term</label>
-                      <span className="field-value">{rowData.taxTerm}</span>
-                    </div>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      {/* Collapsible Left Section */}
+      <Collapse
+        activeKey={isCollapsed ? "1" : null}
+        onChange={handleCollapseChange}
+        style={{
+          flex: isCollapsed ? "0 0 25%" : "0 0 5%", // Shrinks when collapsed
+          marginBottom: "10px",
+          transition: "flex 0.3s ease-in-out",
+        }}
+      >
+        <Panel
+          header={
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontWeight: "bold" }}>Employee Overview</span>
+              <Button
+                type="text"
+                icon={isCollapsed ? <UpOutlined /> : <DownOutlined />}
+                onClick={handleCollapseChange}
+              />
+            </div>
+          }
+          key="1"
+        >
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={8}>
+              {responseData && (
+                <Card className="responsive-card" style={{ width: "100%" }}>
+                  <Typography.Text className="name-span" style={{ color: "blue", fontSize: "20px" }}>
+                    <UserOutlined style={{ marginRight: 5, color: "#1890ff" }} />
+                    {responseData.firstName} {responseData.lastName}
+                  </Typography.Text>
+                  <br />
+                  <Typography.Text className="designation-style">
+                    {responseData.designation}
+                  </Typography.Text>
+                  <Typography.Text
+                    style={{ float: "right", color: "black", fontSize: "10px" }}
+                  >
+                    {responseData.employmentType}
+                  </Typography.Text>
+                  <div style={{ marginTop: "10px" }}>
+                    <Typography.Text>
+                      <MailOutlined style={{ marginRight: 5 }} />
+                      {responseData.emailId}
+                    </Typography.Text>
                   </div>
-                  <div className="details-row" style={{ marginTop: "10px" }}>
-                    <div className="field">
-                      <label htmlFor="emailId">H1B validity</label>
-                      <span className="field-value">
-                        {" "}
-                        {rowData.h1bValidity}
-                      </span>
-                    </div>
-                    <div className="field">
-                      <label htmlFor="phone">Current Project Validity</label>
-                      <span className="field-value">null</span>
-                    </div>
+                  <div>
+                    <Typography.Text>
+                      <PhoneOutlined style={{ marginRight: 5 }} />
+                      {responseData.phone}
+                    </Typography.Text>
                   </div>
-                  <div className="details-row" style={{ marginTop: "10px" }}>
-                    <div className="field">
-                      <label htmlFor="emailId">Employment Start Date</label>
-                      <span className="field-value">{rowData.startDate}</span>
-                    </div>
-                  </div>
-                  <hr className="dotted-line" />
-                  <div className="labelArrow" onClick={toggleContent}>
-                    Document Alerts <span className="arrow">&#9660;</span>
-                  </div>
-                  <div className="content" id="content">
-                    Content here
-                  </div>
-                </section>
-              </Col>
-              <Col span={16}>
-                <Card className="totalRevenceCard">
-                  <>
-                    <span className="totalRevenueLabel">Total Revenue</span>
-                    <span className="totalRevenueCount">$66,143.00</span>
-                  </>
-                  <RevenueCharts
-                    thisMonthData={thisMonthData}
-                    lastMonthData={lastMonthData}
-                  />
-                  <div style={{ marginTop: "12px", textAlign: "right" }}>
+                  <div style={{ marginTop: "12px" }}>
                     <PassportController
                       showTrigger
                       triggerLabel="Add Passport"
@@ -278,19 +215,47 @@ const EmployeeFullDetails = () => {
                     />
                   </div>
                 </Card>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-      </div>
-      <div className="gap"></div> {/* Gap between the two parts */}
-      <div className="part right-part">
-        <Tabs
-          className="bean-home-tabs"
-          defaultActiveKey="2"
-          onChange={toggleTabs}
-          items={items}
-        ></Tabs>
+              )}
+
+            {/* // <Col xs={24} sm={8}> */}
+              {/* <Card> */}
+                <div className="details-row">
+                  <Typography.Text>
+                    <DollarOutlined style={{ marginRight: 5, color: "#13c2c2" }} />
+                    <b>Bill Rate:</b> {responseData?.wage}
+                  </Typography.Text>
+                </div>
+                <div className="details-row">
+                  <Typography.Text>
+                    <CalendarOutlined style={{ marginRight: 5, color: "#722ed1" }} />
+                    <b>Start Date:</b> {responseData?.startDate}
+                  </Typography.Text>
+                </div>
+                <div className="details-row">
+                  <Typography.Text>
+                    <CalendarOutlined style={{ marginRight: 5, color: "#eb2f96" }} />
+                    <b>End Date:</b> {responseData?.endDate}
+                  </Typography.Text>
+                </div> 
+              </Col>             
+
+            {/* Total Revenue & Chart */}
+            <Col xs={24} sm={16}>
+              <Card className="totalRevenceCard">
+                <span className="totalRevenueLabel">Total Revenue</span>
+                <span className="totalRevenueCount">$66,143.00</span>
+                <RevenueCharts thisMonthData={thisMonthData} lastMonthData={lastMonthData} />
+              </Card>
+            </Col>
+          </Row>
+        </Panel>
+      </Collapse>
+
+      {/* Right Section (Tabs) */}
+      <div style={{ flex: "1", overflow: "hidden" }}>
+        <Card className="employeeTableCard" style={{ height: "100%" }}>
+          <Tabs className="bean-home-tabs" defaultActiveKey="2" items={items} />
+        </Card>
       </div>
     </div>
   );

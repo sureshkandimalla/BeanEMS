@@ -12,7 +12,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import AdjustmentForm from "./AdjustmentForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 
-const AdjustementDetails = ({ employeeId }) => {
+const AdjustementDetails = ({ employeeId, isCollapsed }) => {
   const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
@@ -149,7 +149,15 @@ const AdjustementDetails = ({ employeeId }) => {
   };
 
   return (
-    <div className="ag-theme-alpine employee-List-grid">
+    <div
+        style={{
+          height: "100vh", 
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", 
+        }}
+      >
+     <div className="ag-theme-alpine workforce-container">    
       <Drawer
         title={`Add Adjustments`}
         placement="right"
@@ -183,7 +191,7 @@ const AdjustementDetails = ({ employeeId }) => {
           <PlusOutlined /> Add New Adjustment
         </Button>
       </div>
-
+      <div  className={`assignment-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
         ref={gridRef}
         onGridReady={(params) => {
@@ -229,13 +237,18 @@ const AdjustementDetails = ({ employeeId }) => {
           ],
         }}
         sortable={true}
+        defaultToolPanel="columns"
         pagination={true}
-        paginationPageSize={15}
+        paginationPageSize={100}
+        paginationPageSizeSelector={[100,200, 300]}
+        domLayout="normal"
         pinnedTopRowData={pinnedBottomRowData} // Set pinned bottom row data here
         getRowStyle={getRowStyle}
         enableBrowserTooltips={true}
         popupParent={document.body}
       />
+      </div>
+    </div>
     </div>
   );
 };

@@ -142,6 +142,7 @@ export default function ReconciliationDetails({ employeeId }) {
 
   const detailCellRendererParams = {
     detailGridOptions: {
+      domLayout: 'autoHeight',
       columnDefs: [
         {
           field: "description",
@@ -165,11 +166,16 @@ export default function ReconciliationDetails({ employeeId }) {
         { field: "startDate", headerName: "Start Date", filter: true },
         { field: "endDate", headerName: "End Date", filter: true },
       ],
+      defaultColDef: {
+        flex: 1,
+        minWidth: 20,
+        resizable: true,
+      }
     },
     getDetailRowData: (params) => {
       console.log(params)
       params.successCallback(params.data.expenseRecords);
-    },
+    },   
   };
 
   return ( 
@@ -208,8 +214,8 @@ export default function ReconciliationDetails({ employeeId }) {
         columnDefs={columnDefs}
         masterDetail={true}
         detailCellRendererParams={detailCellRendererParams}
-        pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here
-        getRowStyle={getRowStyle}
+        pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here        
+        getRowStyle={getRowStyle}        
         defaultColDef={{
           flex: 1,
           minWidth: 180,
@@ -247,6 +253,7 @@ export default function ReconciliationDetails({ employeeId }) {
         pagination={true}
         paginationPageSize={100}
         paginationPageSizeSelector={[20, 50, 100]}
+        detailRowAutoHeight={true}
       />
       </div>
     </div>  
