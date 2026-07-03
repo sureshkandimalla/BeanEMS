@@ -1,5 +1,6 @@
 import API_ENDPOINTS from "../config";
 import React, { useState, useEffect, useRef } from "react";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
@@ -126,7 +127,7 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
     <>
     <div
         style={{
-          height: "100vh", 
+          height: "100%",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden", 
@@ -167,11 +168,15 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
         </div>
         <div  className={`assignment-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
+          onFirstDataRendered={(params) => {
+            try { params.api.autoSizeAllColumns(); } catch (e) {}
+          }}
+          autoSizeStrategy={{ type: "fitCellContents" }}
           rowData={filterData()}
-          columnDefs={getColumnsDefList(true, false)}          
+          columnDefs={sizeColumnsForHeader(getColumnsDefList(true, false))}
           defaultColDef={{
-            flex: 1,
-            minWidth: 150,
+            minWidth: 100,
+            maxWidth: 220,
             resizable: true,
             filter: false,
             floatingFilter: false,

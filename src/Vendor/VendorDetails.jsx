@@ -8,6 +8,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./Vendor.css";
 import Newvendor from "./NewVendor";
 import API_ENDPOINTS from "../config";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
 const columnsList = [
   { headerName: "Customer Id", field: "customerId", type: "number" },
@@ -201,14 +202,14 @@ const VendorDetails = () => {
   return (
     <div
       style={{
-        height: "100vh",
+        height: "100%",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
       }}
     >
       <div className="ag-theme-alpine vendor-List-grid">
-      <Card style={{ height: "100%", display: "flex", flexDirection: "column" }} styles={{ body: { flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } }}>
+      <Card style={{ height: "100%", marginBottom: 0, display: "flex", flexDirection: "column" }} styles={{ body: { flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } }}>
         <Drawer
           title={`Vendor Onboarding`}
           placement="right"
@@ -254,22 +255,20 @@ const VendorDetails = () => {
           <AgGridReact
             ref={gridRef}
             onGridReady={(params) => {
-              try {
-                gridRef.current = params.api;
-                setTimeout(() => {
-                  try { params.api.sizeColumnsToFit(); } catch (e) {}
-                  try { params.api.refreshView(); } catch (e) {}
-                }, 0);
-              } catch (e) {}
+              gridRef.current = params.api;
             }}
+            onFirstDataRendered={(params) => {
+              try { params.api.autoSizeAllColumns(); } catch (e) {}
+            }}
+            autoSizeStrategy={{ type: "fitCellContents" }}
             rowHeight={48}
             rowData={filterData()}
-            columnDefs={combinedColumnDefs}
+            columnDefs={sizeColumnsForHeader(combinedColumnDefs)}
             defaultColDef={{
-              flex: 1,
               resizable: true,
               filter: true,
-              minWidth: 150,
+              minWidth: 100,
+              maxWidth: 220,
             }}
             sideBar={{
               toolPanels: [

@@ -66,11 +66,11 @@ const VisaEmployees = () => {
 
     return {
       all: rowData,
-      h1b: rowData.filter(({ visa }) => visa?.toUpperCase().includes("H1") || visa?.toUpperCase().includes("H-1")),
-      gc: rowData.filter(({ visa }) => visa?.toUpperCase().includes("GC") || visa?.toUpperCase().includes("GREEN")),
-      opt: rowData.filter(({ visa }) => visa?.toUpperCase().includes("OPT") || visa?.toUpperCase().includes("CPT")),
-      l1: rowData.filter(({ visa }) => visa?.toUpperCase().includes("L1") || visa?.toUpperCase().includes("L-1")),
-      usCitizen: rowData.filter(({ visa }) => visa?.toUpperCase().includes("CITIZEN")),
+      h1b: rowData.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("H1") || (visaCategory || "").toUpperCase().includes("H-1")),
+      gc: rowData.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("GC") || (visaCategory || "").toUpperCase().includes("GREEN")),
+      opt: rowData.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("OPT") || (visaCategory || "").toUpperCase().includes("CPT")),
+      l1: rowData.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("L1") || (visaCategory || "").toUpperCase().includes("L-1")),
+      usCitizen: rowData.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("CITIZEN")),
       active: rowData.filter(({ status }) => status === "Active"),
       expiringSoon: rowData.filter(({ endDate }) => {
         if (!endDate) return false;
@@ -135,7 +135,7 @@ const VisaEmployees = () => {
   ];
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "auto" }}>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "auto" }}>
 
       {/* KPI Cards */}
       <Row gutter={16} style={{ margin: "12px 12px 0" }}>

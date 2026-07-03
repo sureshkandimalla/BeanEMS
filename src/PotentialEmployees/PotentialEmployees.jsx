@@ -8,6 +8,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import NewPotentialEmployee from "./NewPotentialEmployee";
 import "./PotentialEmployees.css";
 import API_ENDPOINTS from "../config";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
 const PotentialEmployees = () => {
   const [searchText, setSearchText] = useState("");
@@ -250,7 +251,7 @@ const PotentialEmployees = () => {
   return (
     <div
         style={{
-          height: "100vh", 
+          height: "100%",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden", 
@@ -301,27 +302,25 @@ const PotentialEmployees = () => {
       <AgGridReact
         ref={gridRef}
         onGridReady={(params) => {
-          try {
-            gridRef.current = params.api;
-            setTimeout(() => {
-              try { params.api.sizeColumnsToFit(); } catch (e) {}
-              try { params.api.refreshView(); } catch (e) {}
-            }, 0);
-          } catch (e) {}
+          gridRef.current = params.api;
         }}
+        onFirstDataRendered={(params) => {
+          try { params.api.autoSizeAllColumns(); } catch (e) {}
+        }}
+        autoSizeStrategy={{ type: "fitCellContents" }}
         rowHeight={48}
         rowData={filterData()}
-        columnDefs={getColumnsDefList()}
+        columnDefs={sizeColumnsForHeader(getColumnsDefList())}
         domLayout="normal"
-        pagination={true}        
+        pagination={true}
         paginationPageSize={100}
         paginationPageSizeSelector={[100,200, 300]}
-        onCellEditingStopped={onCellEditingStopped} 
+        onCellEditingStopped={onCellEditingStopped}
         defaultColDef={{
-          flex: 1,
-          minWidth: 150,
+          minWidth: 100,
+          maxWidth: 220,
           resizable: true,
-          filter: false,      
+          filter: false,
           floatingFilter: false,
           cellClassRules: {
             darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,

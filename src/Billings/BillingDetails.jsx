@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import API_ENDPOINTS from "../config";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
@@ -169,7 +170,7 @@ const BillingDetails = ({ url, isCollapsed }) => {
   return (
     <div
   style={{
-    height: "100vh",
+    height: "100%",
     display: "flex",
     flexDirection: "column",
     overflow: "hidden",
@@ -201,21 +202,19 @@ const BillingDetails = ({ url, isCollapsed }) => {
       <AgGridReact
         ref={gridRef}
         onGridReady={(params) => {
-          try {
-            gridRef.current = params.api;
-            setTimeout(() => {
-              try { params.api.sizeColumnsToFit(); } catch (e) {}
-              try { params.api.refreshView(); } catch (e) {}
-            }, 0);
-          } catch (e) {}
+          gridRef.current = params.api;
         }}
+        onFirstDataRendered={(params) => {
+          try { params.api.autoSizeAllColumns(); } catch (e) {}
+        }}
+        autoSizeStrategy={{ type: "fitCellContents" }}
         rowHeight={48}
         rowData={filterData()}
-        columnDefs={getColumnsDefList(true)}
+        columnDefs={sizeColumnsForHeader(getColumnsDefList(true))}
         gridOptions={gridOptions}
         defaultColDef={{
-          flex: 1,
-          minWidth: 150,
+          minWidth: 100,
+          maxWidth: 220,
           resizable: true,
           filter: true,
           cellClassRules: {

@@ -49,16 +49,15 @@ input {
   flex-direction: column;
   height: 100%;
   width: 100%;
-  min-height: 500px;
-  max-height: calc(100vh - 250px);
+  min-height: 300px;
   transition: max-height 0.3s ease-in-out;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .vendor-List-grid {
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow: hidden;
   transition: flex 0.3s ease-in-out;
   height: 100%;
   width: 100%;

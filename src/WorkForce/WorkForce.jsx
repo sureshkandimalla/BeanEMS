@@ -218,7 +218,7 @@ const WorkForceContent = () => {
       </Drawer>
 
     <div style={{
-          height: "100vh", // Full viewport height
+          height: "100%",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden", // Prevents unwanted scroll

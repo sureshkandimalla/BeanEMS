@@ -8,6 +8,7 @@ import "ag-grid-enterprise";
 import axios from "axios";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import API_ENDPOINTS from "../config";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import "./ReconciliationDetails.css"
 
 export default function ReconciliationDetails({ employeeId }) {
@@ -181,11 +182,11 @@ export default function ReconciliationDetails({ employeeId }) {
   return ( 
     <div
     style={{
-      height: "100vh",
+      height: "100%",
       display: "flex",
       flexDirection: "column",
       overflow: "hidden",
-    }}> 
+    }}>
     <div className="ag-theme-alpine project-List-grid">
       <div className="workforce-search-container">
         <Button
@@ -201,24 +202,22 @@ export default function ReconciliationDetails({ employeeId }) {
       <AgGridReact
         ref={gridRef}
         onGridReady={(params) => {
-          try {
-            gridRef.current = params.api;
-            setTimeout(() => {
-              try { params.api.sizeColumnsToFit(); } catch (e) {}
-              try { params.api.refreshView(); } catch (e) {}
-            }, 0);
-          } catch (e) {}
+          gridRef.current = params.api;
         }}
+        onFirstDataRendered={(params) => {
+          try { params.api.autoSizeAllColumns(); } catch (e) {}
+        }}
+        autoSizeStrategy={{ type: "fitCellContents" }}
         rowHeight={48}
         rowData={rowData}
-        columnDefs={columnDefs}
+        columnDefs={sizeColumnsForHeader(columnDefs)}
         masterDetail={true}
         detailCellRendererParams={detailCellRendererParams}
-        pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here        
-        getRowStyle={getRowStyle}        
+        pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here
+        getRowStyle={getRowStyle}
         defaultColDef={{
-          flex: 1,
-          minWidth: 180,
+          minWidth: 100,
+          maxWidth: 220,
           resizable: true,
           filter: true,
           headerClass: "ag-header-cell",

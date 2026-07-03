@@ -34,6 +34,8 @@ const leftTabNames = [
   getItem("Projects", "/projects", <ProjectOutlined />),
   getItem("Potential Employees", "/potentialEmployees", <UserOutlined />),
   getItem("Visa Employees", "/visaEmployees", <UsergroupAddOutlined />),
+  getItem("LCA Details", "/lcaDetails", <FileTextOutlined />),
+  getItem("Visa Details", "/visaDetails", <FileTextOutlined />),
   getItem("Payroll Summary", "/payrollsummary", <BoxPlotOutlined />),
 ];
 const LeftTabs = () => {

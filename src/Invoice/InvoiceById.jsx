@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import API_ENDPOINTS from "../config";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -178,7 +179,7 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
   return (
     <div
         style={{
-          height: "100vh", 
+          height: "100%",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden", 
@@ -211,12 +212,16 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
       </div>
       <div  className={`invoice-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
+        onFirstDataRendered={(params) => {
+          try { params.api.autoSizeAllColumns(); } catch (e) {}
+        }}
+        autoSizeStrategy={{ type: "fitCellContents" }}
         rowData={filterData()}
-        columnDefs={getColumnsDefList(true)}
+        columnDefs={sizeColumnsForHeader(getColumnsDefList(true))}
         gridOptions={gridOptions}
         defaultColDef={{
-          flex: 1,
-          minWidth: 150,
+          minWidth: 100,
+          maxWidth: 220,
           resizable: true,
           filter: true,
           floatingFilter: false,

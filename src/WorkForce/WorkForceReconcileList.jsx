@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
@@ -202,20 +203,19 @@ const WorkForceReconcileList = ({ employees, isCollapsed, onRefresh }) => {
         <AgGridReact
           ref={gridRef}
           onGridReady={(params) => {
-            try {
-              gridRef.current = params.api;
-              setTimeout(() => {
-                try { params.api.sizeColumnsToFit(); } catch (e) {}
-                try { params.api.refreshView(); } catch (e) {}
-              }, 0);
-            } catch (e) {}
+            gridRef.current = params.api;
           }}
+          onFirstDataRendered={(params) => {
+            try { params.api.autoSizeAllColumns(); } catch (e) {}
+          }}
+          autoSizeStrategy={{ type: "fitCellContents" }}
           rowHeight={48}
           rowData={filterData()}
           frameworkComponents={{ customTooltip: CustomTooltip }}
-          columnDefs={reconcileColumnDefs}
+          columnDefs={sizeColumnsForHeader(reconcileColumnDefs)}
           defaultColDef={{
-            flex: 1,
+            minWidth: 100,
+            maxWidth: 220,
             resizable: true,
             filter: true,
           }}

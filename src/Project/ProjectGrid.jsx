@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import API_ENDPOINTS from "../config";
 import { createRoot } from "react-dom/client";
 import { AgGridReact } from "@ag-grid-community/react";
@@ -95,7 +96,7 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
     <>
      <div
         style={{
-          height: "100vh", 
+          height: "100%",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden", 
@@ -112,13 +113,17 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
       </div>
       <div  className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
+        onFirstDataRendered={(params) => {
+          try { params.api.autoSizeAllColumns(); } catch (e) {}
+        }}
+        autoSizeStrategy={{ type: "fitCellContents" }}
         rowData={filterData()}
         frameworkComponents={{ customTooltip: CustomTooltip }}
-        columnDefs={columnDefs}
+        columnDefs={sizeColumnsForHeader(columnDefs)}
         domLayout="normal"
         defaultColDef={{
-          flex: 1,
-          minWidth: 150,
+          minWidth: 100,
+          maxWidth: 220,
           resizable: true,
           filter: false,
           floatingFilter: false,

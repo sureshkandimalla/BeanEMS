@@ -4,6 +4,7 @@ import { Button, Card } from "antd";
 import { DownloadOutlined, ReloadOutlined } from "@ant-design/icons";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -203,14 +204,18 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
         >
           <AgGridReact
             ref={gridRef}
+            onFirstDataRendered={(params) => {
+              try { params.api.autoSizeAllColumns(); } catch (e) {}
+            }}
+            autoSizeStrategy={{ type: "fitCellContents" }}
             rowHeight={48}
             rowData={rowData}
             quickFilterText={searchText}
-            columnDefs={columnDefs}
+            columnDefs={sizeColumnsForHeader(columnDefs)}
             pinnedTopRowData={pinnedTopRowData}
             defaultColDef={{
-              flex: 1,
-              minWidth: 150,
+              minWidth: 100,
+              maxWidth: 220,
               resizable: true,
               filter: true,
               floatingFilter: false,

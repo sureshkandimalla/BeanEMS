@@ -21,6 +21,7 @@ import {
   VISA_EDITABLE_FIELDS,
 } from "./visaConstants";
 import "./VisaDetailsList.css";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
 export default function VisaDetailsList({ preloadedData }) {
   const [rowData, setRowData] = useState([]);
@@ -373,6 +374,10 @@ export default function VisaDetailsList({ preloadedData }) {
       filter: "agSetColumnFilter",
       cellRenderer: "agGroupCellRenderer",
       cellClassRules: { ...cellClassRules, blueUnderline: () => false },
+      onCellClicked: (params) => {
+        params.node.setExpanded(!params.node.expanded);
+      },
+      cellStyle: { cursor: "pointer" },
     },
     { field: "companyName",         headerName: MASTER_FIELD_LABELS.companyName,        filter: "agSetColumnFilter",  cellClassRules },
     // ── Visible columns (per requested order) ──
@@ -648,7 +653,7 @@ export default function VisaDetailsList({ preloadedData }) {
   };
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <Card className="employeeTableCard" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
         <div className="ag-theme-alpine workforce-container">
           <div className="workforce-search-container">
@@ -688,24 +693,22 @@ export default function VisaDetailsList({ preloadedData }) {
             <AgGridReact
               ref={gridRef}
               onGridReady={(params) => {
-                try {
-                  gridRef.current = params.api;
-                  setTimeout(() => {
-                    try { params.api.sizeColumnsToFit(); } catch (e) {}
-                    try { params.api.refreshView(); } catch (e) {}
-                  }, 0);
-                } catch (e) {}
+                gridRef.current = params.api;
               }}
+              onFirstDataRendered={(params) => {
+                try { params.api.autoSizeAllColumns(); } catch (e) {}
+              }}
+              autoSizeStrategy={{ type: "fitCellContents" }}
               rowHeight={48}
               rowData={filterData()}
-              columnDefs={columnDefs}
+              columnDefs={sizeColumnsForHeader(columnDefs)}
               domLayout="normal"
               pagination={true}
               paginationPageSize={100}
               paginationPageSizeSelector={[20, 50, 100]}
               defaultColDef={{
-                flex: 1,
-                minWidth: 150,
+                minWidth: 100,
+                maxWidth: 220,
                 resizable: true,
                 filter: true,
                 tooltipShowDelay: 0,

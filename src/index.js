@@ -9,9 +9,11 @@ import { ColumnsToolPanelModule } from "@ag-grid-enterprise/column-tool-panel";
 import { MenuModule } from "@ag-grid-enterprise/menu";
 import { ClientSideRowModelModule  } from "@ag-grid-community/client-side-row-model";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
+import "./styles/ag-grid-common.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { SetFilterModule } from "@ag-grid-enterprise/set-filter";
-import { ExcelExportModule } from "@ag-grid-enterprise/excel-export";  
+import { ExcelExportModule } from "@ag-grid-enterprise/excel-export";
+import { MasterDetailModule } from "@ag-grid-enterprise/master-detail";
 
 
 ModuleRegistry.registerModules([
@@ -19,7 +21,9 @@ ModuleRegistry.registerModules([
   ColumnsToolPanelModule,
   MenuModule,
   SetFilterModule,
-  ExcelExportModule
+  ExcelExportModule,
+  SideBarModule,
+  MasterDetailModule,
 ]);
 const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 

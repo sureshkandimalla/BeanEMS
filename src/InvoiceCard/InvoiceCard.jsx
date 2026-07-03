@@ -7,6 +7,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import CustomHeader from "../CustomHeader/CustomHeader";
 import "./InvoiceCard.css";
 const { Search } = Input;
@@ -166,22 +167,20 @@ const InvoiceCard = () => {
         <AgGridReact
           ref={gridApi}
           onGridReady={(params) => {
-            try {
-              gridApi.current = params.api;
-              setTimeout(() => {
-                try { params.api.sizeColumnsToFit(); } catch (e) {}
-                try { params.api.refreshView(); } catch (e) {}
-              }, 0);
-            } catch (e) {}
+            gridApi.current = params.api;
           }}
+          onFirstDataRendered={(params) => {
+            try { params.api.autoSizeAllColumns(); } catch (e) {}
+          }}
+          autoSizeStrategy={{ type: "fitCellContents" }}
           rowHeight={48}
           rowData={filterData()}
           frameworkComponents={{ customTooltip: CustomTooltip }}
-          columnDefs={getColumnsDefList(columnsList, true, false)}
+          columnDefs={sizeColumnsForHeader(getColumnsDefList(columnsList, true, false))}
           domLayout="autoHeight"
           defaultColDef={{
-            flex: 1,
-            minWidth: 150,
+            minWidth: 100,
+            maxWidth: 220,
             resizable: true,
             filter: true,
             cellClassRules: {

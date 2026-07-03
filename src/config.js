@@ -104,6 +104,7 @@ export const API_ENDPOINTS = {
   getLCAById: (lcaId) => `${API_BASE_URL}/lca/${lcaId}`,
   getLCAByEmployee: (employeeId) => `${API_BASE_URL}/lca/employee/${employeeId}`,
   deleteLCA: (lcaId) => `${API_BASE_URL}/lca/${lcaId}`,
+  getAllVisas: `${API_BASE_URL}/visa/getAllVisas`,
   createVisa: `${API_BASE_URL}/visa/createVisa`,
   updateVisa: (visaId) => `${API_BASE_URL}/visa/${visaId}`,
   getVisaById: (visaId) => `${API_BASE_URL}/visa/${visaId}`,

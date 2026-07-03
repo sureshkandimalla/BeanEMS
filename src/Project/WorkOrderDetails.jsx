@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Button, Drawer } from "antd";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
@@ -97,7 +98,7 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
     <>
      <div
         style={{
-          height: "100vh", 
+          height: "100%",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden", 
@@ -138,12 +139,16 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
         </div>
         <div  className={`workOrder-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
+          onFirstDataRendered={(params) => {
+            try { params.api.autoSizeAllColumns(); } catch (e) {}
+          }}
+          autoSizeStrategy={{ type: "fitCellContents" }}
           rowData={filterData()}
-          columnDefs={getColumnsDefList(true, false)}
+          columnDefs={sizeColumnsForHeader(getColumnsDefList(true, false))}
           domLayout="normal"
           defaultColDef={{
-            flex: 1,
-            minWidth: 150,
+            minWidth: 100,
+            maxWidth: 220,
             resizable: true,
             filter: false,
             floatingFilter: false,

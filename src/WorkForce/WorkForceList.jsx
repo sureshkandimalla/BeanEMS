@@ -10,6 +10,7 @@ import "./WorkForceList.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { FileExcelOutlined, SaveOutlined, ReloadOutlined } from "@ant-design/icons";
 import API_ENDPOINTS, { workingStatusList, workAuthorizationList, companyList } from "../config";
+import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
 const employmentTypeOptions = ["Full-Time", "Part-Time", "Hourly", "W2", "C2C", "1099"];
 const i9EverifyStatusOptions = ["Completed", "In Progress", "Failed"];
@@ -393,27 +394,23 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
         <AgGridReact
           ref={gridRef}
           onGridReady={(params) => {
-            try {
-              // store api for later use
-              gridRef.current = params.api;
-              // ensure columns size and force a redraw
-              setTimeout(() => {
-                try { params.api.sizeColumnsToFit(); } catch (e) {}
-                try { params.api.refreshView(); } catch (e) {}
-              }, 0);
-            } catch (e) {}
+            gridRef.current = params.api;
           }}
+          onFirstDataRendered={(params) => {
+            try { params.api.autoSizeAllColumns(); } catch (e) {}
+          }}
+          autoSizeStrategy={{ type: "fitCellContents" }}
           rowHeight={48}
           rowData={filterData()}
           getRowId={(params) => String(params.data.employeeId)}
           onCellValueChanged={onCellValueChanged}
           frameworkComponents={{ customTooltip: CustomTooltip }}
-          columnDefs={combinedColumnDefs}
+          columnDefs={sizeColumnsForHeader(combinedColumnDefs)}
            defaultColDef={{
-             flex: 1,
              resizable: true,
              filter: true ,
-             minWidth: 150,       
+             minWidth: 100,
+             maxWidth: 220,
            }}
           hiddenByDefault={false}
           sideBar={{

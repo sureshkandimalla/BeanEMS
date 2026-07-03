@@ -12,6 +12,7 @@
     "@ag-grid-enterprise/core": "^32.3.2",
     "@ag-grid-enterprise/excel-export": "^32.3.3",
     "@ag-grid-enterprise/filter-tool-panel": "^32.3.2",
+    "@ag-grid-enterprise/master-detail": "^32.3.2",
     "@ag-grid-enterprise/menu": "^32.3.2",
     "@ag-grid-enterprise/set-filter": "^32.3.2",
     "@ag-grid-enterprise/side-bar": "^32.3.2",

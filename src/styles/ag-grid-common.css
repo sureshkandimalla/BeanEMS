@@ -13,6 +13,20 @@
   overflow: visible;
 }
 
+/* ── Rounded, bordered grid frame (applies to every AG Grid instance) ── */
+.ag-theme-alpine .ag-root-wrapper {
+  border-radius: 12px;
+  border: 1px solid #d9d9d9;
+  overflow: hidden;
+}
+
+/* ── Rounded, bordered toolbar (search/refresh/export bar above every grid) ── */
+.workforce-search-container {
+  border-radius: 12px;
+  border: 1px solid #d9d9d9;
+  margin-bottom: 10px;
+}
+
 /* ── Generic grid wrappers (reuse across components) ── */
 .ag-grid-wrapper {
   display: flex;
