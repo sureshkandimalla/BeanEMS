@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
+import { invoiceTermLabel } from "../Utils/invoiceTerm";
 
 const ProjectGrid = ({ employeeId, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
@@ -26,11 +27,18 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
     {
       headerName: "Bill Rate",
       field: "billRates",
-      cellRenderer: (params) =>
-        `$${params.data?.billRates?.[0].wage.toFixed(2)}` || "N/A",
+      cellRenderer: (params) => {
+        const rate = params.data?.billRates?.[0]?.wage;
+        return rate != null ? `$${rate.toFixed(2)}` : "N/A";
+      },
       filter: true,
     },
-    { headerName: "Invoice Term", field: "invoiceTerm", filter: true },
+    {
+      headerName: "Invoice Term",
+      field: "invoiceTerm",
+      valueFormatter: (params) => invoiceTermLabel(params.value),
+      filter: true,
+    },
     { headerName: "Payment Term", field: "paymentTerm", filter: true },
     { headerName: "Start Date", field: "startDate", filter: true },
     { headerName: "End Date", field: "endDate", filter: true },

@@ -8,7 +8,7 @@ import RevenueCharts from "../RevenueCharts/RevenueCharts";
 import ProjectPersonalFile from "./ProjectPersonalFile";
 import AssignmentDetails from "./AssignmentDetails";
 import WorkOrderDetails from "./WorkOrderDetails";
-import InvoiceById from "../Invoice/InvoiceById";
+import InvoiceDetails from "../Invoice/InvoiceDetails";
 import BillingDetails from "../Billings/BillingDetails";
 import { UpOutlined, DownOutlined,CalendarOutlined, DollarOutlined, ProjectOutlined, BankOutlined, UserOutlined } from "@ant-design/icons";
 import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message } from "antd";
@@ -98,8 +98,8 @@ const ProjectFullDetails = () => {
       key: 4,
       label: "Invoices",
       children: (
-        <InvoiceById
-          url={API_ENDPOINTS.getInvoicesForProject(rowData.projectId)}
+        <InvoiceDetails
+          projectId={rowData.projectId}
           employeeId={rowData.employeeId}
           isCollapsed={isCollapsed}
         />

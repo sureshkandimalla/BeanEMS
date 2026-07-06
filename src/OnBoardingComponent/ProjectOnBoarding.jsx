@@ -14,6 +14,7 @@ import {
   Spin,
 } from "antd";
 import { validateEmail } from "../utils";
+import { INVOICE_TERM_OPTIONS } from "../Utils/invoiceTerm";
 //import Sidebar from '../../Commons/Sidebar/Sidebar';
 //import './EmployeeOnBoarding.scss';
 import moment from "moment";
@@ -86,7 +87,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
     expenseExternal: 0,
     net: 0,
     status: "",
-    invoiceTerm: "",
+    invoiceTerm: null,
     paymentTerm: "",
     hours: 0,
     invoiceId: 0,
@@ -158,7 +159,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
       expenseExternal: 0,
       net: 0,
       status: "",
-      invoiceTerm: "",
+      invoiceTerm: null,
       paymentTerm: "",
       hours: 0,
       invoiceId: 0,
@@ -386,12 +387,17 @@ const ProjectOnBoardingForm = ({ onClose }) => {
           <Row gutter={30}>
             <Col span={8} className="form-row">
               <Form.Item label="Invoice Term" name="Invoice Term">
-                <Input
-                  onChange={(e) =>
-                    handleGeneralData(e.target.value, "invoiceTerm")
-                  }
-                  value={generalDetails.invoiceTerm}
-                />
+                <Select
+                  placeholder="Select Invoice Term"
+                  value={generalDetails.invoiceTerm || undefined}
+                  onChange={(value) => handleGeneralData(value, "invoiceTerm")}
+                >
+                  {INVOICE_TERM_OPTIONS.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
             <Col span={8} className="form-row">

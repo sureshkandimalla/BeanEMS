@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Card, Drawer } from "antd";
-import IconButton from "@mui/material/IconButton";
-import EditIcon from "@mui/icons-material/Edit";
-import SaveIcon from "@mui/icons-material/Save";
-import CancelIcon from "@mui/icons-material/Cancel";
 
-import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
+import { PlusOutlined, ReloadOutlined, FileExcelOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -21,12 +17,19 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import { formatMonthYear } from "../Utils/dateFormat";
 
-const InvoiceDetails = () => {
+// employeeId/projectId are optional — when provided (e.g. embedded in the
+// Employee Full Details "INVOICES" tab, or the Project Full Details
+// "Invoices" tab), the grid scopes down to just that employee's/project's
+// invoices, with every other feature (search, edit, Save/Cancel, Export to
+// Excel, Add New Invoice, Generate Invoice, totals) unchanged.
+const InvoiceDetails = ({ employeeId, projectId, isCollapsed } = {}) => {
   const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [rowData, setRowData] = useState();
+  const [projects, setProjectsData] = useState([]);
   const navigate = useNavigate();
   const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
 
@@ -40,6 +43,51 @@ const InvoiceDetails = () => {
       isInitialRender.current = false;
     }
   }, []);
+
+  // Projects carry their own employeeName/projectName/vendorName — used to
+  // look up those display columns for each invoice by its projectId.
+  useEffect(() => {
+    fetch(API_ENDPOINTS.getProjects)
+      .then((response) => response.json())
+      .then((data) => setProjectsData(data || []))
+      .catch((error) => console.error("Error fetching projects:", error));
+  }, []);
+
+  const projectsById = useMemo(
+    () => Object.fromEntries(projects.map((project) => [project.projectId, project])),
+    [projects],
+  );
+
+  // Merge in each invoice's project-derived display fields as real
+  // properties (not just AG Grid valueGetters) so the search box — which
+  // searches Object.values(row) — can actually match against them too.
+  const enrichedRowData = useMemo(() => {
+    if (!rowData) return rowData;
+    const enriched = rowData.map((row) => {
+      const project = projectsById[row.projectId];
+      return {
+        ...row,
+        employeeName: project?.employeeName || "",
+        projectName: project?.projectName || "",
+        vendorName: project?.vendorName || "",
+      };
+    });
+    let scoped = enriched;
+    if (projectId) {
+      // Invoices carry projectId directly, so this scoping is exact.
+      scoped = scoped.filter((row) => Number(row.projectId) === Number(projectId));
+    }
+    if (employeeId) {
+      // Invoices only carry a projectId, so resolve each invoice's project
+      // to find its employeeId. Compared as Numbers since the
+      // caller-supplied employeeId and the project's own employeeId aren't
+      // guaranteed to be the same type.
+      scoped = scoped.filter(
+        (row) => Number(projectsById[row.projectId]?.employeeId) === Number(employeeId),
+      );
+    }
+    return scoped;
+  }, [rowData, projectsById, employeeId, projectId]);
 
   const fetchData = () => {
     //default status =viewAll
@@ -63,51 +111,48 @@ const InvoiceDetails = () => {
       });
   };
 
-  const [editRowId, setEditRowId] = useState(null);
-  const [originalStatus, setOriginalStatus] = useState(null);
+  // Double-click any editable cell (Invoice Id / Invoice Month / Hours) to
+  // edit in place — this is AG Grid's built-in editing interaction, no extra
+  // wiring needed once a column is marked `editable`. Pending edits are
+  // tracked here so the Save/Cancel buttons only appear once something has
+  // actually changed.
+  const [modifiedRows, setModifiedRows] = useState({});
 
-  const handleEdit = (params) => {
-    setEditRowId(params.data.invoiceId);
-    setOriginalStatus(params.data.status); // Store the original status
+  const onCellValueChanged = (params) => {
+    const invoiceId = params.data?.invoiceId;
+    if (invoiceId === undefined || invoiceId === null) return;
+
+    if (params.column.colId === "hours") {
+      const hours = Number(params.data.hours) || 0;
+      const billing = Number(params.data.billing) || 0;
+      params.data.total = hours * billing;
+      params.api.refreshCells({ rowNodes: [params.node], columns: ["total"] });
+    }
+
+    setModifiedRows((prev) => ({ ...prev, [invoiceId]: params.data }));
   };
 
-  const handleSave = (params) => {
-    const updatedRow = params.data;
-    console.log(updatedRow);
-    // Call the PUT API to update the row
-    axios
-      .put(
-        API_ENDPOINTS.invoiceById(updatedRow.invoiceId),
-        updatedRow,
-      )
-      .then((response) => {
-        console.log("Invoice updated successfully:", response.data);
+  const handleSaveChanges = () => {
+    const rows = Object.values(modifiedRows);
+    if (rows.length === 0) return;
+    Promise.all(
+      rows.map((row) => axios.put(API_ENDPOINTS.invoiceById(row.invoiceId), row)),
+    )
+      .then(() => {
+        setModifiedRows({});
         fetchData();
-        setEditRowId(null); // Exit edit mode
       })
       .catch((error) => {
-        console.error("Error updating invoice:", error);
+        console.error("Error saving invoice changes:", error);
       });
   };
 
-  const handleCancel = (params) => {
-    setRowData((prevData) =>
-      prevData.map((row) =>
-        row.invoiceId === editRowId ? { ...row, status: originalStatus } : row,
-      ),
-    );
-    setEditRowId(null); // Exit edit mode
+  const handleCancelChanges = () => {
+    // Discard local edits by simply refetching clean data from the server.
+    setModifiedRows({});
+    fetchData();
   };
 
-  const handleStatusChange = (params, newValue) => {
-    setRowData((prevData) =>
-      prevData.map((row) =>
-        row.invoiceId === params.data.invoiceId
-          ? { ...row, status: newValue }
-          : row,
-      ),
-    );
-  };
   const handleDateChange = (date) => {
     setSelectedDate(date);
     // //alert(date.toISOString().split('T')[0]);
@@ -141,21 +186,28 @@ const InvoiceDetails = () => {
   };
 
   const getColumnsDefList = (isSortable, isEditable, hasFilter) => {
+    // Paid invoices are locked — nothing on the row is editable once paid.
+    const editableUnlessPaid = (params) => params.data?.status !== "Paid";
+
     var columns = [
       {
         headerName: "Invoice Id",
         field: "invoiceId",
         sortable: isSortable,
+        editable: editableUnlessPaid,
         valueFormatter: (params) => {
           // Check if this row is the pinned bottom row and show "Total"
           return params.node.rowPinned === "bottom" ? "Total" : params.value;
         },
       },
-      { headerName: "Project Id", field: "projectId", sortable: isSortable },
+      { headerName: "Employee Name", field: "employeeName", sortable: isSortable },
+      { headerName: "Vendor Name", field: "vendorName", sortable: isSortable },
       {
         headerName: "InvoiceMonth",
         field: "invoiceMonth",
         sortable: isSortable,
+        editable: editableUnlessPaid,
+        valueFormatter: (params) => formatMonthYear(params.value),
       },
       {
         headerName: "Billing",
@@ -163,7 +215,12 @@ const InvoiceDetails = () => {
         sortable: isSortable,
         valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
       },
-      { headerName: "Hours", field: "hours", sortable: isSortable },
+      {
+        headerName: "Hours",
+        field: "hours",
+        sortable: isSortable,
+        editable: editableUnlessPaid,
+      },
       {
         headerName: "InvoiceAmount",
         field: "total",
@@ -182,52 +239,15 @@ const InvoiceDetails = () => {
       {
         headerName: "Status",
         field: "status",
-        cellRenderer: (params) => {
-          if (params.data.invoiceId === editRowId) {
-            return (
-              <select
-                value={params.data.status}
-                onChange={(e) => handleStatusChange(params, e.target.value)}
-              >
-                <option value="Paid">Paid</option>
-                <option value="Unpaid">Unpaid</option>
-              </select>
-            );
-          }
-          return params.value;
+        sortable: isSortable,
+        editable: editableUnlessPaid,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: {
+          values: ["Created", "Paid", "Partially Paid"],
         },
       },
-      {
-        headerName: "Actions",
-        field: "actions",
-        cellRenderer: (params) => {
-          if (params.node.rowPinned) {
-            // Return null or custom content for pinned rows
-            return null;
-          }
-
-          if (params.data.invoiceId === editRowId) {
-            return (
-              <>
-                <IconButton color="primary" onClick={() => handleSave(params)}>
-                  <SaveIcon />
-                </IconButton>
-                <IconButton
-                  color="secondary"
-                  onClick={() => handleCancel(params)}
-                >
-                  <CancelIcon />
-                </IconButton>
-              </>
-            );
-          }
-          return (
-            <IconButton color="primary" onClick={() => handleEdit(params)}>
-              <EditIcon />
-            </IconButton>
-          );
-        },
-      },
+      { headerName: "Project Id", field: "projectId", sortable: isSortable },
+      { headerName: "Project Name", field: "projectName", sortable: isSortable },
     ];
     return columns;
   };
@@ -242,12 +262,18 @@ const InvoiceDetails = () => {
     setSearchText(event.target.value);
   };
 
+  const onBtnExportDataAsExcel = () => {
+    if (gridRef.current) {
+      gridRef.current.exportDataAsExcel();
+    }
+  };
+
   const filterData = () => {
     if (!searchText) {
-      return rowData;
+      return enrichedRowData;
     }
 
-    return rowData.filter((row) =>
+    return (enrichedRowData || []).filter((row) =>
       Object.values(row).some((value) =>
         String(value).toLowerCase().includes(searchText.toLowerCase()),
       ),
@@ -264,25 +290,38 @@ const InvoiceDetails = () => {
   };
 
   useEffect(() => {
-    if (rowData && rowData.length > 0) {
-      console.log(rowData);
+    const visibleRows = filterData();
+    if (visibleRows && visibleRows.length > 0) {
       setPinnedTopRowData([
         {
           invoiceId: "Total",
-          hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
-          total: rowData.reduce((sum, row) => sum + (row.total || 0), 0),
-          invoicePaidAmount: rowData.reduce(
+          hours: visibleRows.reduce((sum, row) => sum + (row.hours || 0), 0),
+          total: visibleRows.reduce((sum, row) => sum + (row.total || 0), 0),
+          invoicePaidAmount: visibleRows.reduce(
             (sum, row) => sum + (row.invoicePaidAmount || 0),
             0,
           ), // Summing billRate values
-          actions: null,
         },
       ]);
-      console.log(pinnedTopRowData);
+    } else {
+      setPinnedTopRowData([]);
     }
-  }, [rowData]);
+    // Recompute whenever the underlying data or the search filter changes —
+    // the totals row must reflect exactly what's currently visible.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enrichedRowData, searchText]);
 
   const generateInvoice = () => {
+    if (employeeId) {
+      // Scoped to just this employee's own active projects.
+      navigate("/generateInvoice", {
+        state: {
+          url: API_ENDPOINTS.activeProjectsForInvoiceByEmployee(employeeId),
+        },
+      });
+      return;
+    }
+
     const formattedDate = selectedDate
       ? new Date(selectedDate).toISOString().split("T")[0]
       : null;
@@ -345,6 +384,33 @@ const InvoiceDetails = () => {
             onChange={handleSearchInputChange}
           />
           <Button
+            type="default"
+            icon={<FileExcelOutlined />}
+            onClick={onBtnExportDataAsExcel}
+            style={{ marginLeft: "10px" }}
+          >
+            Export to Excel
+          </Button>
+          {Object.keys(modifiedRows).length > 0 && (
+            <>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={handleSaveChanges}
+                style={{ marginLeft: "10px" }}
+              >
+                Save
+              </Button>
+              <Button
+                icon={<CloseOutlined />}
+                onClick={handleCancelChanges}
+                style={{ marginLeft: "10px" }}
+              >
+                Cancel
+              </Button>
+            </>
+          )}
+          <Button
             style={{ marginLeft: "20px" }}
             type="primary"
             className="button-vendor"
@@ -385,6 +451,7 @@ const InvoiceDetails = () => {
           try { params.api.autoSizeAllColumns(); } catch (e) {}
         }}
         autoSizeStrategy={{ type: "fitCellContents" }}
+        onCellValueChanged={onCellValueChanged}
         rowHeight={48}
         rowData={filterData()}
         columnDefs={sizeColumnsForHeader(getColumnsDefList(true))}

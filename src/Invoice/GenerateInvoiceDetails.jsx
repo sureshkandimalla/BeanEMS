@@ -100,7 +100,14 @@ const GenerateInvoiceDetails = () => {
   const getFlattenedData = (data) => {
     let updatedData = data.map((dataObj) => {
       //return { ...dataObj, ...dataObj.employeeAddress[0], ...dataObj.employeeAssignments[0] }
-      return { ...dataObj };
+      // Snapshot the project's own start/end date before startDate/endDate
+      // get edited below to represent this invoice's period — these bounds
+      // are what Start/End Date edits get validated against.
+      return {
+        ...dataObj,
+        projectStartDate: dataObj.startDate,
+        projectEndDate: dataObj.endDate,
+      };
     });
     return updatedData || [];
   };
@@ -232,12 +239,48 @@ const GenerateInvoiceDetails = () => {
         field: "startDate",
         sortable: true,
         editable: true,
+        // Invoice Start Date cannot be before the project's own start date.
+        valueSetter: (params) => {
+          const { newValue, data } = params;
+          if (data.projectStartDate && newValue < data.projectStartDate) {
+            alert(
+              `Start Date cannot be before the project's start date (${data.projectStartDate}).`,
+            );
+            return false;
+          }
+          if (data.projectEndDate && newValue > data.projectEndDate) {
+            alert(
+              `Start Date cannot be after the project's end date (${data.projectEndDate}).`,
+            );
+            return false;
+          }
+          data.startDate = newValue;
+          return true;
+        },
       },
       {
         headerName: "End Date",
         field: "endDate",
         sortable: true,
         editable: true,
+        // Invoice End Date cannot be after the project's own end date.
+        valueSetter: (params) => {
+          const { newValue, data } = params;
+          if (data.projectEndDate && newValue > data.projectEndDate) {
+            alert(
+              `End Date cannot be after the project's end date (${data.projectEndDate}).`,
+            );
+            return false;
+          }
+          if (data.projectStartDate && newValue < data.projectStartDate) {
+            alert(
+              `End Date cannot be before the project's start date (${data.projectStartDate}).`,
+            );
+            return false;
+          }
+          data.endDate = newValue;
+          return true;
+        },
       },
       { headerName: "Hours", field: "hours", sortable: true, editable: true },
       {

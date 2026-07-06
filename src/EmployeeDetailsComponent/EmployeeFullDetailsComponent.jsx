@@ -12,7 +12,6 @@ import InvoiceDetails from "../Invoice/InvoiceDetails";
 import PayrollDetails from "../Payroll/PayrollDetails";
 import AdjustementDetails from "../Adjustments/AdjustmentDetails";
 import ReconciliationDetails from "../Reconciliation/ReconciliationDetails";
-import InvoiceById from "../Invoice/InvoiceById";
 import BillingDetails from "../Billings/BillingDetails";
 import PassportController from "../Passport/PassportController";
 import { UpOutlined, DownOutlined,CalendarOutlined, DollarOutlined,MailOutlined,PhoneOutlined, UserOutlined } from "@ant-design/icons";
@@ -72,11 +71,7 @@ const EmployeeFullDetails = () => {
       label: "INVOICES",
       children: (
         <div className="employee-List-grid" style={{ height: "100%" }}>
-          <InvoiceById
-            url={`${API_ENDPOINTS.getInvoicesForEmployee}?employeeId=${rowData.employeeId}`}
-            employeeId={rowData.employeeId}
-            isCollapsed={isCollapsed}
-          />
+          <InvoiceDetails employeeId={rowData.employeeId} isCollapsed={isCollapsed} />
         </div>
       ),
     },

@@ -37,7 +37,7 @@ const ProjectDashboard = () => {
     if (!rowData) return {};
     return {
       all: rowData,
-      active: rowData.filter(({ status }) => status === "ACTIVE"),
+      active: rowData.filter(({ status }) => (status || "").toUpperCase() === "ACTIVE"),
     };
   }, [rowData]);
 

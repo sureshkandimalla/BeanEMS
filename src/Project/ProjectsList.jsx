@@ -8,6 +8,11 @@ import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./ProjectList.css";
+import {
+  INVOICE_TERM_OPTIONS,
+  invoiceTermLabel,
+  invoiceTermCode,
+} from "../Utils/invoiceTerm";
 
 const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   console.log(projectsList);
@@ -49,6 +54,26 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   const getColumnsDefList = (isSortable) => {
     var columns = [
       {
+        colId: "rowNum",
+        headerName: "#",
+        valueGetter: (params) => params.node.rowIndex + 1,
+        width: 60,
+        minWidth: 60,
+        maxWidth: 60,
+        pinned: "left",
+        lockPosition: true,
+        suppressMovable: true,
+        sortable: false,
+        filter: false,
+        editable: false,
+        suppressSizeToFit: true,
+        cellStyle: { textAlign: "center", fontWeight: 500 },
+        headerClass: "ag-center-cols",
+        cellClassRules: {
+          darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+        },
+      },
+      {
         headerName: "Project Id",
         field: "projectId",
         sortable: isSortable,
@@ -85,6 +110,13 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
             </Link>
           );
         },
+        sortable: isSortable,
+        editable: false,
+        filter: "agTextColumnFilter",
+      },
+      {
+        headerName: "Vendor Name",
+        field: "vendorName",
         sortable: isSortable,
         editable: false,
         filter: "agTextColumnFilter",
@@ -177,13 +209,16 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         sortable: isSortable,
         editable: true,
         filter: "agTextColumnFilter",
-      },
-      {
-        headerName: "Invoice Terms",
-        field: "invoiceTerm",
-        sortable: isSortable,
-        editable: true,
-        filter: "agTextColumnFilter",
+        // Backend stores/edits a numeric code; grid always shows/edits the text label.
+        valueGetter: (params) => invoiceTermLabel(params.data?.invoiceTerm),
+        valueSetter: (params) => {
+          params.data.invoiceTerm = invoiceTermCode(params.newValue);
+          return true;
+        },
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: {
+          values: INVOICE_TERM_OPTIONS.map((option) => option.label),
+        },
       },
     ];
     return columns;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import { formatMonthYear } from "../Utils/dateFormat";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
@@ -72,14 +73,7 @@ const BillingDetails = ({ url, isCollapsed }) => {
         headerName: "InvoiceMonth",
         field: "invoiceMonth",
         sortable: isSortable,
-        valueFormatter: (params) => {
-          if (!params.value) return ""; // Handle empty or undefined values
-          const date = new Date(params.value);
-          return date.toLocaleDateString("en-US", {
-            month: "short", // Short month format (e.g., Mar)
-            year: "numeric", // Full year format
-          });
-        },
+        valueFormatter: (params) => formatMonthYear(params.value),
       },
       {
         headerName: "Billing",
