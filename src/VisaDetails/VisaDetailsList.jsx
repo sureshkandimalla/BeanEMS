@@ -11,6 +11,7 @@ import API_ENDPOINTS, { visaStatusList } from "../config";
 import VisaFormModal from "./VisaFormModal";
 import LcaFormModal from "./LcaFormModal";
 import PassportController from "../Passport/PassportController";
+import { parseLocalDateSafe } from "../Utils/dateFormat";
 import {
   MASTER_FIELD_LABELS,
   DETAIL_FIELD_LABELS,
@@ -463,14 +464,12 @@ export default function VisaDetailsList({ preloadedData }) {
     },
     { field: "passportExpiryDate",  headerName: MASTER_FIELD_LABELS.passportExpiryDate, filter: "agDateColumnFilter", cellClassRules,
       valueFormatter: (params) => {
-        if (!params.value) return "";
-        const d = new Date(params.value);
-        return isNaN(d) ? params.value : d.toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" });
+        const d = parseLocalDateSafe(params.value);
+        return d ? d.toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" }) : (params.value || "");
       },
       cellStyle: (params) => {
-        if (!params.value) return null;
-        const expiry = new Date(params.value);
-        if (isNaN(expiry)) return null;
+        const expiry = parseLocalDateSafe(params.value);
+        if (!expiry) return null;
         const today = new Date();
         const daysLeft = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
         if (daysLeft < 0)   return { color: "#cf1322", fontWeight: 600 }; // expired — red

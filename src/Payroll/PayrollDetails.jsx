@@ -9,6 +9,7 @@ import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import { formatDate } from "../Utils/dateFormat";
 
 const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCollapsed, gridHeight = "calc(100vh - 500px)" }) => {
   const [searchText, setSearchText] = useState("");
@@ -30,15 +31,7 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
       .catch((error) => console.error("Error fetching payroll:", error));
   };
 
-  const formatDate = (params) => {
-    if (!params.value) return "";
-    const date = new Date(params.value);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
+  const formatDateCell = (params) => formatDate(params.value);
 
   const columnDefs = useMemo(
     () => [
@@ -64,19 +57,19 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
         headerName: "Pay Check Date",
         field: "checkDate",
         sortable: true,
-        valueFormatter: formatDate,
+        valueFormatter: formatDateCell,
       },
       {
         headerName: "Pay Cycle Start",
         field: "payPeriodStartDate",
         sortable: true,
-        valueFormatter: formatDate,
+        valueFormatter: formatDateCell,
       },
       {
         headerName: "Pay Cycle End",
         field: "payPeriodEndDate",
         sortable: true,
-        valueFormatter: formatDate,
+        valueFormatter: formatDateCell,
       },
       { headerName: "Hours", field: "hours", sortable: true },
       {
