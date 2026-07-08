@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import API_ENDPOINTS from "../config";
-import { Button, Card, Row, Col, Collapse } from "antd";
+import { Button, Card, Row, Col, Collapse, Radio } from "antd";
 import axios from "axios";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import ReactApexChart from "react-apexcharts";
@@ -19,9 +19,11 @@ const PayrollSummary = ({ employeeId }) => {
     totalNetPay: 0,
     totalHours: 0,
     checkDateTotals: { checkDates: [], totalExpenses: [], netPay: [], taxWithheld: [], employerLiability: [] },
+    yearTotals: { years: [], totalExpenses: [], netPay: [], taxWithheld: [], employerLiability: [] },
   });
   const [checkDateOffset, setCheckDateOffset] = useState(0);
   const [chartsOpen, setChartsOpen] = useState(true);
+  const [checkDateGroupBy, setCheckDateGroupBy] = useState("date"); // "date" | "year"
 
   useEffect(() => {
     fetchData();
@@ -76,6 +78,25 @@ const PayrollSummary = ({ employeeId }) => {
       employerLiability: checkDates.map((d) => Math.round(checkDateMap[d].employerLiability)),
     };
 
+    // Totals by year (same shape as checkDateTotals, grouped coarser)
+    const yearMap = {};
+    data.forEach((row) => {
+      const yr = row.checkDate ? row.checkDate.substring(0, 4) : "Unknown";
+      if (!yearMap[yr]) yearMap[yr] = { totalExpenses: 0, netPay: 0, taxWithheld: 0, employerLiability: 0 };
+      yearMap[yr].totalExpenses += row.totalExpenses || 0;
+      yearMap[yr].netPay += row.netPay || 0;
+      yearMap[yr].taxWithheld += row.taxWithheld || 0;
+      yearMap[yr].employerLiability += row.employerLiability || 0;
+    });
+    const years = Object.keys(yearMap).sort();
+    const yearTotals = {
+      years,
+      totalExpenses: years.map((y) => Math.round(yearMap[y].totalExpenses)),
+      netPay: years.map((y) => Math.round(yearMap[y].netPay)),
+      taxWithheld: years.map((y) => Math.round(yearMap[y].taxWithheld)),
+      employerLiability: years.map((y) => Math.round(yearMap[y].employerLiability)),
+    };
+
     // Status distribution
     const statusMap = {};
     data.forEach((row) => {
@@ -88,11 +109,12 @@ const PayrollSummary = ({ employeeId }) => {
     const totalNetPay = data.reduce((sum, r) => sum + (r.netPay || 0), 0);
     const totalHours = data.reduce((sum, r) => sum + (r.hours || 0), 0);
 
-    setChartData({ departments, netPayByDept, hoursByDept, statusLabels, statusCounts, totalNetPay, totalHours, checkDateTotals });
+    setChartData({ departments, netPayByDept, hoursByDept, statusLabels, statusCounts, totalNetPay, totalHours, checkDateTotals, yearTotals });
   };
 
-  // Chart configs
-  const allCheckDates = chartData.checkDateTotals.checkDates;
+  // Chart configs — grouped by either exact check date or by year, per the toggle.
+  const groupedTotals = checkDateGroupBy === "year" ? chartData.yearTotals : chartData.checkDateTotals;
+  const allCheckDates = checkDateGroupBy === "year" ? groupedTotals.years : groupedTotals.checkDates;
   const visibleCount = 6;
   const totalDates = allCheckDates.length;
   // Default to showing last 6; offset counts from end
@@ -100,10 +122,10 @@ const PayrollSummary = ({ employeeId }) => {
   const endIdx = Math.max(visibleCount, totalDates - checkDateOffset);
   const visibleDates = allCheckDates.slice(startIdx, endIdx);
   const visibleTotals = {
-    totalExpenses: chartData.checkDateTotals.totalExpenses.slice(startIdx, endIdx),
-    netPay: chartData.checkDateTotals.netPay.slice(startIdx, endIdx),
-    taxWithheld: chartData.checkDateTotals.taxWithheld.slice(startIdx, endIdx),
-    employerLiability: chartData.checkDateTotals.employerLiability.slice(startIdx, endIdx),
+    totalExpenses: groupedTotals.totalExpenses.slice(startIdx, endIdx),
+    netPay: groupedTotals.netPay.slice(startIdx, endIdx),
+    taxWithheld: groupedTotals.taxWithheld.slice(startIdx, endIdx),
+    employerLiability: groupedTotals.employerLiability.slice(startIdx, endIdx),
   };
 
   const checkDateBarOptions = {
@@ -114,12 +136,16 @@ const PayrollSummary = ({ employeeId }) => {
     xaxis: {
       categories: visibleDates,
       labels: { style: { fontSize: "11px" }, rotate: -30 },
-      title: { text: "Check Date (Month)" },
+      title: { text: checkDateGroupBy === "year" ? "Year" : "Check Date (Month)" },
     },
     yaxis: { show: false },
     legend: { position: "top", fontSize: "12px" },
     tooltip: { y: { formatter: (val) => formatCurrency(val) } },
-    title: { text: "Payroll Totals by Check Date", align: "center", style: { fontSize: "13px" } },
+    title: {
+      text: checkDateGroupBy === "year" ? "Payroll Totals by Year" : "Payroll Totals by Check Date",
+      align: "center",
+      style: { fontSize: "13px" },
+    },
   };
 
   const hoursBarOptions = {
@@ -186,17 +212,30 @@ const PayrollSummary = ({ employeeId }) => {
           <Row gutter={16}>
             <Col span={12}>
               <Card bodyStyle={{ padding: "12px" }}>
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 4 }}>
-                  <Button
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <Radio.Group
                     size="small"
-                    onClick={() => setCheckDateOffset((o) => Math.min(o + 1, totalDates - visibleCount))}
-                    disabled={checkDateOffset >= totalDates - visibleCount}
-                  >← Older</Button>
-                  <Button
-                    size="small"
-                    onClick={() => setCheckDateOffset((o) => Math.max(o - 1, 0))}
-                    disabled={checkDateOffset <= 0}
-                  >Newer →</Button>
+                    value={checkDateGroupBy}
+                    onChange={(e) => {
+                      setCheckDateGroupBy(e.target.value);
+                      setCheckDateOffset(0); // reset paging — bucket count changes between date/year views
+                    }}
+                  >
+                    <Radio.Button value="date">By Check Date</Radio.Button>
+                    <Radio.Button value="year">By Year</Radio.Button>
+                  </Radio.Group>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <Button
+                      size="small"
+                      onClick={() => setCheckDateOffset((o) => Math.min(o + 1, totalDates - visibleCount))}
+                      disabled={checkDateOffset >= totalDates - visibleCount}
+                    >← Older</Button>
+                    <Button
+                      size="small"
+                      onClick={() => setCheckDateOffset((o) => Math.max(o - 1, 0))}
+                      disabled={checkDateOffset <= 0}
+                    >Newer →</Button>
+                  </div>
                 </div>
                 <ReactApexChart
                   options={checkDateBarOptions}
@@ -242,7 +281,7 @@ const PayrollSummary = ({ employeeId }) => {
         <PayrollDetails
           rowData={rowData}
           onRefresh={fetchData}
-          gridHeight={chartsOpen ? "calc(100vh - 820px)" : "calc(100vh - 500px)"}
+          gridHeight={chartsOpen ? "calc(100vh - 720px)" : "calc(100vh - 400px)"}
         />
       </div>
     </div>

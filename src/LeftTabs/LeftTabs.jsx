@@ -11,6 +11,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   ProjectOutlined,
+  DollarOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -31,6 +32,7 @@ const leftTabNames = [
   getItem("Employee Onboarding", "/employeeonboard", <UsergroupAddOutlined />),
   getItem("Vendor", "/vendordetails", <BlockOutlined />),
   getItem("Invoice", "/invoicedetails", <FileTextOutlined />),
+  getItem("Expenses", "/expensedetails", <DollarOutlined />),
   getItem("Projects", "/projects", <ProjectOutlined />),
   getItem("Potential Employees", "/potentialEmployees", <UserOutlined />),
   getItem("Visa Employees", "/visaEmployees", <UsergroupAddOutlined />),

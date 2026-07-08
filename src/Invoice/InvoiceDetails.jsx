@@ -23,8 +23,10 @@ import { formatMonthYear } from "../Utils/dateFormat";
 // Employee Full Details "INVOICES" tab, or the Project Full Details
 // "Invoices" tab), the grid scopes down to just that employee's/project's
 // invoices, with every other feature (search, edit, Save/Cancel, Export to
-// Excel, Add New Invoice, Generate Invoice, totals) unchanged.
-const InvoiceDetails = ({ employeeId, projectId, isCollapsed } = {}) => {
+// Excel, Add New Invoice, Generate Invoice, totals) unchanged. statusFilter
+// is likewise optional — when provided (e.g. embedded in a status tab on
+// the Dashboard), only invoices with that exact status are shown.
+const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, gridHeight } = {}) => {
   const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
@@ -86,8 +88,13 @@ const InvoiceDetails = ({ employeeId, projectId, isCollapsed } = {}) => {
         (row) => Number(projectsById[row.projectId]?.employeeId) === Number(employeeId),
       );
     }
+    if (statusFilter) {
+      scoped = scoped.filter(
+        (row) => (row.status || "").toLowerCase() === statusFilter.toLowerCase(),
+      );
+    }
     return scoped;
-  }, [rowData, projectsById, employeeId, projectId]);
+  }, [rowData, projectsById, employeeId, projectId, statusFilter]);
 
   const fetchData = () => {
     //default status =viewAll
@@ -200,19 +207,33 @@ const InvoiceDetails = ({ employeeId, projectId, isCollapsed } = {}) => {
           return params.node.rowPinned === "bottom" ? "Total" : params.value;
         },
       },
-      { headerName: "Employee Name", field: "employeeName", sortable: isSortable },
-      { headerName: "Vendor Name", field: "vendorName", sortable: isSortable },
+      { headerName: "Employee Name", field: "employeeName", sortable: isSortable, enableRowGroup: true },
+      { headerName: "Vendor Name", field: "vendorName", sortable: isSortable, enableRowGroup: true },
+      {
+        headerName: "Year",
+        field: "invoiceMonth",
+        colId: "invoiceYear",
+        sortable: isSortable,
+        enableRowGroup: true,
+        filter: "agSetColumnFilter",
+        valueGetter: (params) =>
+          params.data?.invoiceMonth ? params.data.invoiceMonth.substring(0, 4) : null,
+        valueFormatter: (params) =>
+          params.node.rowPinned === "bottom" ? "" : params.value,
+      },
       {
         headerName: "InvoiceMonth",
         field: "invoiceMonth",
         sortable: isSortable,
         editable: editableUnlessPaid,
+        enableRowGroup: true,
         valueFormatter: (params) => formatMonthYear(params.value),
       },
       {
         headerName: "Billing",
         field: "billing",
         sortable: isSortable,
+        aggFunc: "sum",
         valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
       },
       {
@@ -220,17 +241,20 @@ const InvoiceDetails = ({ employeeId, projectId, isCollapsed } = {}) => {
         field: "hours",
         sortable: isSortable,
         editable: editableUnlessPaid,
+        aggFunc: "sum",
       },
       {
         headerName: "InvoiceAmount",
         field: "total",
         sortable: isSortable,
+        aggFunc: "sum",
         valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
       },
       {
         headerName: "Invoice PaidAmount",
         field: "invoicePaidAmount",
         sortable: isSortable,
+        aggFunc: "sum",
         valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
       },
       { headerName: "Start Date", field: "startDate", sortable: isSortable },
@@ -441,7 +465,10 @@ const InvoiceDetails = ({ employeeId, projectId, isCollapsed } = {}) => {
           </Button>
         </div>
       </div>
-      <div className= "invoice1-grid-wrapper">
+      <div
+        className="invoice1-grid-wrapper"
+        style={gridHeight ? { height: gridHeight, maxHeight: gridHeight } : undefined}
+      >
       <AgGridReact
         ref={gridRef}
         onGridReady={(params) => {
@@ -461,7 +488,6 @@ const InvoiceDetails = ({ employeeId, projectId, isCollapsed } = {}) => {
           maxWidth: 220,
           resizable: true,
           filter: true,
-          cellClass: "ag-cell-centered",
           headerClass: "ag-header-cell",
           cellClassRules: {
             darkGreyBackground: (params) => params.node?.rowIndex !== undefined
@@ -477,7 +503,7 @@ const InvoiceDetails = ({ employeeId, projectId, isCollapsed } = {}) => {
               iconKey: "columns",
               toolPanel: "agColumnsToolPanel",
               toolPanelParams: {
-                suppressRowGroups: true,
+                suppressRowGroups: false,
                 suppressValues: true,
                 suppressPivots: false,
                 suppressPivotMode: true,
@@ -489,6 +515,7 @@ const InvoiceDetails = ({ employeeId, projectId, isCollapsed } = {}) => {
           ],
         }}
         sortable={true}
+        rowGroupPanelShow="always"
         domLayout="normal"
         pagination={true}
         paginationPageSize={100}

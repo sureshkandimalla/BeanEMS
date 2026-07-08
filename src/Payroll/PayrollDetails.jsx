@@ -51,14 +51,65 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
         sortable: true,
         minWidth: 180,
         pinned: "left",
+        enableRowGroup: true,
+        rowGroup: !employeeId,
       },
-      { headerName: "Department", field: "department", sortable: true },
+      {
+        headerName: "Year",
+        field: "checkDate",
+        colId: "checkYear",
+        sortable: true,
+        enableRowGroup: true,
+        filter: "agSetColumnFilter",
+        valueGetter: (params) =>
+          params.data?.checkDate ? params.data.checkDate.substring(0, 4) : null,
+        valueFormatter: (params) =>
+          params.node.rowPinned === "top" ? "" : params.value,
+      },
       {
         headerName: "Pay Check Date",
         field: "checkDate",
         sortable: true,
         valueFormatter: formatDateCell,
       },
+      { headerName: "Hours", field: "hours", sortable: true, aggFunc: "sum" },
+      {
+        headerName: "Total Paid",
+        field: "totalPaid",
+        sortable: true,
+        aggFunc: "sum",
+        valueFormatter: (params) => formatCurrency(params.value),
+      },
+      {
+        headerName: "Net Pay",
+        field: "netPay",
+        sortable: true,
+        aggFunc: "sum",
+        valueFormatter: (params) => formatCurrency(params.value),
+      },
+      {
+        headerName: "Tax Withheld",
+        field: "taxWithheld",
+        sortable: true,
+        aggFunc: "sum",
+        valueFormatter: (params) => formatCurrency(params.value),
+      },
+      {
+        headerName: "Deductions",
+        field: "deductions",
+        sortable: true,
+        aggFunc: "sum",
+        valueFormatter: (params) => formatCurrency(params.value),
+      },
+      {
+        headerName: "Employer Liability",
+        field: "employerLiability",
+        sortable: true,
+        aggFunc: "sum",
+        valueFormatter: (params) => formatCurrency(params.value),
+      },
+      { headerName: "Pay Period", field: "payPeriodId", sortable: true, hide: true },
+      { headerName: "Department", field: "department", sortable: true, enableRowGroup: true },
       {
         headerName: "Pay Cycle Start",
         field: "payPeriodStartDate",
@@ -71,41 +122,9 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
         sortable: true,
         valueFormatter: formatDateCell,
       },
-      { headerName: "Hours", field: "hours", sortable: true },
-      {
-        headerName: "Total Paid",
-        field: "totalPaid",
-        sortable: true,
-        valueFormatter: (params) => formatCurrency(params.value),
-      },
-      {
-        headerName: "Net Pay",
-        field: "netPay",
-        sortable: true,
-        valueFormatter: (params) => formatCurrency(params.value),
-      },
-      {
-        headerName: "Tax Withheld",
-        field: "taxWithheld",
-        sortable: true,
-        valueFormatter: (params) => formatCurrency(params.value),
-      },
-      {
-        headerName: "Deductions",
-        field: "deductions",
-        sortable: true,
-        valueFormatter: (params) => formatCurrency(params.value),
-      },
-      {
-        headerName: "Employer Liability",
-        field: "employerLiability",
-        sortable: true,
-        valueFormatter: (params) => formatCurrency(params.value),
-      },
-      { headerName: "Pay Period", field: "payPeriodId", sortable: true, hide: true },
-      { headerName: "Status", field: "status", sortable: true },
+      { headerName: "Status", field: "status", sortable: true, enableRowGroup: true },
     ],
-    [],
+    [employeeId],
   );
 
   const pinnedTopRowData = useMemo(() =>
@@ -212,7 +231,6 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
               resizable: true,
               filter: true,
               floatingFilter: false,
-              cellClass: "ag-cell-centered",
               headerClass: "ag-header-cell",
               cellClassRules: {
                 darkGreyBackground: (params) =>
@@ -241,6 +259,7 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
               ],
             }}
             sortable={true}
+            rowGroupPanelShow="always"
             domLayout="normal"
             pagination={true}
             paginationPageSize={100}

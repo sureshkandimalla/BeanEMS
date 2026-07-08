@@ -12,6 +12,7 @@ import InvoiceDetails from "../Invoice/InvoiceDetails";
 import PayrollDetails from "../Payroll/PayrollDetails";
 import AdjustementDetails from "../Adjustments/AdjustmentDetails";
 import ReconciliationDetails from "../Reconciliation/ReconciliationDetails";
+import FinalReportDetails from "../Reconciliation/FinalReportDetails";
 import BillingDetails from "../Billings/BillingDetails";
 import PassportController from "../Passport/PassportController";
 import { UpOutlined, DownOutlined,CalendarOutlined, DollarOutlined,MailOutlined,PhoneOutlined, UserOutlined } from "@ant-design/icons";
@@ -45,6 +46,7 @@ const EmployeeFullDetails = () => {
 
   const { TabPane } = Tabs;
   //const history = useHistory();
+  const gridHeight = isCollapsed ? "calc(100vh - 560px)" : "calc(100vh - 320px)";
   const items = [
     {
       key: 1,
@@ -71,7 +73,11 @@ const EmployeeFullDetails = () => {
       label: "INVOICES",
       children: (
         <div className="employee-List-grid" style={{ height: "100%" }}>
-          <InvoiceDetails employeeId={rowData.employeeId} isCollapsed={isCollapsed} />
+          <InvoiceDetails
+            employeeId={rowData.employeeId}
+            isCollapsed={isCollapsed}
+            gridHeight={gridHeight}
+          />
         </div>
       ),
     },
@@ -80,7 +86,11 @@ const EmployeeFullDetails = () => {
       label: "PAYROLLS",
       children: (
         <div className="employee-List-grid" style={{ height: "100%" }}>
-          <PayrollDetails employeeId={rowData.employeeId} isCollapsed={isCollapsed} />
+          <PayrollDetails
+            employeeId={rowData.employeeId}
+            isCollapsed={isCollapsed}
+            gridHeight={gridHeight}
+          />
         </div>
       ),
     },
@@ -134,6 +144,15 @@ const EmployeeFullDetails = () => {
     {
       key: 12,
       label: "LEAVE REPORT",
+    },
+    {
+      key: 13,
+      label: "FINAL REPORT",
+      children: (
+        <div className="employee-List-grid" style={{ height: "100%" }}>
+          <FinalReportDetails employeeId={rowData.employeeId} />
+        </div>
+      ),
     },
   ];
 

@@ -14,6 +14,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import { SetFilterModule } from "@ag-grid-enterprise/set-filter";
 import { ExcelExportModule } from "@ag-grid-enterprise/excel-export";
 import { MasterDetailModule } from "@ag-grid-enterprise/master-detail";
+import { RowGroupingModule } from "@ag-grid-enterprise/row-grouping";
 
 
 ModuleRegistry.registerModules([
@@ -24,6 +25,7 @@ ModuleRegistry.registerModules([
   ExcelExportModule,
   SideBarModule,
   MasterDetailModule,
+  RowGroupingModule,
 ]);
 const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 

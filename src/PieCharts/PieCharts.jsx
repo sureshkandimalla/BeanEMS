@@ -27,6 +27,8 @@ const PieCharts = ({ chartData, chartLabels }) => {
     legend: {
       position: "right",
       fontSize: "14px",
+      formatter: (seriesName, opts) =>
+        `${seriesName}: ${opts.w.globals.series[opts.seriesIndex]}`,
     },
     responsive: [
       {

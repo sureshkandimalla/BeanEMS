@@ -1,12 +1,12 @@
 // src/Dashboard/Dashboard.js
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Button, Flex, Drawer, Space, Tag } from "antd";
+import { Card, Row, Col, Button, Flex, Drawer, Space, Tag, Tabs } from "antd";
 import { DesktopOutlined, RiseOutlined, PlusOutlined } from "@ant-design/icons";
 import Newemployee from "../Newemployee/Newemployee";
 import Newvendor from "../Vendor/NewVendor";
 import PieCharts from "../PieCharts/PieCharts";
 import RevenueCharts from "../RevenueCharts/RevenueCharts";
-import InvoiceCard from "../InvoiceCard/InvoiceCard";
+import InvoiceDetails from "../Invoice/InvoiceDetails";
 import CurrentEmployeeCard from "../CurrentEmployeeCard/CurrentEmployeeCard";
 import "./Dashboard.css";
 import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
@@ -109,38 +109,11 @@ const Dashboard = () => {
     setOpen(true);
   };
 
-  const employeeData = [
-    {
-      id: 1,
-      name: "John Doe",
-      position: "Software Engineer",
-      department: "Engineering",
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      position: "Product Manager",
-      department: "Product",
-    },
-    {
-      id: 3,
-      name: "Alice Johnson",
-      position: "UX Designer",
-      department: "Design",
-    },
-    {
-      id: 4,
-      name: "Bob Brown",
-      position: "Data Scientist",
-      department: "Data Science",
-    },
-    {
-      id: 5,
-      name: "Ella Davis",
-      position: "Marketing Specialist",
-      department: "Marketing",
-    },
-    // Add more sample data as needed
+  const invoiceStatusTabs = [
+    { key: "all", label: "All", statusFilter: undefined },
+    { key: "created", label: "Created", statusFilter: "Created" },
+    { key: "paid", label: "Paid", statusFilter: "Paid" },
+    { key: "partiallyPaid", label: "Partially Paid", statusFilter: "Partially Paid" },
   ];
 
   return (
@@ -245,29 +218,27 @@ const Dashboard = () => {
               <Col span={10}>
                 <Card className="invoiceStatusCard">
                   <span className="invoiceCardTitle">Invoice Status</span>
-                  <PieCharts
-                    chartData={invoicesChartData}
-                    chartLabels={invoicesChartLabels}
-                  />
+                  <div style={{ width: 300, height: 180 }}>
+                    <PieCharts
+                      chartData={invoicesChartData}
+                      chartLabels={invoicesChartLabels}
+                    />
+                  </div>
                 </Card>
               </Col>
               <Col span={14}>
                 <Card className="totalworkForceCard">
                   <Row>
                     <Col span={18}>
-                      <PieCharts
-                        chartData={workForceChartData}
-                        chartLabels={workForceChartLabels}
-                      />
+                      <div style={{ width: 300, height: 180 }}>
+                        <PieCharts
+                          chartData={workForceChartData}
+                          chartLabels={workForceChartLabels}
+                        />
+                      </div>
                     </Col>
                     <Col span={6}>
                       <div className="totalWorkFrcDiv">
-                        <span
-                          className="totalWorkTitle"
-                          style={{ marginTop: "10px" }}
-                        >
-                          Total Work Force
-                        </span>
                         <Row justify="space-between">
                           <span className="totalWorkForceCount">
                             {totalParamCount}
@@ -284,14 +255,29 @@ const Dashboard = () => {
               </Col>
               <Col span={24}>
                 <Card title="Invoice Status" className="invoiceCard">
-                  <InvoiceCard employeeData={employeeData} />
+                  <Tabs
+                    defaultActiveKey="all"
+                    items={invoiceStatusTabs.map((tab) => ({
+                      key: tab.key,
+                      label: tab.label,
+                      children: (
+                        <div style={{ height: 650 }}>
+                          <InvoiceDetails statusFilter={tab.statusFilter} />
+                        </div>
+                      ),
+                    }))}
+                  />
                 </Card>
               </Col>
             </Row>
           </Col>
 
           <Col span={7}>
-            <Card title="Current Employees" className="currentEmployeesCard">
+            <Card
+              title="Current Employees"
+              className="currentEmployeesCard"
+              style={{ height: "100%" }}
+            >
               <CurrentEmployeeCard />
             </Card>
           </Col>

@@ -14,6 +14,7 @@ import WorkForce from "./WorkForce/WorkForce";
 import EmployeeOnboard from "./EmployeeOnboard/EmployeeOnboard";
 import VendorDetails from "./Vendor/VendorDetails";
 import InvoiceDetails from "./Invoice/InvoiceDetails";
+import ExpenseDetails from "./Expense/ExpenseDetails";
 import EmployeeFullDetailsComponent from "./EmployeeDetailsComponent/EmployeeFullDetailsComponent";
 import EmployeeDetailDashboard from "./EmployeeDetailDashboard/EmployeeDetailDashboard";
 import ProjectDashboard from "./Project/ProjectDashboard";
@@ -57,6 +58,7 @@ const App = () => {
               <Route path="/employeeonboard" element={<EmployeeOnboard />} />
               <Route path="/vendordetails" element={<VendorDetails />} />
               <Route path="/invoicedetails" element={<InvoiceDetails />} />
+              <Route path="/expensedetails" element={<ExpenseDetails />} />
               <Route path="/payrollsummary" element={<PayrollSummary />} />
               <Route
                 path="/employeeFullDetails"

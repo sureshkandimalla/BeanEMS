@@ -1,6 +1,15 @@
 .currentEmployeesCard {
   background: #fafafa;
 }
+.invoiceCard.ant-card,
+.currentEmployeesCard.ant-card {
+  border-radius: 24px;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+.currentEmployeesCard.ant-card .ant-card-body {
+  overflow: auto;
+}
 .ant-card.totalProjectsCard {
   background: #fff3ed;
 }

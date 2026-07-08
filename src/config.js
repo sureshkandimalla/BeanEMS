@@ -57,6 +57,22 @@ export const invoiceStatusList = [
   { value: "Partially Paid", label: "Partially Paid" },
 ];
 
+export const expenseStatusList = [
+  { value: "Pending", label: "Pending" },
+  { value: "Approved", label: "Approved" },
+  { value: "Rejected", label: "Rejected" },
+  { value: "Reimbursed", label: "Reimbursed" },
+];
+
+export const expenseTypeList = [
+  { value: "Attorney Fee", label: "Attorney Fee" },
+  { value: "USCIS Fee", label: "USCIS Fee" },
+  { value: "Employee Reimbursement", label: "Employee Reimbursement" },
+  { value: "Green Card Fee", label: "Green Card Fee" },
+  { value: "Mail Service", label: "Mail Service" },
+  { value: "Other", label: "Other" },
+];
+
 export const visaStatusList = [
   { value: "Submitted",   label: "Submitted" },
   { value: "RFE",         label: "RFE" },
@@ -93,6 +109,11 @@ export const API_ENDPOINTS = {
   saveOnBoardDetailsVendor: `${API_BASE_URL}/customers/saveOnBoardDetails`,
   getInvoicesForProject: (projectId) => `${API_BASE_URL}/invoice/getInvoicesForProject?projectId=${projectId}`,
   getInvoicesForEmployee: `${API_BASE_URL}/invoice/getInvoicesForEmployee`,
+  addExpense: `${API_BASE_URL}/expense/addExpense`,
+  getAllExpenses: `${API_BASE_URL}/expense/getAllExpenses`,
+  expenseById: (expenseId) => `${API_BASE_URL}/expense/expenses/${expenseId}`,
+  getExpensesForEmployee: (employeeId) => `${API_BASE_URL}/expense/getExpensesForEmployee?employeeId=${employeeId}`,
+  expensesCountByStatus: `${API_BASE_URL}/expense/expensesCountByStatus`,
   getBillsForProject: (projectId) => `${API_BASE_URL}/bills/getBillsForProject?projectId=${projectId}`,
   assignments: `${API_BASE_URL}/assignments`,
   saveOnBoardProject: `${API_BASE_URL}/saveOnBoardProject`,
@@ -118,6 +139,7 @@ export const API_ENDPOINTS = {
   deletePassport: (id) => `${API_BASE_URL}/passport/${id}`,
   employeesListByStatus: `${API_BASE_URL}/employees/employeesListByStatus`,
   addAdjustment: `${API_BASE_URL}/adjustment/addAdjustment`,
+  findAdjustmentsByEmployeeId: `${API_BASE_URL}/adjustment/findAdjustmentsByEmployeeId`,
   saveWage: `${API_BASE_URL}/wages/wage`,
   createPotentialEmployee: `${API_BASE_URL}/visa/potentialEmployees`,
   activeProjects: (endDate, selectedDate) => `${API_BASE_URL}/activeProjects?endDate=${endDate}&selectedDate=${selectedDate}`,
