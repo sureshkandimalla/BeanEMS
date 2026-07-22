@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
+import axios from "axios";
+import API_ENDPOINTS from "../config";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -20,6 +22,44 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
+  const [modifiedRows, setModifiedRows] = useState({});
+
+  const onCellValueChanged = (params) => {
+    const projectId = params.data?.projectId;
+    if (projectId === undefined || projectId === null) return;
+    setModifiedRows((prev) => ({ ...prev, [projectId]: params.data }));
+  };
+
+  const handleSaveChanges = () => {
+    const rows = Object.values(modifiedRows);
+    if (rows.length === 0) return;
+    // Bill Rate / Start Date / End Date shown here actually live on the
+    // project's Wage record (not the Project entity itself), so those go to
+    // the Wage endpoint; everything else editable goes to the Project one.
+    const requests = rows.flatMap((row) => {
+      const projectUpdate = axios.put(API_ENDPOINTS.projectsById(row.projectId), row);
+      if (!row.wageId) return [projectUpdate];
+      const wageUpdate = axios.put(API_ENDPOINTS.wagesById(row.wageId), {
+        wage: row.billRate,
+        startDate: row.startDate,
+        endDate: row.endDate,
+      });
+      return [projectUpdate, wageUpdate];
+    });
+    Promise.all(requests)
+      .then(() => {
+        setModifiedRows({});
+        onRefresh?.();
+      })
+      .catch((error) => {
+        console.error("Error saving project changes:", error);
+      });
+  };
+
+  const handleCancelChanges = () => {
+    setModifiedRows({});
+    onRefresh?.();
+  };
 
   useEffect(() => {
     setRowData((prevState) => (projectsList ? [...projectsList] : prevState));
@@ -78,12 +118,15 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         field: "projectId",
         sortable: isSortable,
         editable: false,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       {
         headerName: "Project Name",
         field: "projectName",
         cellRenderer: (params) => {
+          // Group rows (e.g. when grouped by another column) have no
+          // params.data — just show nothing rather than crashing.
+          if (!params.data) return null;
           const rowData = params.data;
           return (
             <Link to="/projectFullDetails" state={{ rowData }}>
@@ -94,12 +137,15 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         },
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       {
         headerName: "Employee Name",
         field: "employeeName",
         cellRenderer: (params) => {
+          // Group rows (e.g. when grouped by another column) have no
+          // params.data — just show nothing rather than crashing.
+          if (!params.data) return null;
           const rowData = params.data;
           return (
             <Link
@@ -112,28 +158,32 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         },
         sortable: isSortable,
         editable: false,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       {
         headerName: "Vendor Name",
         field: "vendorName",
         sortable: isSortable,
         editable: false,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       {
         headerName: "Status",
         field: "status",
         sortable: isSortable,
-        editable: false,
-        filter: "agTextColumnFilter",
+        editable: true,
+        filter: "agSetColumnFilter",
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: {
+          values: ["Active", "Yet to Start", "Closed", "Inactive"],
+        },
       },
       {
         headerName: "Bill Rate",
         field: "billRate",
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
       },
@@ -141,8 +191,8 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         headerName: "Bean Net Internal",
         field: "net",
         sortable: isSortable,
-        editable: true,
-        filter: "agTextColumnFilter",
+        editable: false,
+        filter: "agSetColumnFilter",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
       },
@@ -150,8 +200,8 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         headerName: "Employee pay Rate",
         field: "employeePay",
         sortable: isSortable,
-        editable: true,
-        filter: "agTextColumnFilter",
+        editable: false,
+        filter: "agSetColumnFilter",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
       },
@@ -159,8 +209,8 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         headerName: "External",
         field: "expenseExternal",
         sortable: isSortable,
-        editable: true,
-        filter: "agTextColumnFilter",
+        editable: false,
+        filter: "agSetColumnFilter",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
       },
@@ -168,8 +218,8 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         headerName: "Internal",
         field: "expenseInternal",
         sortable: isSortable,
-        editable: true,
-        filter: "agTextColumnFilter",
+        editable: false,
+        filter: "agSetColumnFilter",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
       },
@@ -177,8 +227,8 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         headerName: "Bean Net",
         field: "net",
         sortable: isSortable,
-        editable: true,
-        filter: "agTextColumnFilter",
+        editable: false,
+        filter: "agSetColumnFilter",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
       },
@@ -186,29 +236,29 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         headerName: "Client",
         field: "clientName",
         sortable: isSortable,
-        editable: true,
-        filter: "agTextColumnFilter",
+        editable: false,
+        filter: "agSetColumnFilter",
       },
       {
         headerName: "Project Start Date",
         field: "startDate",
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       {
         headerName: "Project End Date",
         field: "endDate",
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       {
         headerName: "Invoice Terms",
         field: "invoiceTerm",
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
         // Backend stores/edits a numeric code; grid always shows/edits the text label.
         valueGetter: (params) => invoiceTermLabel(params.data?.invoiceTerm),
         valueSetter: (params) => {
@@ -257,6 +307,25 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
           value={searchText}
           onChange={handleSearchInputChange}
         />
+        {Object.keys(modifiedRows).length > 0 && (
+          <>
+            <Button
+              type="primary"
+              icon={<SaveOutlined />}
+              onClick={handleSaveChanges}
+              style={{ marginLeft: "10px" }}
+            >
+              Save
+            </Button>
+            <Button
+              icon={<CloseOutlined />}
+              onClick={handleCancelChanges}
+              style={{ marginLeft: "10px" }}
+            >
+              Cancel
+            </Button>
+          </>
+        )}
       </div>
       <div className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
@@ -264,6 +333,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
           onGridReady={(params) => {
             gridRef.current = params.api;
           }}
+          onCellValueChanged={onCellValueChanged}
           onFirstDataRendered={(params) => {
             try { params.api.autoSizeAllColumns(); } catch (e) {}
           }}
@@ -276,14 +346,15 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
             minWidth: 100,
             maxWidth: 220,
             resizable: true,
-            filter: true,
+            filter: "agSetColumnFilter",
+            enableRowGroup: true,
             headerClass: "ag-header-cell",
             cellClassRules: {
               darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
             }
           }}
           hiddenByDefault={false}
-          rowGroupPanelShow="never"
+          rowGroupPanelShow="always"
           pivotPanelShow="always"
           sideBar={{
             toolPanels: [
@@ -294,7 +365,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
                 iconKey: "columns",
                 toolPanel: "agColumnsToolPanel",
                 toolPanelParams: {
-                  suppressRowGroups: true,
+                  suppressRowGroups: false,
                   suppressValues: true,
                   suppressPivots: false,
                   suppressPivotMode: true,

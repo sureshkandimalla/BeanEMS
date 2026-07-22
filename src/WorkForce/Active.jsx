@@ -21,31 +21,31 @@ const Active = () => {
       headerName: "ID",
       field: "id",
       sortable: true,
-      filter: true,
+      filter: "agSetColumnFilter",
     },
     {
       headerName: "Name",
       field: "name",
       sortable: true,
-      filter: true,
+      filter: "agSetColumnFilter",
     },
     {
       headerName: "Position",
       field: "position",
       sortable: true,
-      filter: true,
+      filter: "agSetColumnFilter",
     },
     {
       headerName: "Department",
       field: "department",
       sortable: true,
-      filter: true,
+      filter: "agSetColumnFilter",
     },
     {
       headerName: "Employee Information",
       field: "employeeInfo",
       sortable: true,
-      filter: true,
+      filter: "agSetColumnFilter",
       headerComponentFramework: CustomHeader, // Custom header component
     },
   ];

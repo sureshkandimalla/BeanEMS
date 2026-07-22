@@ -82,14 +82,14 @@ const AdjustementDetails = ({ employeeId, isCollapsed }) => {
         headerName: "AdjustmentType",
         field: "adjustmentType",
         sortable: isSortable,
-        filter: true,
+        filter: "agSetColumnFilter",
       },
       { headerName: "Notes", field: "notes", sortable: isSortable, width: 550 },
       {
         headerName: "AdjustmentDate",
         field: "adjustmentDate",
         sortable: isSortable,
-        filter: true,
+        filter: "agSetColumnFilter",
       },
     ];
     return columns;
@@ -210,7 +210,7 @@ const AdjustementDetails = ({ employeeId, isCollapsed }) => {
           minWidth: 100,
           maxWidth: 220,
           resizable: true,
-          filter: true,
+          filter: "agSetColumnFilter",
           cellClassRules: {
             darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
           },

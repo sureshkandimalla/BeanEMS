@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Tabs, Card, Collapse, Row, Col, Spin, Button, Form, message } from "antd";
+import { Tabs, Card, Collapse, Row, Col, Spin, Button, Form, message, Checkbox } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -15,6 +15,7 @@ const { Panel } = Collapse;
 const VisaEmployees = () => {
   const [isChartsOpen, setIsChartsOpen] = useState(false);
   const [rowData, setRowData] = useState([]);
+  const [showNewHires, setShowNewHires] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [lcaModalOpen,  setLcaModalOpen]  = useState(false);
   const [h1bModalOpen,  setH1bModalOpen]  = useState(false);
@@ -64,21 +65,25 @@ const VisaEmployees = () => {
     const in90Days = new Date();
     in90Days.setDate(today.getDate() + 90);
 
+    const visibleRows = showNewHires
+      ? rowData
+      : rowData.filter(({ status }) => status !== "NewHires");
+
     return {
-      all: rowData,
-      h1b: rowData.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("H1") || (visaCategory || "").toUpperCase().includes("H-1")),
-      gc: rowData.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("GC") || (visaCategory || "").toUpperCase().includes("GREEN")),
-      opt: rowData.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("OPT") || (visaCategory || "").toUpperCase().includes("CPT")),
-      l1: rowData.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("L1") || (visaCategory || "").toUpperCase().includes("L-1")),
-      usCitizen: rowData.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("CITIZEN")),
-      active: rowData.filter(({ status }) => status === "Active"),
-      expiringSoon: rowData.filter(({ endDate }) => {
+      all: visibleRows,
+      h1b: visibleRows.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("H1") || (visaCategory || "").toUpperCase().includes("H-1")),
+      gc: visibleRows.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("GC") || (visaCategory || "").toUpperCase().includes("GREEN")),
+      opt: visibleRows.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("OPT") || (visaCategory || "").toUpperCase().includes("CPT")),
+      l1: visibleRows.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("L1") || (visaCategory || "").toUpperCase().includes("L-1")),
+      usCitizen: visibleRows.filter(({ visaCategory }) => (visaCategory || "").toUpperCase().includes("CITIZEN")),
+      active: visibleRows.filter(({ status }) => status === "Active"),
+      expiringSoon: visibleRows.filter(({ endDate }) => {
         if (!endDate) return false;
         const end = new Date(endDate);
         return end >= today && end <= in90Days;
       }),
     };
-  }, [rowData]);
+  }, [rowData, showNewHires]);
 
   // --- Static chart data (replace with API later) ---
   const visaTypePieOptions = {
@@ -204,7 +209,13 @@ const VisaEmployees = () => {
               defaultActiveKey="all"
               items={tabItems}
               tabBarExtraContent={
-                <div style={{ display: "flex", gap: 8, paddingRight: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, paddingRight: 8 }}>
+                  <Checkbox
+                    checked={showNewHires}
+                    onChange={(e) => setShowNewHires(e.target.checked)}
+                  >
+                    Show New Hires
+                  </Checkbox>
                   <Button type="default" icon={<PlusOutlined />} onClick={() => setLcaModalOpen(true)}>
                     Add New LCA
                   </Button>

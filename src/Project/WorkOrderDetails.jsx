@@ -65,14 +65,14 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
         field: "wageType",
         sortable: isSortable,
         editable: false,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       {
         headerName: "Bill Rate",
         field: "wage",
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
         valueFormatter: (params) => formatCurrency(params.value),
       },
       {
@@ -80,14 +80,14 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
         field: "startDate",
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       {
         headerName: "Project End Date",
         field: "endDate",
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       // { headerName: 'Wage', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
     ];

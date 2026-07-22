@@ -105,7 +105,7 @@ const PotentialEmployees = () => {
         headerName: "Year", 
         field: "year", 
         editable: true, 
-        filter: "agTextColumnFilter"
+        filter: "agSetColumnFilter"
       },
       { 
         headerName: "Status", 
@@ -130,13 +130,13 @@ const PotentialEmployees = () => {
         headerName: "Referred By", 
         field: "referredBy", 
         editable: true, 
-        filter: "agTextColumnFilter" 
+        filter: "agSetColumnFilter" 
       },
       { 
         headerName: "Email", 
         field: "emailId", 
         editable: true, 
-        filter: "agTextColumnFilter" ,
+        filter: "agSetColumnFilter" ,
         cellClassRules: {
           blueUnderline: (params) => params.colDef.field === "emailId"
         }
@@ -151,19 +151,19 @@ const PotentialEmployees = () => {
         headerName: "DOB", 
         field: "dob", 
         editable: true, 
-        filter: "agDateColumnFilter" 
+        filter: "agSetColumnFilter" 
       },
       { 
         headerName: "Primary Skills", 
         field: "primarySkills", 
         editable: true, 
-        filter: "agTextColumnFilter" 
+        filter: "agSetColumnFilter" 
       },
       { 
         headerName: "Secondary Skills", 
         field: "secondarySkills", 
         editable: true, 
-        filter: "agTextColumnFilter" 
+        filter: "agSetColumnFilter" 
       },
       { 
         headerName: "Work Country", 
@@ -175,13 +175,13 @@ const PotentialEmployees = () => {
         headerName: "Start Date", 
         field: "startDate", 
         editable: true, 
-        filter: "agDateColumnFilter" 
+        filter: "agSetColumnFilter" 
       },
       { 
         headerName: "End Date", 
         field: "endDate", 
         editable: true, 
-        filter: "agDateColumnFilter" 
+        filter: "agSetColumnFilter" 
       },
     ];
     return columns;

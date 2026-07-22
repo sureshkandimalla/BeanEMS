@@ -129,7 +129,7 @@ body {
 }
 
 .header-title-green {
-  color: rgb(22, 226, 22);
+  color: #042c54;
 }
 .update-button {
   background-color: #042c54;
@@ -175,6 +175,38 @@ body {
 .dotted-line {
   border-top: 1px dotted #ccc;
   margin-bottom: 10px;
+}
+
+.project-totals-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+  border: 1px solid #e0e0e0;
+}
+
+.project-totals-table th,
+.project-totals-table td {
+  text-align: left;
+  padding: 8px 16px;
+  font-size: 13px;
+  border: 1px solid #e0e0e0;
+}
+
+.project-totals-table th {
+  color: grey;
+  font-weight: 600;
+  background: #fafafa;
+}
+
+.project-totals-table td:first-child,
+.project-totals-table th:first-child {
+  font-weight: bold;
+  color: grey;
+}
+
+.project-totals-table td {
+  color: #042c54;
+  font-weight: bold;
 }
 
 .arrow {

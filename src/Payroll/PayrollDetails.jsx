@@ -229,8 +229,9 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
               minWidth: 100,
               maxWidth: 220,
               resizable: true,
-              filter: true,
+              filter: "agSetColumnFilter",
               floatingFilter: false,
+              enableRowGroup: true,
               headerClass: "ag-header-cell",
               cellClassRules: {
                 darkGreyBackground: (params) =>

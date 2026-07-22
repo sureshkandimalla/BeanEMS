@@ -159,7 +159,7 @@ const LCADetails = () => {
     { colId: "lcaCaseNumber", field: "lcaCaseNumber", headerName: LCA_FIELD_LABELS.lcaCaseNumber, filter: "agSetColumnFilter", cellClassRules },
     { colId: "socCode", field: "socCode", headerName: LCA_FIELD_LABELS.socCode, filter: "agSetColumnFilter", cellClassRules },
     {
-      colId: "lcaWage", field: "lcaWage", headerName: LCA_FIELD_LABELS.lcaWage, filter: "agNumberColumnFilter", cellClassRules,
+      colId: "lcaWage", field: "lcaWage", headerName: LCA_FIELD_LABELS.lcaWage, filter: "agSetColumnFilter", cellClassRules,
       valueFormatter: (params) => params.value != null ? formatCurrency(params.value) : "",
     },
     { colId: "status", field: "status", headerName: LCA_FIELD_LABELS.status, filter: "agSetColumnFilter", cellClassRules },
@@ -167,12 +167,12 @@ const LCADetails = () => {
     { colId: "vendor", field: "vendor", headerName: LCA_FIELD_LABELS.vendor, filter: "agSetColumnFilter", cellClassRules },
     { colId: "jobLocation", field: "jobLocation", headerName: LCA_FIELD_LABELS.jobLocation, filter: "agSetColumnFilter", cellClassRules },
     { colId: "jobLocation2", field: "jobLocation2", headerName: LCA_FIELD_LABELS.jobLocation2, filter: "agSetColumnFilter", cellClassRules, hide: true },
-    { colId: "employmentStartDate", field: "employmentStartDate", headerName: LCA_FIELD_LABELS.employmentStartDate, filter: "agDateColumnFilter", cellClassRules },
-    { colId: "employmentEndDate", field: "employmentEndDate", headerName: LCA_FIELD_LABELS.employmentEndDate, filter: "agDateColumnFilter", cellClassRules },
-    { colId: "lcaPostedFromDate", field: "lcaPostedFromDate", headerName: LCA_FIELD_LABELS.lcaPostedFromDate, filter: "agDateColumnFilter", cellClassRules, hide: true },
-    { colId: "lcaPostedToDate", field: "lcaPostedToDate", headerName: LCA_FIELD_LABELS.lcaPostedToDate, filter: "agDateColumnFilter", cellClassRules, hide: true },
-    { colId: "certifiedDate", field: "certifiedDate", headerName: LCA_FIELD_LABELS.certifiedDate, filter: "agDateColumnFilter", cellClassRules },
-    { colId: "lastUpdated", field: "lastUpdated", headerName: "Last Updated", filter: "agDateColumnFilter", cellClassRules },
+    { colId: "employmentStartDate", field: "employmentStartDate", headerName: LCA_FIELD_LABELS.employmentStartDate, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "employmentEndDate", field: "employmentEndDate", headerName: LCA_FIELD_LABELS.employmentEndDate, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "lcaPostedFromDate", field: "lcaPostedFromDate", headerName: LCA_FIELD_LABELS.lcaPostedFromDate, filter: "agSetColumnFilter", cellClassRules, hide: true },
+    { colId: "lcaPostedToDate", field: "lcaPostedToDate", headerName: LCA_FIELD_LABELS.lcaPostedToDate, filter: "agSetColumnFilter", cellClassRules, hide: true },
+    { colId: "certifiedDate", field: "certifiedDate", headerName: LCA_FIELD_LABELS.certifiedDate, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "lastUpdated", field: "lastUpdated", headerName: "Last Updated", filter: "agSetColumnFilter", cellClassRules },
   ];
 
   const columnDefsSized = sizeColumnsForHeader(columnDefs);
@@ -228,7 +228,7 @@ const LCADetails = () => {
               getRowId={(params) => String(params.data.lcaId)}
               defaultColDef={{
                 resizable: true,
-                filter: true,
+                filter: "agSetColumnFilter",
                 minWidth: 100,
                 maxWidth: 220,
               }}

@@ -14,7 +14,7 @@ import {
   Spin,
 } from "antd";
 import { validateEmail } from "../utils";
-import { INVOICE_TERM_OPTIONS } from "../Utils/invoiceTerm";
+import { INVOICE_TERM_OPTIONS, WEEK_START_DAY_OPTIONS, DEFAULT_WEEK_START_DAY } from "../Utils/invoiceTerm";
 //import Sidebar from '../../Commons/Sidebar/Sidebar';
 //import './EmployeeOnBoarding.scss';
 import moment from "moment";
@@ -89,6 +89,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
     status: "",
     invoiceTerm: null,
     paymentTerm: "",
+    weekStartDay: DEFAULT_WEEK_START_DAY,
     hours: 0,
     invoiceId: 0,
     Billing: 0,
@@ -161,6 +162,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
       status: "",
       invoiceTerm: null,
       paymentTerm: "",
+      weekStartDay: DEFAULT_WEEK_START_DAY,
       hours: 0,
       invoiceId: 0,
       Billing: 0,
@@ -420,6 +422,27 @@ const ProjectOnBoardingForm = ({ onClose }) => {
                   onChange={(e) => handleGeneralData(e.target.value, "status")}
                   value={generalDetails.status}
                 />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={30}>
+            <Col span={8} className="form-row">
+              <Form.Item
+                label="Week Start Day"
+                name="Week Start Day"
+                initialValue={DEFAULT_WEEK_START_DAY}
+                tooltip="Only used by Weekly, Biweekly, and Once in 4 Weeks invoice terms — defaults to Monday if left unchanged."
+              >
+                <Select
+                  value={generalDetails.weekStartDay || DEFAULT_WEEK_START_DAY}
+                  onChange={(value) => handleGeneralData(value, "weekStartDay")}
+                >
+                  {WEEK_START_DAY_OPTIONS.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
           </Row>

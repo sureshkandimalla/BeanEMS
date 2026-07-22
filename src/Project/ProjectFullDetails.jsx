@@ -12,7 +12,10 @@ import InvoiceDetails from "../Invoice/InvoiceDetails";
 import BillingDetails from "../Billings/BillingDetails";
 import { UpOutlined, DownOutlined,CalendarOutlined, DollarOutlined, ProjectOutlined, BankOutlined, UserOutlined } from "@ant-design/icons";
 import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message } from "antd";
+import axios from "axios";
 import API_ENDPOINTS from "../config";
+import { formatCurrency } from "../Utils/CurrencyFormatter";
+import { formatMonthYear } from "../Utils/dateFormat";
 //const style: React.CSSProperties = { background: '#A9A9A9', padding: '8px 0' ,paddingLeft: '8px 0'};
 
 const { Panel } = Collapse;
@@ -33,8 +36,6 @@ const ProjectFullDetails = () => {
     // Your logic or actions when the button is clicked
     console.log("Button clicked!");
   };
-  const thisMonthData = [50000, 43000, 60000, 70000, 55000];
-  const lastMonthData = [25000, 28000, 20000, 15000, 50000];
   const location = useLocation();
   const { rowData } = location.state;
   console.log(rowData);
@@ -44,6 +45,9 @@ const ProjectFullDetails = () => {
   const [responseData, setResponseData] = useState(null);
   const [workOrders, setWorkOrders] = useState([]);
   const [assignments, setAssignments] = useState([]);
+  const [invoiceTotals, setInvoiceTotals] = useState({ amount: 0, paid: 0, balance: 0 });
+  const [billTotals, setBillTotals] = useState({ amount: 0, paid: 0, balance: 0 });
+  const [monthlyChart, setMonthlyChart] = useState({ categories: [], invoiceSeries: [], billSeries: [] });
 
   const getFlattenedData = (data) => {
     setAssignments(data.assignments);
@@ -70,9 +74,60 @@ const ProjectFullDetails = () => {
     }
   };
 
+  const fetchTotals = async () => {
+    try {
+      const [{ data: invoices }, { data: bills }] = await Promise.all([
+        axios.get(API_ENDPOINTS.getInvoicesForProject(rowData.projectId)),
+        axios.get(API_ENDPOINTS.getBillsForProject(rowData.projectId)),
+      ]);
+
+      const invoiceAmount = (invoices || []).reduce((sum, inv) => sum + (inv.total || 0), 0);
+      const invoicePaid = (invoices || []).reduce((sum, inv) => sum + (inv.invoicePaidAmount || 0), 0);
+      setInvoiceTotals({ amount: invoiceAmount, paid: invoicePaid, balance: invoiceAmount - invoicePaid });
+
+      const billAmount = (bills || []).reduce((sum, bill) => sum + (bill.total || 0), 0);
+      const billPaid = (bills || []).reduce((sum, bill) => sum + (bill.billPaidAmount || 0), 0);
+      setBillTotals({ amount: billAmount, paid: billPaid, balance: billAmount - billPaid });
+
+      // Month-wise totals for the Total Revenue chart, keyed by "yyyy-MM"
+      // (invoiceMonth is a full date, e.g. "2025-09-01").
+      const sumByMonth = (records) => {
+        const map = {};
+        (records || []).forEach((record) => {
+          if (!record.invoiceMonth) return;
+          const monthKey = record.invoiceMonth.substring(0, 7);
+          map[monthKey] = (map[monthKey] || 0) + (record.total || 0);
+        });
+        return map;
+      };
+
+      const invoiceByMonth = sumByMonth(invoices);
+      const billByMonth = sumByMonth(bills);
+      const months = Array.from(new Set([...Object.keys(invoiceByMonth), ...Object.keys(billByMonth)])).sort();
+
+      setMonthlyChart({
+        categories: months.map((m) => formatMonthYear(m)),
+        invoiceSeries: months.map((m) => invoiceByMonth[m] || 0),
+        billSeries: months.map((m) => billByMonth[m] || 0),
+      });
+    } catch (error) {
+      console.error("Error fetching invoice/bill totals:", error);
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fetchTotals();
   }, []);
+
+  // Passed down to each tab's own Refresh (and any bulk-save action) so
+  // that refreshing WorkOrders/Invoices/Bills also refreshes the Project
+  // Overview panel above (totals table + revenue chart) — those numbers
+  // are derived from the same invoice/bill data those tabs edit.
+  const refreshOverview = () => {
+    fetchData();
+    fetchTotals();
+  };
 
   const { TabPane } = Tabs;
   //const history = useHistory();
@@ -92,7 +147,7 @@ const ProjectFullDetails = () => {
     {
       key: 3,
       label: "WorkOrders",
-      children: <WorkOrderDetails rowData={workOrders} isCollapsed={isCollapsed} onRefresh={fetchData} />,
+      children: <WorkOrderDetails rowData={workOrders} isCollapsed={isCollapsed} onRefresh={refreshOverview} />,
     },
     {
       key: 4,
@@ -102,16 +157,18 @@ const ProjectFullDetails = () => {
           projectId={rowData.projectId}
           employeeId={rowData.employeeId}
           isCollapsed={isCollapsed}
+          onRefresh={refreshOverview}
         />
       ),
     },
     {
       key: 5,
-      label: "BillingDetails",
+      label: "Bills",
       children: (
         <BillingDetails
           url={API_ENDPOINTS.getBillsForProject(rowData.projectId)}
           isCollapsed={isCollapsed}
+          onRefresh={refreshOverview}
         />
       ),
     },
@@ -192,14 +249,52 @@ const ProjectFullDetails = () => {
                     </Typography.Text>
                     </div>
                   </div>
+                  <table className="project-totals-table">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th>Total</th>
+                        <th>Paid</th>
+                        <th>Balance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Invoice</td>
+                        <td>{formatCurrency(invoiceTotals.amount)}</td>
+                        <td>{formatCurrency(invoiceTotals.paid)}</td>
+                        <td>{formatCurrency(invoiceTotals.balance)}</td>
+                      </tr>
+                      <tr>
+                        <td>Bill</td>
+                        <td>{formatCurrency(billTotals.amount)}</td>
+                        <td>{formatCurrency(billTotals.paid)}</td>
+                        <td>{formatCurrency(billTotals.balance)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
               </Col>
   
               {/* Total Revenue & Chart */}
               <Col xs={24} sm={16}>
                 <Card className="totalRevenceCard">
-                  <span className="totalRevenueLabel">Total Revenue</span>
-                  <span className="totalRevenueCount">$66,143.00</span>
-                  <RevenueCharts thisMonthData={thisMonthData} lastMonthData={lastMonthData} />
+                  <div style={{ display: "flex", gap: 60 }}>
+                    <div>
+                      <span className="totalRevenueLabel">Total Revenue</span>
+                      <span className="totalRevenueCount">{formatCurrency(invoiceTotals.amount)}</span>
+                    </div>
+                    <div>
+                      <span className="totalRevenueLabel">Total Expense</span>
+                      <span className="totalRevenueCount">{formatCurrency(billTotals.amount)}</span>
+                    </div>
+                  </div>
+                  <RevenueCharts
+                    thisMonthData={monthlyChart.invoiceSeries}
+                    lastMonthData={monthlyChart.billSeries}
+                    categories={monthlyChart.categories}
+                    series1Name="Invoice"
+                    series2Name="Bill"
+                  />
                 </Card>
               </Col>
             </Row>

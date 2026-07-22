@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message } from "antd";
+import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message, Checkbox } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
@@ -36,6 +36,7 @@ const WorkForceContent = () => {
   const [open, setOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [showNewHires, setShowNewHires] = useState(false);
  const pageSize = 10;
 
   const {
@@ -106,25 +107,29 @@ const WorkForceContent = () => {
         corpData: [],
       };
     }
+    const visibleEmployees = showNewHires
+      ? employeeData
+      : employeeData.filter(({ status }) => status !== "NewHires");
+
     return {
-      all: employeeData,
-      usa: employeeData.filter(({ workCountry }) => ["USA", "US"].includes((workCountry || "").toUpperCase())),
-      india: employeeData.filter(({ workCountry }) => ["INDIA", "IN"].includes((workCountry || "").toUpperCase())),
-      active: employeeData.filter(({ status }) => status === "Active"),
-      onboarding: employeeData.filter(({ status }) => status === "Onboarding"),
-      approved: employeeData.filter(({ status }) => status === "Approved"),
-      terminated: employeeData.filter(({ status }) => status !== "Active"),
-      billable: employeeData.filter(
+      all: visibleEmployees,
+      usa: visibleEmployees.filter(({ workCountry }) => ["USA", "US"].includes((workCountry || "").toUpperCase())),
+      india: visibleEmployees.filter(({ workCountry }) => ["INDIA", "IN"].includes((workCountry || "").toUpperCase())),
+      active: visibleEmployees.filter(({ status }) => status === "Active"),
+      onboarding: visibleEmployees.filter(({ status }) => status === "Onboarding"),
+      approved: visibleEmployees.filter(({ status }) => status === "Approved"),
+      terminated: visibleEmployees.filter(({ status }) => status !== "Active"),
+      billable: visibleEmployees.filter(
         ({ resourceType }) => resourceType === "Billable",
       ),
-      fulltime: employeeData.filter(({ employmentType }) =>
+      fulltime: visibleEmployees.filter(({ employmentType }) =>
         ["W2", "Full-Time"].includes(employmentType),
       ),
-      corpData: employeeData.filter(({ employmentType }) =>
+      corpData: visibleEmployees.filter(({ employmentType }) =>
         ["1099", "C2C"].includes(employmentType),
       ),
     };
-  }, [employeeData]);
+  }, [employeeData, showNewHires]);
 
   const paginatedData = processedData.all
     ? processedData.all.slice(
@@ -293,9 +298,17 @@ const WorkForceContent = () => {
       defaultActiveKey="4"
       items={items}
       tabBarExtraContent={
-        <Button type="primary" onClick={handleAddNewEmployee}>
-        <PlusOutlined /> Add New Employee
-      </Button>
+        <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Checkbox
+            checked={showNewHires}
+            onChange={(e) => setShowNewHires(e.target.checked)}
+          >
+            Show New Hires
+          </Checkbox>
+          <Button type="primary" onClick={handleAddNewEmployee}>
+            <PlusOutlined /> Add New Employee
+          </Button>
+        </span>
       }
     />
   </Card>

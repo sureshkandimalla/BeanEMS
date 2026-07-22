@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Card, Button, Drawer } from "antd";
-import { PlusOutlined, FileExcelOutlined, ReloadOutlined } from "@ant-design/icons";
+import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
+import axios from "axios";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -27,6 +28,31 @@ const VendorDetails = () => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
   const [open, setOpen] = useState(false);
+  const [modifiedRows, setModifiedRows] = useState({});
+
+  const onCellValueChanged = (params) => {
+    const customerId = params.data?.customerId;
+    if (customerId === undefined || customerId === null) return;
+    setModifiedRows((prev) => ({ ...prev, [customerId]: params.data }));
+  };
+
+  const handleSaveChanges = () => {
+    const rows = Object.values(modifiedRows);
+    if (rows.length === 0) return;
+    Promise.all(rows.map((row) => axios.put(API_ENDPOINTS.customersById(row.customerId), row)))
+      .then(() => {
+        setModifiedRows({});
+        fetchData();
+      })
+      .catch((error) => {
+        console.error("Error saving vendor changes:", error);
+      });
+  };
+
+  const handleCancelChanges = () => {
+    setModifiedRows({});
+    fetchData();
+  };
 
   const fetchData = () => {
     fetch(API_ENDPOINTS.getAllCustomers)
@@ -77,14 +103,10 @@ const VendorDetails = () => {
 
   const getColumnsDefList = (columnsList, isSortable) => {
     return columnsList.map(({ headerName, field, type }) => {
-      let columnFilter;
-      if (type === "date") {
-        columnFilter = "agDateColumnFilter";
-      } else if (type === "number") {
-        columnFilter = "agNumberColumnFilter";
-      } else {
-        columnFilter = "agSetColumnFilter";
-      }
+      // Every column uses the checkbox/select-values Set Filter — kept
+      // consistent across every grid in the app rather than per-type
+      // filter widgets (contains/equals/etc.).
+      const columnFilter = "agSetColumnFilter";
 
       const isIdColumn = field === "customerId";
       const autoWidth = type === "date" || field === "customerStatus" || isIdColumn ? 145 : 170;
@@ -185,7 +207,7 @@ const VendorDetails = () => {
         headerName: k.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase()),
         field: k,
         sortable: true,
-        filter: true,
+        filter: "agSetColumnFilter",
         resizable: true,
         minWidth: 120,
         cellClassRules: {
@@ -250,6 +272,25 @@ const VendorDetails = () => {
           >
             <PlusOutlined /> Add New Vendor
           </Button>
+          {Object.keys(modifiedRows).length > 0 && (
+            <>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={handleSaveChanges}
+                style={{ marginLeft: "10px" }}
+              >
+                Save
+              </Button>
+              <Button
+                icon={<CloseOutlined />}
+                onClick={handleCancelChanges}
+                style={{ marginLeft: "10px" }}
+              >
+                Cancel
+              </Button>
+            </>
+          )}
         </div>
         <div className="vendor-grid-wrapper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
           <AgGridReact
@@ -260,13 +301,14 @@ const VendorDetails = () => {
             onFirstDataRendered={(params) => {
               try { params.api.autoSizeAllColumns(); } catch (e) {}
             }}
+            onCellValueChanged={onCellValueChanged}
             autoSizeStrategy={{ type: "fitCellContents" }}
             rowHeight={48}
             rowData={filterData()}
             columnDefs={sizeColumnsForHeader(combinedColumnDefs)}
             defaultColDef={{
               resizable: true,
-              filter: true,
+              filter: "agSetColumnFilter",
               minWidth: 100,
               maxWidth: 220,
             }}

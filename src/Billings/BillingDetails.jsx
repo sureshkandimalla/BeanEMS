@@ -4,7 +4,7 @@ import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { formatMonthYear } from "../Utils/dateFormat";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined, FileExcelOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -14,7 +14,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import "./BillingDetails.css"
 
-const BillingDetails = ({ url, isCollapsed }) => {
+const BillingDetails = ({ url, isCollapsed, onRefresh }) => {
   const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
@@ -125,6 +125,12 @@ const BillingDetails = ({ url, isCollapsed }) => {
     setSearchText(event.target.value);
   };
 
+  const onBtnExportDataAsExcel = () => {
+    if (gridRef.current) {
+      gridRef.current.exportDataAsExcel();
+    }
+  };
+
   const filterData = () => {
     if (!searchText) {
       return rowData;
@@ -175,7 +181,12 @@ const BillingDetails = ({ url, isCollapsed }) => {
       <Button
         type="default"
         icon={<ReloadOutlined />}
-        onClick={fetchData}
+        onClick={() => {
+          fetchData();
+          // When embedded (e.g. Project Full Details' "Bills" tab), also
+          // refreshes the host page's own totals/chart.
+          onRefresh?.();
+        }}
         style={{ marginRight: "10px" }}
       >
         Refresh
@@ -186,6 +197,14 @@ const BillingDetails = ({ url, isCollapsed }) => {
         value={searchText}
         onChange={handleSearchInputChange}
       />
+      <Button
+        type="default"
+        icon={<FileExcelOutlined />}
+        onClick={onBtnExportDataAsExcel}
+        style={{ marginLeft: "10px" }}
+      >
+        Export to Excel
+      </Button>
     </div>
 
     <div
@@ -210,7 +229,7 @@ const BillingDetails = ({ url, isCollapsed }) => {
           minWidth: 100,
           maxWidth: 220,
           resizable: true,
-          filter: true,
+          filter: "agSetColumnFilter",
           cellClassRules: {
             darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
           }

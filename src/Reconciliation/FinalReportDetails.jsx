@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button } from "antd";
+import { Button, Select } from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -16,10 +16,12 @@ import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 // category — Projects use Billing/Income/Income Paid, Payments use Total
 // Payment — cells that don't apply to a row's category are just left blank.
 //
-// Projects: built from the Projects and Invoice services directly — a
-// project's real billing rate lives on the project itself (EMP_PAY
-// assignment wage), and its real hours/income come from its own invoices.
-// Expanding a project row (master/detail) shows that project's invoices.
+// Projects: Income/Income Paid are computed from the Bills table (one bill
+// per assignment per invoice, employeeId already on each bill) rather than
+// re-deriving from invoices — Income is every bill for the employee on
+// that project; Income Paid is just the bills whose invoice has cleared
+// (status !== "Created", i.e. "Invoice Cleared" or "Paid"). Expanding a
+// project row (master/detail) shows those bill records.
 //
 // Payments: one row per YEAR (from payroll), aggregated client-side.
 // Expanding a year row (same master/detail mechanism) shows every
@@ -28,6 +30,14 @@ export default function FinalReportDetails({ employeeId }) {
   const gridRef = useRef(null);
   const [rowData, setRowData] = useState([]);
   const [loading, setLoading] = useState(false);
+  // Cutoffs: null means "no filter, show everything" (the default). When
+  // set, they scope the Payments/Projects categories to records on or
+  // before the chosen date — Payroll Date against payroll checkDate,
+  // Invoice Date against a bill's endDate (which now mirrors its
+  // invoice's endDate, see bills-and-invoices.md). Adjustments/Expenses
+  // aren't payroll- or invoice-dated, so they're left unfiltered.
+  const [payrollCutoffDate, setPayrollCutoffDate] = useState(null);
+  const [invoiceCutoffDate, setInvoiceCutoffDate] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -39,34 +49,40 @@ export default function FinalReportDetails({ employeeId }) {
 
     return Promise.all(
       (projects || []).map(async (project) => {
-        const { data: invoices } = await axios.get(
-          API_ENDPOINTS.getInvoicesForProject(project.projectId),
+        const { data: allBills } = await axios.get(
+          API_ENDPOINTS.getBillsForProject(project.projectId),
         );
+        // A project can have bills for more than one employee (multiple
+        // assignments) — scope to this employee's own bills.
+        const bills = (allBills || []).filter(
+          (bill) => Number(bill.employeeId) === Number(employeeId),
+        );
+        // Cleared: the client has paid the invoice this bill was billed
+        // against (status moved past "Created" to "Invoice Cleared", or
+        // further to "Paid").
+        const clearedBills = bills.filter((bill) => bill.status !== "Created");
+
         // "Billing" here is what the employee is paid (EMP_PAY assignment
-        // wage), not the client billing rate.
+        // wage), not the client billing rate — shown for reference only,
+        // Income/Income Paid come from the bills themselves.
         const empPayAssignment = (project.assignments || []).find(
           (assignment) =>
             assignment.assignmentType === "EMP_PAY" &&
             Number(assignment.employeeId) === Number(employeeId),
         );
-
         const billing = empPayAssignment?.wage || 0;
-        const totalHours = invoices.reduce((sum, inv) => sum + (inv.hours || 0), 0);
-        const paidHours = invoices
-          .filter((inv) => inv.status === "Paid")
-          .reduce((sum, inv) => sum + (inv.hours || 0), 0);
 
         return {
           category: "Projects",
-          detailType: "invoices",
+          detailType: "bills",
           projectId: project.projectId,
           description: `Consulting services provided for ${project.customer?.customerCompanyName || project.projectName}`,
           billing,
-          hours: totalHours,
-          paidHours,
-          income: billing * totalHours,
-          incomePaid: billing * paidHours,
-          invoiceRecords: invoices,
+          hours: bills.reduce((sum, bill) => sum + (bill.hours || 0), 0),
+          paidHours: clearedBills.reduce((sum, bill) => sum + (bill.hours || 0), 0),
+          income: bills.reduce((sum, bill) => sum + (bill.total || 0), 0),
+          incomePaid: clearedBills.reduce((sum, bill) => sum + (bill.total || 0), 0),
+          billRecords: bills,
         };
       }),
     );
@@ -183,16 +199,78 @@ export default function FinalReportDetails({ employeeId }) {
     }
   };
 
+  // Every payroll checkDate / bill endDate seen across the fetched data —
+  // the dropdown options are drawn from the employee's own actual dates
+  // rather than a free-form date picker, so there's no way to pick a
+  // cutoff that doesn't correspond to a real record.
+  const payrollDateOptions = useMemo(() => {
+    const dates = new Set();
+    rowData.forEach((row) => {
+      if (row.detailType === "payroll") {
+        (row.payRecords || []).forEach((r) => r.checkDate && dates.add(r.checkDate));
+      }
+    });
+    return Array.from(dates).sort();
+  }, [rowData]);
+
+  const invoiceDateOptions = useMemo(() => {
+    const dates = new Set();
+    rowData.forEach((row) => {
+      if (row.detailType === "bills") {
+        (row.billRecords || []).forEach((r) => r.endDate && dates.add(r.endDate));
+      }
+    });
+    return Array.from(dates).sort();
+  }, [rowData]);
+
+  // Applies the two cutoffs by re-deriving each Projects/Payments row's
+  // aggregates from its own already-fetched detail records (billRecords /
+  // payRecords) rather than re-fetching — cheap, and keeps the drill-down
+  // grids in sync with the filtered totals automatically.
+  const filteredRowData = useMemo(() => {
+    return rowData
+      .map((row) => {
+        if (row.detailType === "bills" && invoiceCutoffDate) {
+          const filteredBills = (row.billRecords || []).filter(
+            (bill) => bill.endDate && bill.endDate <= invoiceCutoffDate,
+          );
+          const clearedBills = filteredBills.filter((bill) => bill.status !== "Created");
+          return {
+            ...row,
+            hours: filteredBills.reduce((sum, bill) => sum + (bill.hours || 0), 0),
+            paidHours: clearedBills.reduce((sum, bill) => sum + (bill.hours || 0), 0),
+            income: filteredBills.reduce((sum, bill) => sum + (bill.total || 0), 0),
+            incomePaid: clearedBills.reduce((sum, bill) => sum + (bill.total || 0), 0),
+            billRecords: filteredBills,
+          };
+        }
+        if (row.detailType === "payroll" && payrollCutoffDate) {
+          const filteredRecords = (row.payRecords || []).filter(
+            (r) => r.checkDate && r.checkDate <= payrollCutoffDate,
+          );
+          return {
+            ...row,
+            totalPayment: filteredRecords.reduce((sum, r) => sum + (r.totalPaid || 0), 0),
+            payRecords: filteredRecords,
+          };
+        }
+        return row;
+      })
+      // A payroll year-row with every record filtered out has nothing left
+      // to show — drop it rather than leaving a $0 row behind.
+      .filter((row) => !(row.detailType === "payroll" && payrollCutoffDate && row.payRecords.length === 0));
+  }, [rowData, invoiceCutoffDate, payrollCutoffDate]);
+
   const pinnedTopRowData = useMemo(
     () =>
-      rowData.length > 0
+      filteredRowData.length > 0
         ? [
             (() => {
-              const hours = rowData.reduce((sum, row) => sum + (row.hours || 0), 0);
-              const paidHours = rowData.reduce((sum, row) => sum + (row.paidHours || 0), 0);
-              const income = rowData.reduce((sum, row) => sum + (row.income || 0), 0);
-              const incomePaid = rowData.reduce((sum, row) => sum + (row.incomePaid || 0), 0);
-              const totalPayment = rowData.reduce((sum, row) => sum + (row.totalPayment || 0), 0);
+              const hours = filteredRowData.reduce((sum, row) => sum + (row.hours || 0), 0);
+              const paidHours = filteredRowData.reduce((sum, row) => sum + (row.paidHours || 0), 0);
+              const income = filteredRowData.reduce((sum, row) => sum + (row.income || 0), 0);
+              const incomePaid = filteredRowData.reduce((sum, row) => sum + (row.incomePaid || 0), 0);
+              const totalPayment = filteredRowData.reduce((sum, row) => sum + (row.totalPayment || 0), 0);
               return {
                 description: "Total",
                 hours,
@@ -206,7 +284,7 @@ export default function FinalReportDetails({ employeeId }) {
             })(),
           ]
         : [],
-    [rowData],
+    [filteredRowData],
   );
 
   const columnDefs = [
@@ -265,24 +343,30 @@ export default function FinalReportDetails({ employeeId }) {
     },
   ];
 
-  const invoiceDetailConfig = {
+  const billDetailConfig = {
     detailGridOptions: {
       domLayout: "autoHeight",
       columnDefs: [
-        { field: "invoiceId", headerName: "Invoice Id", filter: true },
+        { field: "billId", headerName: "Bill Id", filter: "agSetColumnFilter" },
         {
           field: "invoiceMonth",
           headerName: "Invoice Month",
-          filter: true,
+          filter: "agSetColumnFilter",
           valueFormatter: (params) => formatMonthYear(params.value),
         },
-        { field: "hours", headerName: "Hours", filter: true },
-        { field: "status", headerName: "Status", filter: true },
+        { field: "hours", headerName: "Hours", filter: "agSetColumnFilter" },
+        {
+          field: "total",
+          headerName: "Total",
+          filter: "agSetColumnFilter",
+          valueFormatter: (params) => (params.value ? formatCurrency(params.value) : ""),
+        },
+        { field: "status", headerName: "Status", filter: "agSetColumnFilter" },
       ],
       defaultColDef: { flex: 1, minWidth: 20, resizable: true },
     },
     getDetailRowData: (params) => {
-      params.successCallback(params.data.invoiceRecords || []);
+      params.successCallback(params.data.billRecords || []);
     },
   };
 
@@ -293,19 +377,19 @@ export default function FinalReportDetails({ employeeId }) {
         {
           field: "checkDate",
           headerName: "Pay Check Date",
-          filter: true,
+          filter: "agSetColumnFilter",
           valueFormatter: (params) => formatDate(params.value),
         },
-        { field: "hours", headerName: "Hours", filter: true },
+        { field: "hours", headerName: "Hours", filter: "agSetColumnFilter" },
         {
           field: "totalPaid",
           headerName: "Total Paid",
-          filter: true,
+          filter: "agSetColumnFilter",
           valueFormatter: (params) => formatCurrency(params.value),
         },
-        { field: "paymentDetails", headerName: "Payment Details", filter: true },
-        { field: "payPeriodStartDate", headerName: "Pay Cycle Start", filter: true },
-        { field: "payPeriodEndDate", headerName: "Pay Cycle End", filter: true },
+        { field: "paymentDetails", headerName: "Payment Details", filter: "agSetColumnFilter" },
+        { field: "payPeriodStartDate", headerName: "Pay Cycle Start", filter: "agSetColumnFilter" },
+        { field: "payPeriodEndDate", headerName: "Pay Cycle End", filter: "agSetColumnFilter" },
       ],
       defaultColDef: { flex: 1, minWidth: 20, resizable: true },
     },
@@ -318,27 +402,27 @@ export default function FinalReportDetails({ employeeId }) {
     detailGridOptions: {
       domLayout: "autoHeight",
       columnDefs: [
-        { field: "description", headerName: "Type", filter: true },
-        { field: "from", headerName: "From", filter: true },
-        { field: "to", headerName: "To", filter: true },
-        { field: "date", headerName: "Date", filter: true },
-        { field: "notes", headerName: "Notes", filter: true },
+        { field: "description", headerName: "Type", filter: "agSetColumnFilter" },
+        { field: "from", headerName: "From", filter: "agSetColumnFilter" },
+        { field: "to", headerName: "To", filter: "agSetColumnFilter" },
+        { field: "date", headerName: "Date", filter: "agSetColumnFilter" },
+        { field: "notes", headerName: "Notes", filter: "agSetColumnFilter" },
         {
           field: "totalPayment",
           headerName: "Total Payment",
-          filter: true,
+          filter: "agSetColumnFilter",
           valueFormatter: (params) => (params.value ? formatCurrency(params.value) : ""),
         },
         {
           field: "income",
           headerName: "Income",
-          filter: true,
+          filter: "agSetColumnFilter",
           valueFormatter: (params) => (params.value ? formatCurrency(params.value) : ""),
         },
         {
           field: "incomePaid",
           headerName: "Income Paid",
-          filter: true,
+          filter: "agSetColumnFilter",
           valueFormatter: (params) => (params.value ? formatCurrency(params.value) : ""),
         },
       ],
@@ -353,21 +437,21 @@ export default function FinalReportDetails({ employeeId }) {
     detailGridOptions: {
       domLayout: "autoHeight",
       columnDefs: [
-        { field: "description", headerName: "Description", filter: true },
+        { field: "description", headerName: "Description", filter: "agSetColumnFilter" },
         {
           field: "amount",
           headerName: "Amount",
-          filter: true,
+          filter: "agSetColumnFilter",
           valueFormatter: (params) => (params.value ? formatCurrency(params.value) : ""),
         },
         {
           field: "reimbursable",
           headerName: "Reimbursable",
-          filter: true,
+          filter: "agSetColumnFilter",
           valueFormatter: (params) => (params.value ? "Yes" : "No"),
         },
-        { field: "date", headerName: "Date", filter: true },
-        { field: "status", headerName: "Status", filter: true },
+        { field: "date", headerName: "Date", filter: "agSetColumnFilter" },
+        { field: "status", headerName: "Status", filter: "agSetColumnFilter" },
       ],
       defaultColDef: { flex: 1, minWidth: 20, resizable: true },
     },
@@ -377,14 +461,14 @@ export default function FinalReportDetails({ employeeId }) {
   };
 
   // Which detail grid to show depends on the row's own category — Projects
-  // drill down into invoices, Payments (year rows) drill down into the
+  // drill down into bills, Payments (year rows) drill down into the
   // individual pay records for that year, Adjustments/Expenses drill down
   // into their own individual records.
   const detailCellRendererParams = (params) => {
     if (params.data?.detailType === "payroll") return payrollDetailConfig;
     if (params.data?.detailType === "adjustments") return adjustmentDetailConfig;
     if (params.data?.detailType === "expenses") return expenseDetailConfig;
-    return invoiceDetailConfig;
+    return billDetailConfig;
   };
 
   return (
@@ -400,6 +484,22 @@ export default function FinalReportDetails({ employeeId }) {
           >
             Refresh
           </Button>
+          <Select
+            allowClear
+            placeholder="Payroll Cutoff (All)"
+            style={{ width: 200, marginRight: "10px" }}
+            value={payrollCutoffDate || undefined}
+            onChange={(value) => setPayrollCutoffDate(value || null)}
+            options={payrollDateOptions.map((date) => ({ value: date, label: formatDate(date) }))}
+          />
+          <Select
+            allowClear
+            placeholder="Invoice Cutoff (All)"
+            style={{ width: 200 }}
+            value={invoiceCutoffDate || undefined}
+            onChange={(value) => setInvoiceCutoffDate(value || null)}
+            options={invoiceDateOptions.map((date) => ({ value: date, label: formatDate(date) }))}
+          />
         </div>
         <div className="project-grid-wrapper">
           <AgGridReact
@@ -414,7 +514,7 @@ export default function FinalReportDetails({ employeeId }) {
             }}
             autoSizeStrategy={{ type: "fitCellContents" }}
             rowHeight={48}
-            rowData={rowData}
+            rowData={filteredRowData}
             columnDefs={sizeColumnsForHeader(columnDefs)}
             masterDetail={true}
             isRowMaster={(dataItem) => Boolean(dataItem?.detailType)}
@@ -429,7 +529,7 @@ export default function FinalReportDetails({ employeeId }) {
             defaultColDef={{
               minWidth: 100,
               resizable: true,
-              filter: true,
+              filter: "agSetColumnFilter",
               headerClass: "ag-header-cell",
               cellClassRules: {
                 darkGreyBackground: (params) =>

@@ -101,19 +101,10 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
 
       let updatedColumn = column === "DOB" ? "Date of Birth" : column;
       updatedColumn = column;
-      let columnFilter;
-      if (
-        column === "Date of Birth" ||
-        column === "startDate" ||
-        column === "DOB" ||
-        column === "endDate"
-      ) {
-        columnFilter = "agDateColumnFilter";
-      } else if (column === "Annual Pay" || column === "EmployeeId") {
-        columnFilter = "agNumberColumnFilter";
-      } else {
-        columnFilter = "agSetColumnFilter";
-      }
+      // Every column uses the checkbox/select-values Set Filter — kept
+      // consistent across every grid in the app rather than per-type
+      // filter widgets (contains/equals/etc.).
+      const columnFilter = "agSetColumnFilter";
       let autoWidth = 0;
       if (column == "Visa") {
         autoWidth = 110;
@@ -310,7 +301,7 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
         headerName: k.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()),
         field: k,
         sortable: true,
-        filter: true,
+        filter: "agSetColumnFilter",
         resizable: true,
         minWidth: 120,
         cellClassRules: {
@@ -408,9 +399,10 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
           columnDefs={sizeColumnsForHeader(combinedColumnDefs)}
            defaultColDef={{
              resizable: true,
-             filter: true ,
+             filter: "agSetColumnFilter" ,
              minWidth: 100,
              maxWidth: 220,
+             enableRowGroup: true,
            }}
           hiddenByDefault={false}
           sideBar={{
@@ -422,7 +414,7 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
                 iconKey: "columns",
                 toolPanel: "agColumnsToolPanel",
                 toolPanelParams: {
-                  suppressRowGroups: true,
+                  suppressRowGroups: false,
                   suppressValues: true,
                   suppressPivots: false,
                   suppressPivotMode: true,
@@ -433,6 +425,7 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
               },
             ],
           }}
+          rowGroupPanelShow="always"
           sortable={true}
           pagination={true}
           paginationPageSize={100}

@@ -200,16 +200,16 @@ const VisaMasterList = () => {
     { colId: "lcaNumber", field: "lcaNumber", headerName: DETAIL_FIELD_LABELS.lcaNumber, filter: "agSetColumnFilter", cellClassRules },
     { colId: "socCode", field: "socCode", headerName: DETAIL_FIELD_LABELS.socCode, filter: "agSetColumnFilter", cellClassRules },
     {
-      colId: "lcaWage", field: "lcaWage", headerName: DETAIL_FIELD_LABELS.lcaWage, filter: "agNumberColumnFilter", cellClassRules,
+      colId: "lcaWage", field: "lcaWage", headerName: DETAIL_FIELD_LABELS.lcaWage, filter: "agSetColumnFilter", cellClassRules,
       valueFormatter: (params) => params.value != null ? formatCurrency(params.value) : "",
     },
     { colId: "client", field: "client", headerName: DETAIL_FIELD_LABELS.client, filter: "agSetColumnFilter", cellClassRules },
     { colId: "vendor", field: "vendor", headerName: DETAIL_FIELD_LABELS.vendor, filter: "agSetColumnFilter", cellClassRules },
     { colId: "jobLocation", field: "jobLocation", headerName: DETAIL_FIELD_LABELS.jobLocation, filter: "agSetColumnFilter", cellClassRules },
     { colId: "jobLocation2", field: "jobLocation2", headerName: DETAIL_FIELD_LABELS.jobLocation2, filter: "agSetColumnFilter", cellClassRules, hide: true },
-    { colId: "startDate", field: "startDate", headerName: DETAIL_FIELD_LABELS.startDate, filter: "agDateColumnFilter", cellClassRules },
-    { colId: "endDate", field: "endDate", headerName: DETAIL_FIELD_LABELS.endDate, filter: "agDateColumnFilter", cellClassRules },
-    { colId: "lastUpdated", field: "lastUpdated", headerName: DETAIL_FIELD_LABELS.lastUpdated, filter: "agDateColumnFilter", cellClassRules },
+    { colId: "startDate", field: "startDate", headerName: DETAIL_FIELD_LABELS.startDate, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "endDate", field: "endDate", headerName: DETAIL_FIELD_LABELS.endDate, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "lastUpdated", field: "lastUpdated", headerName: DETAIL_FIELD_LABELS.lastUpdated, filter: "agSetColumnFilter", cellClassRules },
   ];
 
   const columnDefsSized = sizeColumnsForHeader(columnDefs);
@@ -265,7 +265,7 @@ const VisaMasterList = () => {
               getRowId={(params) => String(params.data.visaId)}
               defaultColDef={{
                 resizable: true,
-                filter: true,
+                filter: "agSetColumnFilter",
                 minWidth: 100,
                 maxWidth: 220,
               }}

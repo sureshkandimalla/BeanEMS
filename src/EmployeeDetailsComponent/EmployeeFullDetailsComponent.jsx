@@ -33,7 +33,7 @@ const EmployeeFullDetails = () => {
   const thisMonthData = [50000, 43000, 60000, 70000, 55000];
   const lastMonthData = [25000, 28000, 20000, 15000, 50000];
   const location = useLocation();
-  const { rowData } = location.state || {};
+  const { rowData, activeTab } = location.state || {};
   console.log(location.state);
   const [responseData, setResponseData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -118,7 +118,7 @@ const EmployeeFullDetails = () => {
       children: (
         <div className="employee-List-grid" style={{ height: "100%" }}>
           <BillingDetails
-            url={`${API_ENDPOINTS.getBillsForEmployee}?employeeId=${rowData.employeeId}`}
+            url={API_ENDPOINTS.getBillsForEmployee(rowData.employeeId)}
             isCollapsed={isCollapsed}
           />
         </div>
@@ -268,7 +268,7 @@ const EmployeeFullDetails = () => {
       {/* Right Section (Tabs) */}
       <div style={{ flex: "1", overflow: "hidden" }}>
         <Card className="employeeTableCard" style={{ height: "100%" }}>
-          <Tabs className="bean-home-tabs" defaultActiveKey="2" items={items} />
+          <Tabs className="bean-home-tabs" defaultActiveKey={activeTab || "2"} items={items} />
         </Card>
       </div>
     </div>

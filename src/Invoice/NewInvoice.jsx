@@ -6,7 +6,7 @@ import "./Invoice.css";
 import API_ENDPOINTS from "../config";
 import { INVOICE_TERM_OPTIONS, computeInvoiceEndDate } from "../Utils/invoiceTerm";
 
-const NewInvoice = ({ onClose }) => {
+const NewInvoice = ({ onClose, employeeId, open }) => {
   const { Option } = Select;
   const [form] = Form.useForm();
   const [selectedEmployeeId, setSelectedEmployeeId] = useState();
@@ -334,6 +334,22 @@ const NewInvoice = ({ onClose }) => {
     handleGeneralData(0, "billRate");
     handleGeneralData(null, "invoiceTerm");
   };
+
+  // When opened from a context that already knows the employee (e.g. the
+  // Employee Full Details "INVOICES" tab), pre-select them by default —
+  // same cascade as picking them from the dropdown (auto-fills their latest
+  // project/vendor/bill rate), but the dropdown still lets the user switch.
+  // Re-runs on every reopen (`open` in the deps) since the Drawer doesn't
+  // unmount this form on close — after a successful submit, handleClear()
+  // resets selectedEmployeeId to null, so without `open` as a dependency
+  // this would only ever fire once and never re-fill on the next invoice.
+  useEffect(() => {
+    if (open && employeeId && employees.length > 0 && !selectedEmployeeId) {
+      form.setFieldsValue({ employeeId });
+      handleEmployeeChange(employeeId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, employeeId, employees, projects]);
 
   const handleProjectChange = (value) => {
     const selectedProject = projects.find(

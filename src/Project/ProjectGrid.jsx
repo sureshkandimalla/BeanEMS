@@ -3,26 +3,32 @@ import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import API_ENDPOINTS from "../config";
 import { createRoot } from "react-dom/client";
 import { AgGridReact } from "@ag-grid-community/react";
+import { Button, Drawer } from "antd";
+import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
 import { invoiceTermLabel } from "../Utils/invoiceTerm";
+import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
+import Newvendor from "../Vendor/NewVendor";
 
 const ProjectGrid = ({ employeeId, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
+  const [projectDrawerOpen, setProjectDrawerOpen] = useState(false);
+  const [vendorDrawerOpen, setVendorDrawerOpen] = useState(false);
   const columnDefs = [
     {
       headerName: "Employee Name",
       field: "employee.firstName",
       valueGetter: (params) =>
         `${params.data?.employee?.firstName || ""} ${params.data?.employee?.lastName || ""}`,
-      filter: true,
+      filter: "agSetColumnFilter",
     },
     {
       headerName: "Client Name",
       field: "client",
       cellRenderer: (params) => params.data?.customer?.customerCompanyName,
-      filter: true,
+      filter: "agSetColumnFilter",
     },
     {
       headerName: "Bill Rate",
@@ -31,21 +37,21 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
         const rate = params.data?.billRates?.[0]?.wage;
         return rate != null ? `$${rate.toFixed(2)}` : "N/A";
       },
-      filter: true,
+      filter: "agSetColumnFilter",
     },
     {
       headerName: "Invoice Term",
       field: "invoiceTerm",
       valueFormatter: (params) => invoiceTermLabel(params.value),
-      filter: true,
+      filter: "agSetColumnFilter",
     },
-    { headerName: "Payment Term", field: "paymentTerm", filter: true },
-    { headerName: "Start Date", field: "startDate", filter: true },
-    { headerName: "End Date", field: "endDate", filter: true },
-    { headerName: "Status", field: "status", filter: true },
+    { headerName: "Payment Term", field: "paymentTerm", filter: "agSetColumnFilter" },
+    { headerName: "Start Date", field: "startDate", filter: "agSetColumnFilter" },
+    { headerName: "End Date", field: "endDate", filter: "agSetColumnFilter" },
+    { headerName: "Status", field: "status", filter: "agSetColumnFilter" },
   ];
 
-  useEffect(() => {
+  const fetchData = () => {
     fetch(API_ENDPOINTS.projectsByEmployeeId(employeeId))
       .then((response) => response.json())
       .then((data) => {
@@ -54,6 +60,11 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
         console.log(transformedData);
       })
       .catch((error) => console.error("Error fetching data:", error));
+  };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const flattenObject = (data) => {
@@ -111,13 +122,61 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
         }}
       >
     <div className="ag-theme-alpine workforce-container">
-      <div class="workforce-search-container">
+      <Drawer
+        title="Project Onboarding"
+        placement="right"
+        size="large"
+        onClose={() => {
+          setProjectDrawerOpen(false);
+          fetchData();
+        }}
+        open={projectDrawerOpen}
+      >
+        <ProjectOnBoardingForm />
+      </Drawer>
+      <Drawer
+        title="Vendor Onboarding"
+        placement="right"
+        size="large"
+        onClose={() => {
+          setVendorDrawerOpen(false);
+          fetchData();
+        }}
+        open={vendorDrawerOpen}
+      >
+        <Newvendor />
+      </Drawer>
+      <div className="workforce-search-container">
+        <Button
+          type="default"
+          icon={<ReloadOutlined />}
+          onClick={fetchData}
+          style={{ marginRight: "10px" }}
+        >
+          Refresh
+        </Button>
         <input
           type="text"
           placeholder="Search..."
           value={searchText}
           onChange={handleSearchInputChange}
         />
+        <Button
+          type="primary"
+          className="button-vendor"
+          onClick={() => setProjectDrawerOpen(true)}
+          style={{ marginLeft: "10px" }}
+        >
+          <PlusOutlined /> Add New Project
+        </Button>
+        <Button
+          type="primary"
+          className="button-vendor"
+          onClick={() => setVendorDrawerOpen(true)}
+          style={{ marginLeft: "10px" }}
+        >
+          <PlusOutlined /> Add New Vendor
+        </Button>
       </div>
       <div  className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
@@ -135,6 +194,7 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
           resizable: true,
           filter: false,
           floatingFilter: false,
+          enableRowGroup: true,
         }}
         hiddenByDefault={false}
         rowGroupPanelShow="always"
@@ -151,7 +211,7 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
               iconKey: "columns",
               toolPanel: "agColumnsToolPanel",
               toolPanelParams: {
-                suppressRowGroups: true,
+                suppressRowGroups: false,
                 suppressValues: true,
                 suppressPivots: false,
                 suppressPivotMode: true,

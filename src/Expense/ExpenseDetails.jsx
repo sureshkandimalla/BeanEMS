@@ -281,7 +281,7 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
                 minWidth: 100,
                 maxWidth: 220,
                 resizable: true,
-                filter: true,
+                filter: "agSetColumnFilter",
                 headerClass: "ag-header-cell",
                 cellClassRules: {
                   darkGreyBackground: (params) =>

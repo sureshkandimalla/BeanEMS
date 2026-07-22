@@ -97,7 +97,7 @@ const InvoiceCard = () => {
         field: fieldValue,
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
         tooltipValueGetter: (params) => params.value,
         cellRenderer: (params) => {
           return params.value;
@@ -182,7 +182,7 @@ const InvoiceCard = () => {
             minWidth: 100,
             maxWidth: 220,
             resizable: true,
-            filter: true,
+            filter: "agSetColumnFilter",
             cellClassRules: {
               darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
             },

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button } from "antd";
-import { ReloadOutlined } from "@ant-design/icons";
+import { Button, Alert } from "antd";
+import { ReloadOutlined, ArrowLeftOutlined, CloseOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -14,14 +14,24 @@ import { IconButton } from "@mui/material";
 import EditHoursInvoiceModal from "./EditHoursInvoiceModel";
 import "./GenerateInvoiceDetails.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import { formatMonthYear } from "../Utils/dateFormat";
+import { computeInvoicePeriod } from "../Utils/invoiceTerm";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
-const GenerateInvoiceDetails = () => {
+const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {}) => {
   const location = useLocation();
-  const { url, month } = location.state || {};
+  const { url: stateUrl, month: stateMonth } = location.state || {};
+  const url = propUrl ?? stateUrl;
+  const month = propMonth ?? stateMonth;
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
+  // Captured from the raw (pre-filter) fetch so the "up to date" message
+  // still has a name to show even once every row's been filtered out.
+  const [employeeName, setEmployeeName] = useState("");
+  // Guards the "up to date" message against showing during the brief
+  // window before the first fetch resolves, when rowData is also still [].
+  const [hasFetched, setHasFetched] = useState(false);
   const [editingRowData, setEditingRowData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [invalidRows, setInvalidRows] = useState([]); // Track invalid rows
@@ -59,7 +69,9 @@ const GenerateInvoiceDetails = () => {
       .then((response) => {
         console.log(response.data);
         setLoading(false);
+        setEmployeeName(response.data?.[0]?.employeeName || "");
         setRowData(getFlattenedData(response.data));
+        setHasFetched(true);
       })
       .catch((error) => {
         console.error(error);
@@ -98,17 +110,25 @@ const GenerateInvoiceDetails = () => {
   }, [hasUnsavedChanges]);
 
   const getFlattenedData = (data) => {
-    let updatedData = data.map((dataObj) => {
-      //return { ...dataObj, ...dataObj.employeeAddress[0], ...dataObj.employeeAssignments[0] }
-      // Snapshot the project's own start/end date before startDate/endDate
-      // get edited below to represent this invoice's period — these bounds
-      // are what Start/End Date edits get validated against.
-      return {
-        ...dataObj,
-        projectStartDate: dataObj.startDate,
-        projectEndDate: dataObj.endDate,
-      };
-    });
+    let updatedData = data
+      // Generate Invoice is for creating new invoices — a row that already
+      // matched an existing invoice (invoiceId > 0) has nothing left to
+      // generate, so it's dropped rather than shown alongside the rows that
+      // still need one.
+      .filter((dataObj) => !dataObj.invoiceId)
+      .map((dataObj) => {
+        //return { ...dataObj, ...dataObj.employeeAddress[0], ...dataObj.employeeAssignments[0] }
+        // Snapshot the project's own start/end date before startDate/endDate
+        // get edited below to represent this invoice's period — these bounds
+        // are what Start/End Date edits get validated against.
+        return {
+          ...dataObj,
+          projectStartDate: dataObj.startDate,
+          projectEndDate: dataObj.endDate,
+          // Each row's startDate is already the first of its invoice month.
+          invoiceMonth: dataObj.startDate,
+        };
+      });
     return updatedData || [];
   };
 
@@ -219,6 +239,14 @@ const GenerateInvoiceDetails = () => {
   const getColumnsDefList = (isSortable, isEditable, hasFilter) => {
     var columns = [
       { headerName: "Employee Name", field: "employeeName", sortable: true },
+      {
+        headerName: "Invoice Month",
+        field: "invoiceMonth",
+        sortable: true,
+        editable: false,
+        enableRowGroup: true,
+        valueFormatter: (params) => formatMonthYear(params.value),
+      },
       { headerName: "Client", field: "clientName", sortable: true },
       {
         headerName: "Vendor",
@@ -240,6 +268,10 @@ const GenerateInvoiceDetails = () => {
         sortable: true,
         editable: true,
         // Invoice Start Date cannot be before the project's own start date.
+        // The picked date snaps to the correct period boundary for this
+        // row's Invoice Term (e.g. a Wednesday snaps back to that week's
+        // Monday for Weekly), and End Date is recalculated from it —
+        // onCellValueChanged below refreshes the End Date cell to reflect it.
         valueSetter: (params) => {
           const { newValue, data } = params;
           if (data.projectStartDate && newValue < data.projectStartDate) {
@@ -254,7 +286,13 @@ const GenerateInvoiceDetails = () => {
             );
             return false;
           }
-          data.startDate = newValue;
+
+          const { startDate, endDate } = computeInvoicePeriod(newValue, data.invoiceTerm, data.weekStartDay);
+          data.startDate = startDate || newValue;
+          if (endDate) {
+            data.endDate =
+              data.projectEndDate && endDate > data.projectEndDate ? data.projectEndDate : endDate;
+          }
           return true;
         },
       },
@@ -363,6 +401,14 @@ const GenerateInvoiceDetails = () => {
         });
       }
     }
+
+    if (params.column.colId === "startDate") {
+      setHasUnsavedChanges(true);
+      // The Start Date valueSetter above may have recalculated End Date as
+      // a side effect — AG Grid only auto-refreshes the edited column's own
+      // cell, so refresh End Date explicitly to show the new value.
+      params.api.refreshCells({ rowNodes: [params.node], columns: ["endDate"] });
+    }
   };
 
   const gridOptions = {
@@ -399,6 +445,11 @@ const GenerateInvoiceDetails = () => {
     "invalid-row": (params) => invalidRows.includes(params.data.projectId), // Highlight rows if their ID is in invalidRows
   };
 
+  // Every period already has an invoice — nothing left to generate. Only
+  // fires once the first fetch has actually resolved (hasFetched), so it
+  // can't flash on screen during the initial load.
+  const isUpToDate = hasFetched && rowData.length === 0;
+
   return (
     <>
       {month ? <p> Generating Invoice for {month}</p> : ""}
@@ -409,6 +460,25 @@ const GenerateInvoiceDetails = () => {
           <>
             <div className="workforce-search-container">
               <div style={{ display: "flex", alignItems: "center" }}>
+                {onBack && (
+                  <>
+                    <Button
+                      type="default"
+                      icon={<ArrowLeftOutlined />}
+                      onClick={onBack}
+                      style={{ marginRight: "10px" }}
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      icon={<CloseOutlined />}
+                      onClick={onBack}
+                      style={{ marginRight: "10px" }}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                )}
                 <Button
                   type="default"
                   icon={<ReloadOutlined />}
@@ -424,60 +494,73 @@ const GenerateInvoiceDetails = () => {
                   onChange={handleSearchInputChange}
                 />
               </div>
-              <Button key="save" type="primary" onClick={handleSave}>
-                Save
-              </Button>
+              {!isUpToDate && (
+                <Button key="save" type="primary" onClick={handleSave} disabled={!hasUnsavedChanges}>
+                  Save
+                </Button>
+              )}
             </div>
 
-            <AgGridReact
-              ref={gridRef}
-              onGridReady={(params) => {
-                gridRef.current = params.api;
-              }}
-              onFirstDataRendered={(params) => {
-                try { params.api.autoSizeAllColumns(); } catch (e) {}
-              }}
-              autoSizeStrategy={{ type: "fitCellContents" }}
-              rowHeight={48}
-              rowData={filterData()}
-              columnDefs={sizeColumnsForHeader(getColumnsDefList(true))}
-              gridOptions={gridOptions}
-              defaultColDef={{
-                minWidth: 100,
-                maxWidth: 220,
-                resizable: true,
-                filter: true,
-                cellClassRules: {
-                  darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
-                },
-              }}
-              sideBar={{
-                toolPanels: [
-                  {
-                    id: "columns",
-                    labelDefault: "Columns",
-                    labelKey: "columns",
-                    iconKey: "columns",
-                    toolPanel: "agColumnsToolPanel",
-                    toolPanelParams: {
-                      suppressRowGroups: true,
-                      suppressValues: true,
-                      suppressPivots: false,
-                      suppressPivotMode: true,
-                      suppressColumnFilter: true,
-                      suppressColumnSelectAll: true,
-                      suppressColumnExpandAll: true,
-                    },
+            {isUpToDate ? (
+              <Alert
+                type="success"
+                showIcon
+                message={`Invoices for ${employeeName || "this employee"} is up to date`}
+                style={{ margin: "10px 0" }}
+              />
+            ) : (
+              <AgGridReact
+                ref={gridRef}
+                onGridReady={(params) => {
+                  gridRef.current = params.api;
+                }}
+                onFirstDataRendered={(params) => {
+                  try { params.api.autoSizeAllColumns(); } catch (e) {}
+                }}
+                autoSizeStrategy={{ type: "fitCellContents" }}
+                rowHeight={48}
+                rowData={filterData()}
+                columnDefs={sizeColumnsForHeader(getColumnsDefList(true))}
+                gridOptions={gridOptions}
+                defaultColDef={{
+                  minWidth: 100,
+                  maxWidth: 220,
+                  resizable: true,
+                  filter: "agSetColumnFilter",
+                  enableRowGroup: true,
+                  cellClassRules: {
+                    darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
                   },
-                ],
-              }}
-              rowClassRules={rowClassRules}
-              sortable={true}
-              pagination={true}
-              paginationPageSize={15}
-              enableBrowserTooltips={true}
-              popupParent={document.body}
-            />
+                }}
+                sideBar={{
+                  toolPanels: [
+                    {
+                      id: "columns",
+                      labelDefault: "Columns",
+                      labelKey: "columns",
+                      iconKey: "columns",
+                      toolPanel: "agColumnsToolPanel",
+                      toolPanelParams: {
+                        suppressRowGroups: false,
+                        suppressValues: true,
+                        suppressPivots: false,
+                        suppressPivotMode: true,
+                        suppressColumnFilter: true,
+                        suppressColumnSelectAll: true,
+                        suppressColumnExpandAll: true,
+                      },
+                    },
+                  ],
+                }}
+                rowClassRules={rowClassRules}
+                rowGroupPanelShow="always"
+                sortable={true}
+                pagination={true}
+                paginationPageSize={15}
+                enableBrowserTooltips={true}
+                popupParent={document.body}
+              />
+            )}
 
             {isModalOpen && (
               <EditHoursInvoiceModal

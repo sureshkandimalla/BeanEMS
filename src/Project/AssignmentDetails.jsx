@@ -1,11 +1,12 @@
 import API_ENDPOINTS from "../config";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
-import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Button, Drawer } from "antd";
+import { PlusOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
+import { Button, Drawer, message } from "antd";
+import axios from "axios";
 import "./ProjectGrid.css";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
 import AssignmentForm from "./AssignmentForm";
@@ -17,6 +18,8 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
   //  const [rowData, setRowData] = useState();
   const [rowData, setRowData] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const [modifiedRows, setModifiedRows] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
   const addNewProject = () => {
     setOpen(true);
@@ -34,11 +37,42 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
       const data = await response.json();
       const flattendData = getFlattenedData(data);
       setRowData(flattendData);
+      setModifiedRows({});
       console.log(flattendData);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
+
+  const onCellValueChanged = useCallback((params) => {
+    const assignmentId = params.data?.assignmentId;
+    if (assignmentId === undefined || assignmentId === null) return;
+    setModifiedRows((prev) => ({ ...prev, [assignmentId]: params.data }));
+  }, []);
+
+  const handleCancelChanges = () => {
+    setModifiedRows({});
+    fetchData();
+  };
+
+  const saveChanges = useCallback(() => {
+    const rows = Object.values(modifiedRows);
+    if (rows.length === 0) return;
+    setIsSaving(true);
+    Promise.all(
+      rows.map((row) => axios.put(API_ENDPOINTS.assignmentsById(row.assignmentId), row)),
+    )
+      .then(() => {
+        message.success(`${rows.length} assignment(s) saved successfully`);
+        setModifiedRows({});
+        fetchData();
+      })
+      .catch(() => {
+        message.error("One or more assignments failed to save. Please try again.");
+      })
+      .finally(() => setIsSaving(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modifiedRows]);
 
   useEffect(() => {
     fetchData();
@@ -79,7 +113,7 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
         field: "assignmentType",
         sortable: isSortable,
         editable: false,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       {
         headerName: "Employee Name",
@@ -92,7 +126,7 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
         field: "wage",
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
         valueFormatter: (params) => formatCurrency(params.value),
       },
       {
@@ -100,7 +134,7 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
         field: "status",
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       //{ headerName: 'Client', field: 'clientName',sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
       //{ headerName: 'Vendor', field: 'vendorName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
@@ -110,14 +144,14 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
         field: "startDate",
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
       {
         headerName: "Project End Date",
         field: "endDate",
         sortable: isSortable,
         editable: true,
-        filter: "agTextColumnFilter",
+        filter: "agSetColumnFilter",
       },
     ];
     return columns;
@@ -165,9 +199,31 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
           >
             <PlusOutlined /> Add New Assignment
           </Button>
+          {Object.keys(modifiedRows).length > 0 && (
+            <>
+              <Button
+                type="primary"
+                ghost
+                icon={<SaveOutlined />}
+                onClick={saveChanges}
+                loading={isSaving}
+                style={{ marginLeft: "10px" }}
+              >
+                Save Changes
+              </Button>
+              <Button
+                icon={<CloseOutlined />}
+                onClick={handleCancelChanges}
+                style={{ marginLeft: "10px" }}
+              >
+                Cancel
+              </Button>
+            </>
+          )}
         </div>
         <div  className={`assignment-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
+          onCellValueChanged={onCellValueChanged}
           onFirstDataRendered={(params) => {
             try { params.api.autoSizeAllColumns(); } catch (e) {}
           }}

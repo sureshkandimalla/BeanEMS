@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import moment from "moment";
 import {
   Tag,
   Button,
@@ -26,8 +27,8 @@ const onFinishFailed = (errorInfo) => {
 const usCountryTelList = [
   //TODO later get from db/api call
   {
-    value: "US",
-    label: "US",
+    value: "USA",
+    label: "USA",
   },
   {
     value: "IN",
@@ -42,12 +43,21 @@ const NewVendor = () => {
     vendorCompanyName: "",
     ein: "",
     phone: "",
+    phoneCountry: "USA",
     emailId: "",
     webSite: "",
-    startDate: null,
+    startDate: moment().format("YYYY-MM-DD"),
     endDate: null,
+    streetAddress: "",
+    streetAddress2: "",
+    city: "",
+    state: "",
     zipCode: "",
+    country: "USA",
   });
+  // Vendor Company Name auto-fills from Vendor Name until the user directly
+  // edits Company Name themselves — then it stops following.
+  const companyNameEditedRef = useRef(false);
 
   const handleSubmit = () => {
     console.log("generalDetails: " + generalDetails);
@@ -56,7 +66,6 @@ const NewVendor = () => {
       !generalDetails.vendorName ||
       !generalDetails.vendorCompanyName ||
       !generalDetails.ein ||
-      !generalDetails.zipCode ||
       !generalDetails.phone ||
       !generalDetails.emailId
     ) {
@@ -132,9 +141,16 @@ const NewVendor = () => {
             >
               <Input
                 placeholder="Vendor Name"
-                onChange={(e) =>
-                  handleGeneralData(e.target.value, "vendorName")
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  handleGeneralData(value, "vendorName");
+                  // Auto-fill Company Name from Vendor Name until the user
+                  // edits Company Name directly themselves.
+                  if (!companyNameEditedRef.current) {
+                    handleGeneralData(value, "vendorCompanyName");
+                    form.setFieldsValue({ vendorCompanyName: value });
+                  }
+                }}
                 value={generalDetails.vendorName}
               />
             </Form.Item>
@@ -152,9 +168,10 @@ const NewVendor = () => {
             >
               <Input
                 placeholder="Vendor Company Name"
-                onChange={(e) =>
-                  handleGeneralData(e.target.value, "vendorCompanyName")
-                }
+                onChange={(e) => {
+                  companyNameEditedRef.current = true;
+                  handleGeneralData(e.target.value, "vendorCompanyName");
+                }}
                 value={generalDetails.vendorCompanyName}
               />
             </Form.Item>
@@ -163,17 +180,17 @@ const NewVendor = () => {
         <Row gutter={25}>
           <Col span={12}>
             <Form.Item
-              label="ein"
+              label="EIN"
               name="ein"
               rules={[
                 {
                   required: true,
-                  message: "Please Enter ein",
+                  message: "Please Enter EIN",
                 },
               ]}
             >
               <Input
-                placeholder="ein"
+                placeholder="EIN"
                 onChange={(e) => handleGeneralData(e.target.value, "ein")}
                 value={generalDetails.ein}
               />
@@ -232,7 +249,11 @@ const NewVendor = () => {
             >
               <Space direction="vertical" size="middle">
                 <Space.Compact>
-                  <Select defaultValue="" options={usCountryTelList} />
+                  <Select
+                    options={usCountryTelList}
+                    value={generalDetails.phoneCountry}
+                    onChange={(value) => handleGeneralData(value, "phoneCountry")}
+                  />
                   <Input
                     placeholder="+1 (555) 000-000"
                     onChange={(e) => handleGeneralData(e.target.value, "phone")}
@@ -254,6 +275,7 @@ const NewVendor = () => {
               ]}
             >
               <DatePicker
+                value={generalDetails.startDate ? moment(generalDetails.startDate) : null}
                 onChange={(date, dateString) =>
                   handleGeneralData(dateString, "startDate")
                 }
@@ -279,6 +301,17 @@ const NewVendor = () => {
                 handleGeneralData(e.target.value, "streetAddress")
               }
               value={generalDetails.streetAddress}
+            />
+          </Form.Item>
+        </Col>
+        <Col span={24}>
+          <Form.Item label="Address Line 2" name="streetAddress2">
+            <Input
+              placeholder="Apt, suite, unit, etc. (optional)"
+              onChange={(e) =>
+                handleGeneralData(e.target.value, "streetAddress2")
+              }
+              value={generalDetails.streetAddress2}
             />
           </Form.Item>
         </Col>
@@ -323,16 +356,7 @@ const NewVendor = () => {
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item
-              label="Zip Code/Postal Code"
-              name="zipCode"
-              rules={[
-                {
-                  required: true,
-                  message: "Please Enter Zip code",
-                },
-              ]}
-            >
+            <Form.Item label="Zip Code/Postal Code" name="zipCode">
               <Input
                 placeholder="Enter Zip Code"
                 onChange={(e) => handleGeneralData(e.target.value, "zipCode")}
@@ -352,7 +376,6 @@ const NewVendor = () => {
               ]}
             >
               <Select
-                defaultValue="us"
                 options={usCountryTelList}
                 onChange={(value) => handleGeneralData(value, "country")}
                 value={generalDetails.country}

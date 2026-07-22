@@ -29,11 +29,14 @@ export const workingStatusList = [
 export const workAuthorizationList = [
   { value: "H1B", label: "H1B" },
   { value: "OPT", label: "OPT" },
+  { value: "OPT EAD", label: "OPT EAD" },
+  { value: "STEM EAD", label: "STEM EAD" },
+  { value: "H4 EAD", label: "H4 EAD" },
   { value: "Citizen", label: "Citizen" },
   { value: "GC", label: "GC" },
   { value: "L1", label: "L1" },
   { value: "E3", label: "E3" },
-  
+
 ];
 
 export const everifyStatusList = [
@@ -91,9 +94,11 @@ export const API_ENDPOINTS = {
   employeesCountByStatus: `${API_BASE_URL}/employees/employeesCountByStatus`,
   invoicesCountByStatus: `${API_BASE_URL}/invoice/invoicesCountByStatus`,
   getProjects: `${API_BASE_URL}/getProjects`,
+  wagesById: (wageId) => `${API_BASE_URL}/wages/${wageId}`,
   getEmployees: `${API_BASE_URL}/employees/getEmployees`,
   getAllEmployees: `${API_BASE_URL}/employees/getAllEmployees`,
   getAllCustomers: `${API_BASE_URL}/customers/getAllCustomers`,
+  customersById: (customerId) => `${API_BASE_URL}/customers/customers/${customerId}`,
   assignmentsForProject: (projectId) => `${API_BASE_URL}/assignmentsForProject?projectId=${projectId}`,
   projectsById: (projectId) => `${API_BASE_URL}/projects/${projectId}`,
   employeeById: (employeeId) => `${API_BASE_URL}/employees/employee/${employeeId}`,
@@ -115,7 +120,9 @@ export const API_ENDPOINTS = {
   getExpensesForEmployee: (employeeId) => `${API_BASE_URL}/expense/getExpensesForEmployee?employeeId=${employeeId}`,
   expensesCountByStatus: `${API_BASE_URL}/expense/expensesCountByStatus`,
   getBillsForProject: (projectId) => `${API_BASE_URL}/bills/getBillsForProject?projectId=${projectId}`,
+  getBillsForEmployee: (employeeId) => `${API_BASE_URL}/bills/getBillsForEmployee?employeeId=${employeeId}`,
   assignments: `${API_BASE_URL}/assignments`,
+  assignmentsById: (assignmentId) => `${API_BASE_URL}/assignments/${assignmentId}`,
   saveOnBoardProject: `${API_BASE_URL}/saveOnBoardProject`,
   getPayrollSummaryAll: `${API_BASE_URL}/payrollsummary/getAll`,
   getPayrollsForEmp: (employeeId) => `${API_BASE_URL}/payrollsummary/getByEmployeeId/${employeeId}`,
@@ -155,11 +162,13 @@ export const employeeTypeOptions = [
 export const companyList = [
   { value: "Intellan Technologies LLC", label: "Intellan Technologies LLC" },
   { value: "Code9 LLC", label: "Code9 LLC" },
+  { value: "Referral", label: "Referral" },
 ];
 
 export const departmentList = [
   { value: "Intellan Technologies LLC", label: "Intellan Technologies LLC" },
   { value: "Code9 LLC", label: "Code9 LLC" },
+  { value: "Referral", label: "Referral" },
 ];
 
 export const projectStatus = [

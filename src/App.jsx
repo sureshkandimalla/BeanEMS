@@ -15,6 +15,7 @@ import EmployeeOnboard from "./EmployeeOnboard/EmployeeOnboard";
 import VendorDetails from "./Vendor/VendorDetails";
 import InvoiceDetails from "./Invoice/InvoiceDetails";
 import ExpenseDetails from "./Expense/ExpenseDetails";
+import CompanyFinalReportDetails from "./CompanyDashboard/CompanyFinalReportDetails";
 import EmployeeFullDetailsComponent from "./EmployeeDetailsComponent/EmployeeFullDetailsComponent";
 import EmployeeDetailDashboard from "./EmployeeDetailDashboard/EmployeeDetailDashboard";
 import ProjectDashboard from "./Project/ProjectDashboard";
@@ -59,6 +60,7 @@ const App = () => {
               <Route path="/vendordetails" element={<VendorDetails />} />
               <Route path="/invoicedetails" element={<InvoiceDetails />} />
               <Route path="/expensedetails" element={<ExpenseDetails />} />
+              <Route path="/companyreport" element={<CompanyFinalReportDetails />} />
               <Route path="/payrollsummary" element={<PayrollSummary />} />
               <Route
                 path="/employeeFullDetails"

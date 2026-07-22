@@ -3,6 +3,7 @@ import API_ENDPOINTS from "../config";
 import { Button, Card, Row, Col, Collapse, Radio } from "antd";
 import axios from "axios";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import { formatMonthYear } from "../Utils/dateFormat";
 import ReactApexChart from "react-apexcharts";
 import PayrollDetails from "./PayrollDetails";
 
@@ -13,13 +14,13 @@ const PayrollSummary = ({ employeeId }) => {
   const [chartData, setChartData] = useState({
     departments: [],
     netPayByDept: [],
-    hoursByDept: [],
     statusLabels: [],
     statusCounts: [],
     totalNetPay: 0,
     totalHours: 0,
     checkDateTotals: { checkDates: [], totalExpenses: [], netPay: [], taxWithheld: [], employerLiability: [] },
     yearTotals: { years: [], totalExpenses: [], netPay: [], taxWithheld: [], employerLiability: [] },
+    employeeCountByMonth: { months: [], counts: [] },
   });
   const [checkDateOffset, setCheckDateOffset] = useState(0);
   const [chartsOpen, setChartsOpen] = useState(true);
@@ -47,7 +48,7 @@ const PayrollSummary = ({ employeeId }) => {
   };
 
   const buildChartData = (data) => {
-    // Net Pay & Hours by Department
+    // Net Pay by Department (Department count still feeds the "Departments" KPI card)
     const deptMap = {};
     data.forEach((row) => {
       const dept = row.department || "Unknown";
@@ -57,7 +58,20 @@ const PayrollSummary = ({ employeeId }) => {
     });
     const departments = Object.keys(deptMap);
     const netPayByDept = departments.map((d) => Math.round(deptMap[d].netPay));
-    const hoursByDept = departments.map((d) => deptMap[d].hours);
+
+    // Distinct employees paid per check-date month.
+    const monthEmployeeMap = {};
+    data.forEach((row) => {
+      if (!row.checkDate) return;
+      const month = row.checkDate.substring(0, 7); // "yyyy-MM"
+      if (!monthEmployeeMap[month]) monthEmployeeMap[month] = new Set();
+      monthEmployeeMap[month].add(row.employeeId ?? row.employeeName);
+    });
+    const months = Object.keys(monthEmployeeMap).sort();
+    const employeeCountByMonth = {
+      months,
+      counts: months.map((m) => monthEmployeeMap[m].size),
+    };
 
     // Totals by checkDate
     const checkDateMap = {};
@@ -109,7 +123,7 @@ const PayrollSummary = ({ employeeId }) => {
     const totalNetPay = data.reduce((sum, r) => sum + (r.netPay || 0), 0);
     const totalHours = data.reduce((sum, r) => sum + (r.hours || 0), 0);
 
-    setChartData({ departments, netPayByDept, hoursByDept, statusLabels, statusCounts, totalNetPay, totalHours, checkDateTotals, yearTotals });
+    setChartData({ departments, netPayByDept, statusLabels, statusCounts, totalNetPay, totalHours, checkDateTotals, yearTotals, employeeCountByMonth });
   };
 
   // Chart configs — grouped by either exact check date or by year, per the toggle.
@@ -148,14 +162,17 @@ const PayrollSummary = ({ employeeId }) => {
     },
   };
 
-  const hoursBarOptions = {
+  const employeeCountByMonthOptions = {
     chart: { type: "bar", toolbar: { show: false } },
     plotOptions: { bar: { borderRadius: 4, columnWidth: "50%" } },
     dataLabels: { enabled: false },
     colors: ["#e697ff"],
-    xaxis: { categories: chartData.departments, labels: { style: { fontSize: "11px" } } },
+    xaxis: {
+      categories: chartData.employeeCountByMonth.months.map((m) => formatMonthYear(m)),
+      labels: { style: { fontSize: "11px" }, rotate: -30 },
+    },
     yaxis: { show: false },
-    title: { text: "Hours by Department", align: "center", style: { fontSize: "13px" } },
+    title: { text: "Employee Count by Month", align: "center", style: { fontSize: "13px" } },
   };
 
   const statusPieOptions = {
@@ -265,8 +282,8 @@ const PayrollSummary = ({ employeeId }) => {
             <Col span={6}>
               <Card bodyStyle={{ padding: "12px", height: "100%" }}>
                 <ReactApexChart
-                  options={hoursBarOptions}
-                  series={[{ name: "Hours", data: chartData.hoursByDept }]}
+                  options={employeeCountByMonthOptions}
+                  series={[{ name: "Employees", data: chartData.employeeCountByMonth.counts }]}
                   type="bar"
                   height={300}
                 />

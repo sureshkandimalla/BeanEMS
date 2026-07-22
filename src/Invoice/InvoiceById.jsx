@@ -217,7 +217,7 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
           minWidth: 100,
           maxWidth: 220,
           resizable: true,
-          filter: true,
+          filter: "agSetColumnFilter",
           floatingFilter: false,
           cellClassRules: {
             darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,

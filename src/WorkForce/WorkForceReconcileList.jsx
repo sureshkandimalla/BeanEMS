@@ -47,19 +47,10 @@ const WorkForceReconcileList = ({ employees, isCollapsed, onRefresh }) => {
 
       let updatedColumn = column === "DOB" ? "Date of Birth" : column;
       updatedColumn = column;
-      let columnFilter;
-      if (
-        column === "Date of Birth" ||
-        column === "startDate" ||
-        column === "DOB" ||
-        column === "endDate"
-      ) {
-        columnFilter = "agDateColumnFilter";
-      } else if (column === "Annual Pay" || column === "EmployeeId") {
-        columnFilter = "agNumberColumnFilter";
-      } else {
-        columnFilter = "agSetColumnFilter";
-      }
+      // Every column uses the checkbox/select-values Set Filter — kept
+      // consistent across every grid in the app rather than per-type
+      // filter widgets (contains/equals/etc.).
+      const columnFilter = "agSetColumnFilter";
       let autoWidth = 0;
       if (column == "Visa") {
         autoWidth = 100;
@@ -217,7 +208,7 @@ const WorkForceReconcileList = ({ employees, isCollapsed, onRefresh }) => {
             minWidth: 100,
             maxWidth: 220,
             resizable: true,
-            filter: true,
+            filter: "agSetColumnFilter",
           }}
           hiddenByDefault={false}
           sideBar={{

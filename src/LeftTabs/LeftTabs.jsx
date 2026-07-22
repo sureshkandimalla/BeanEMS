@@ -12,6 +12,7 @@ import {
   MenuUnfoldOutlined,
   ProjectOutlined,
   DollarOutlined,
+  BankOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -39,6 +40,7 @@ const leftTabNames = [
   getItem("LCA Details", "/lcaDetails", <FileTextOutlined />),
   getItem("Visa Details", "/visaDetails", <FileTextOutlined />),
   getItem("Payroll Summary", "/payrollsummary", <BoxPlotOutlined />),
+  getItem("Company Report", "/companyreport", <BankOutlined />),
 ];
 const LeftTabs = () => {
   const [collapsed, setCollapsed] = useState(true);

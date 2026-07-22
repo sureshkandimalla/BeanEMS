@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Card, Drawer } from "antd";
+import { Button, Card, Drawer, message } from "antd";
 
 import { PlusOutlined, ReloadOutlined, FileExcelOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./Invoice.css";
 import NewInvoice from "./NewInvoice";
+import GenerateInvoiceDetails from "./GenerateInvoiceDetails";
 import MonthlyTimesheetDialog from "../Project/TimeSheet/MonthlyTimeSheetModal";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DatePicker from "react-datepicker";
@@ -26,7 +27,7 @@ import { formatMonthYear } from "../Utils/dateFormat";
 // Excel, Add New Invoice, Generate Invoice, totals) unchanged. statusFilter
 // is likewise optional — when provided (e.g. embedded in a status tab on
 // the Dashboard), only invoices with that exact status are shown.
-const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, gridHeight } = {}) => {
+const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, gridHeight, onRefresh } = {}) => {
   const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
@@ -34,6 +35,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
   const [projects, setProjectsData] = useState([]);
   const navigate = useNavigate();
   const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
+  const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
 
   //  const columnsList = ['Customer Id', 'Company Name', 'Email Id', 'Phone', 'Status', 'ein', 'Website','startDate','endDate' ];
   const isInitialRender = useRef(true);
@@ -148,6 +150,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       .then(() => {
         setModifiedRows({});
         fetchData();
+        onRefresh?.();
       })
       .catch((error) => {
         console.error("Error saving invoice changes:", error);
@@ -337,12 +340,27 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
 
   const generateInvoice = () => {
     if (employeeId) {
-      // Scoped to just this employee's own active projects.
-      navigate("/generateInvoice", {
-        state: {
-          url: API_ENDPOINTS.activeProjectsForInvoiceByEmployee(employeeId),
-        },
-      });
+      // Check first whether there's actually anything left to generate —
+      // if every period already has an invoice, just alert and stay on
+      // this page instead of swapping to an empty Generate Invoice grid.
+      axios
+        .get(API_ENDPOINTS.activeProjectsForInvoiceByEmployee(employeeId))
+        .then((response) => {
+          const rows = response.data || [];
+          const remaining = rows.filter((row) => !row.invoiceId);
+          if (rows.length > 0 && remaining.length === 0) {
+            message.success(`Invoices for ${rows[0].employeeName || "this employee"} is up to date`);
+            return;
+          }
+          // Scoped to just this employee's own active projects — swap the
+          // grid in place instead of navigating to a separate page.
+          setIsGeneratingInvoice(true);
+        })
+        .catch((error) => {
+          console.error("Error checking invoice status:", error);
+          // Fail open — let the grid itself surface any error.
+          setIsGeneratingInvoice(true);
+        });
       return;
     }
 
@@ -371,13 +389,28 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
     return null;
   };
 
+  if (isGeneratingInvoice) {
+    return (
+      <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <GenerateInvoiceDetails
+          url={API_ENDPOINTS.activeProjectsForInvoiceByEmployee(employeeId)}
+          onBack={() => {
+            setIsGeneratingInvoice(false);
+            fetchData();
+            onRefresh?.();
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
     style={{
       height: "100%",
       display: "flex",
       flexDirection: "column",
-      overflow: "hidden", 
+      overflow: "hidden",
     }}
   >
     <div className="ag-theme-alpine employee-List-grid">
@@ -389,14 +422,20 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
         onClose={onClose}
         open={open}
       >
-        <NewInvoice onClose={onClose} />
+        <NewInvoice onClose={onClose} employeeId={employeeId} open={open} />
       </Drawer>
       <div className="workforce-search-container" style={{ gap: "32px" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <Button
             type="default"
             icon={<ReloadOutlined />}
-            onClick={fetchData}
+            onClick={() => {
+              fetchData();
+              // When embedded (e.g. Project Full Details' "Invoices" tab),
+              // also refreshes the host page's own totals/chart — otherwise
+              // those go stale after a save made right here.
+              onRefresh?.();
+            }}
             style={{ marginRight: "10px" }}
           >
             Refresh
@@ -458,7 +497,10 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
             type="primary"
             style={{ marginLeft: "10px" }}
             className="button-vendor"
-            disabled={!selectedDate}
+            // Scoped to an employee (e.g. the employeeFullDetails Invoices
+            // tab), generateInvoice() doesn't need a month — it's only
+            // required for the generic/bulk (no employeeId) path below.
+            disabled={!employeeId && !selectedDate}
             onClick={generateInvoice}
           >
             <PlusOutlined /> Generate Invoice
@@ -487,7 +529,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
           minWidth: 100,
           maxWidth: 220,
           resizable: true,
-          filter: true,
+          filter: "agSetColumnFilter",
           headerClass: "ag-header-cell",
           cellClassRules: {
             darkGreyBackground: (params) => params.node?.rowIndex !== undefined

@@ -2,17 +2,39 @@
 import React from "react";
 import ReactApexChart from "react-apexcharts";
 
-const RevenueCharts = ({ thisMonthData, lastMonthData }) => {
+// Whole-dollar formatting for on-bar labels — the shared formatCurrency
+// always shows cents, which is too noisy printed vertically inside a bar.
+const formatWholeCurrency = (value) =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(value || 0);
+
+const RevenueCharts = ({
+  thisMonthData,
+  lastMonthData,
+  categories = ["Company 1", "Company 2", "Company 3", "Company 4", "Company 5"],
+  series1Name = "This Month",
+  series2Name = "Last Month",
+}) => {
   const chartOptions = {
     options: {
       plotOptions: {
         bar: {
           borderRadius: 5,
           columnWidth: 30,
+          dataLabels: {
+            orientation: "vertical",
+          },
         },
       },
       dataLabels: {
-        enabled: false,
+        enabled: true,
+        formatter: (value) => formatWholeCurrency(value),
+        style: {
+          fontSize: "10px",
+        },
       },
       colors: ["#63abfd", "#e697ff"],
       chart: {
@@ -20,13 +42,7 @@ const RevenueCharts = ({ thisMonthData, lastMonthData }) => {
         height: 250,
       },
       xaxis: {
-        categories: [
-          "Company 1",
-          "Company 2",
-          "Company 3",
-          "Company 4",
-          "Company 5",
-        ],
+        categories,
       },
       yaxis: {
         show: false,
@@ -37,11 +53,11 @@ const RevenueCharts = ({ thisMonthData, lastMonthData }) => {
     },
     series: [
       {
-        name: "This Month",
+        name: series1Name,
         data: thisMonthData,
       },
       {
-        name: "Last Month",
+        name: series2Name,
         data: lastMonthData,
       },
     ],
@@ -52,7 +68,7 @@ const RevenueCharts = ({ thisMonthData, lastMonthData }) => {
       options={chartOptions?.options}
       series={chartOptions?.series}
       type="bar"
-      height={150}
+      height={250}
     />
   );
 };
