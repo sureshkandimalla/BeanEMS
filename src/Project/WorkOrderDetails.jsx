@@ -3,8 +3,10 @@ import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
-import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
+import { PlusOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import { Button, Drawer } from "antd";
+import axios from "axios";
+import API_ENDPOINTS from "../config";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
 import WorkOrderForm from "./WorkOrderForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
@@ -14,6 +16,38 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
   //  const [rowData, setRowData] = useState();
   const [responseData, setResponseData] = useState();
   const [searchText, setSearchText] = useState("");
+  const [modifiedRows, setModifiedRows] = useState({});
+
+  const onCellValueChanged = (params) => {
+    const wageId = params.data?.wageId;
+    if (wageId === undefined || wageId === null) return;
+    setModifiedRows((prev) => ({ ...prev, [wageId]: params.data }));
+  };
+
+  const handleSaveChanges = () => {
+    const rows = Object.values(modifiedRows);
+    if (rows.length === 0) return;
+    const requests = rows.map((row) =>
+      axios.put(API_ENDPOINTS.wagesById(row.wageId), {
+        wage: row.wage,
+        startDate: row.startDate,
+        endDate: row.endDate,
+      }),
+    );
+    Promise.all(requests)
+      .then(() => {
+        setModifiedRows({});
+        onRefresh?.();
+      })
+      .catch((error) => {
+        console.error("Error saving work order changes:", error);
+      });
+  };
+
+  const handleCancelChanges = () => {
+    setModifiedRows({});
+    onRefresh?.();
+  };
 
   const addNewProject = () => {
     setOpen(true);
@@ -136,9 +170,29 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
           >
             <PlusOutlined /> Add New WorkOrder
           </Button>
+          {Object.keys(modifiedRows).length > 0 && (
+            <>
+              <Button
+                type="primary"
+                icon={<SaveOutlined />}
+                onClick={handleSaveChanges}
+                style={{ marginLeft: "10px" }}
+              >
+                Save
+              </Button>
+              <Button
+                icon={<CloseOutlined />}
+                onClick={handleCancelChanges}
+                style={{ marginLeft: "10px" }}
+              >
+                Cancel
+              </Button>
+            </>
+          )}
         </div>
         <div  className={`workOrder-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
+          onCellValueChanged={onCellValueChanged}
           onFirstDataRendered={(params) => {
             try { params.api.autoSizeAllColumns(); } catch (e) {}
           }}
