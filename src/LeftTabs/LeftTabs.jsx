@@ -7,6 +7,7 @@ import {
   BoxPlotOutlined,
   HistoryOutlined,
   FileTextOutlined,
+  MedicineBoxOutlined,
   SettingOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -40,6 +41,7 @@ const leftTabNames = [
   getItem("LCA Details", "/lcaDetails", <FileTextOutlined />),
   getItem("Visa Details", "/visaDetails", <FileTextOutlined />),
   getItem("Payroll Summary", "/payrollsummary", <BoxPlotOutlined />),
+  getItem("Health Insurance", "/healthinsurance", <MedicineBoxOutlined />),
   getItem("Company Report", "/companyreport", <BankOutlined />),
 ];
 const LeftTabs = () => {
