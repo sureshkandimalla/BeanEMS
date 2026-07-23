@@ -15,6 +15,7 @@ import { parseLocalDateSafe } from "../Utils/dateFormat";
 import {
   MASTER_FIELD_LABELS,
   DETAIL_FIELD_LABELS,
+  VISA_CATEGORY_OPTIONS,
   VISA_SUB_CATEGORY_VALUES,
   FILING_TYPE_VALUES,
   FILING_TYPE_LABEL_MAP,
@@ -113,6 +114,7 @@ export default function VisaDetailsList({ preloadedData }) {
           value: l.lcaId,
           label: `${l.lcaId} — ${l.lcaNumber || ""}`,
           lcaNumber: l.lcaNumber || "",
+          lca: l,
         }));
       })
       .catch((err) => {
@@ -292,6 +294,39 @@ export default function VisaDetailsList({ preloadedData }) {
       .finally(() => { isSavingCellRef.current = false; });
   };
 
+  // Master-row equivalent of the detail grid's onCellValueChanged (line
+  // ~613 below) — edits the same underlying Visa record via the same
+  // pendingChangesRef/handleSavePendingChanges save path, so the row
+  // doesn't need to be expanded into its detail grid just to fix a typo.
+  // Only fields the master row actually carries are editable here — a row
+  // with no visaId yet (no visa exists) can't be edited this way, use
+  // "Add H1-B" instead. "applicationStatus" is the master row's name for
+  // what the visa/detail row calls "status" — translated on the way in.
+  const MASTER_VISA_EDITABLE_FIELDS = [
+    "visaCategory", "visaSubCategory", "filingType", "filingYear",
+    "startDate", "endDate", "lcaNumber", "applicationStatus",
+  ];
+  const handleMasterCellValueChanged = (params) => {
+    if (isSavingCellRef.current) return;
+    const row = params.data;
+    const visaId = row?.visaId;
+    const field = params.colDef.field;
+    if (!visaId || !MASTER_VISA_EDITABLE_FIELDS.includes(field)) return;
+
+    const visaRow = {
+      visaCategory: row.visaCategory,
+      visaSubCategory: row.visaSubCategory,
+      filingType: row.filingType,
+      filingYear: row.filingYear,
+      startDate: row.startDate,
+      endDate: row.endDate,
+      lcaNumber: row.lcaNumber,
+      status: row.applicationStatus,
+    };
+    pendingChangesRef.current[`visa_${visaId}`] = { type: "visa", visaId, row: visaRow };
+    setHasPendingChanges(Object.keys(pendingChangesRef.current).length > 0);
+  };
+
   const fetchData = () => {
     axios
       .get(API_ENDPOINTS.getAllEmployeesImmigration)
@@ -383,7 +418,11 @@ export default function VisaDetailsList({ preloadedData }) {
     { field: "companyName",         headerName: MASTER_FIELD_LABELS.companyName,        filter: "agSetColumnFilter",  cellClassRules },
     // ── Visible columns (per requested order) ──
     { field: "status",              headerName: MASTER_FIELD_LABELS.status,             filter: "agSetColumnFilter",  cellClassRules, cellStyle: statusCellStyle },
-    { field: "visaCategory",        headerName: MASTER_FIELD_LABELS.visaCategory,       filter: "agSetColumnFilter",  cellClassRules },
+    { field: "visaCategory",        headerName: MASTER_FIELD_LABELS.visaCategory,       filter: "agSetColumnFilter",  cellClassRules,
+      editable: (params) => !!params.data?.visaId,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: VISA_CATEGORY_OPTIONS.map((o) => o.value) },
+    },
     { field: "receiptNumber",       headerName: MASTER_FIELD_LABELS.receiptNumber,      filter: "agSetColumnFilter",  cellClassRules,
       cellRenderer: (params) => {
         const receiptNum = params.value;
@@ -400,7 +439,11 @@ export default function VisaDetailsList({ preloadedData }) {
     },
     { field: "employmentType",      headerName: MASTER_FIELD_LABELS.employmentType,     filter: "agSetColumnFilter",  cellClassRules, hide: true },
     { field: "employeeType",        headerName: MASTER_FIELD_LABELS.employeeType,       filter: "agSetColumnFilter",  cellClassRules, hide: true },
-    { field: "applicationStatus",   headerName: MASTER_FIELD_LABELS.applicationStatus,  filter: "agSetColumnFilter",  cellClassRules, cellStyle: statusCellStyle },
+    { field: "applicationStatus",   headerName: MASTER_FIELD_LABELS.applicationStatus,  filter: "agSetColumnFilter",  cellClassRules, cellStyle: statusCellStyle,
+      editable: (params) => !!params.data?.visaId,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: visaStatusList.map((o) => o.value) },
+    },
     {
       field: "paf",
       headerName: MASTER_FIELD_LABELS.paf,
@@ -418,15 +461,28 @@ export default function VisaDetailsList({ preloadedData }) {
     },
     { field: "i9",                  headerName: MASTER_FIELD_LABELS.i9,                filter: "agSetColumnFilter",  cellClassRules, cellStyle: statusCellStyle },
     { field: "everifyStatus",       headerName: MASTER_FIELD_LABELS.everifyStatus,      filter: "agSetColumnFilter",  cellClassRules, cellStyle: statusCellStyle },
-    { field: "startDate",           headerName: MASTER_FIELD_LABELS.startDate,          filter: "agSetColumnFilter", cellClassRules },
-    { field: "endDate",             headerName: MASTER_FIELD_LABELS.endDate,            filter: "agSetColumnFilter", cellClassRules },
+    { field: "startDate",           headerName: MASTER_FIELD_LABELS.startDate,          filter: "agSetColumnFilter", cellClassRules,
+      editable: (params) => !!params.data?.visaId,
+    },
+    { field: "endDate",             headerName: MASTER_FIELD_LABELS.endDate,            filter: "agSetColumnFilter", cellClassRules,
+      editable: (params) => !!params.data?.visaId,
+    },
     { field: "employmentStartDate", headerName: MASTER_FIELD_LABELS.employmentStartDate, filter: "agSetColumnFilter", cellClassRules },
     { field: "employmentEndDate",   headerName: MASTER_FIELD_LABELS.employmentEndDate,   filter: "agSetColumnFilter", cellClassRules },
     { field: "filingType",          headerName: MASTER_FIELD_LABELS.filingType,         filter: "agSetColumnFilter",  cellClassRules,
       valueFormatter: (p) => FILING_TYPE_LABEL_MAP[p.value] ?? p.value ?? "",
+      editable: (params) => !!params.data?.visaId,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: FILING_TYPE_VALUES },
     },
-    { field: "visaSubCategory",     headerName: MASTER_FIELD_LABELS.visaSubCategory,    filter: "agSetColumnFilter",  cellClassRules },
-    { field: "filingYear",          headerName: MASTER_FIELD_LABELS.filingYear,         filter: "agSetColumnFilter",  cellClassRules },
+    { field: "visaSubCategory",     headerName: MASTER_FIELD_LABELS.visaSubCategory,    filter: "agSetColumnFilter",  cellClassRules,
+      editable: (params) => !!params.data?.visaId,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: VISA_SUB_CATEGORY_VALUES },
+    },
+    { field: "filingYear",          headerName: MASTER_FIELD_LABELS.filingYear,         filter: "agSetColumnFilter",  cellClassRules,
+      editable: (params) => !!params.data?.visaId,
+    },
     { field: "emailId",             headerName: MASTER_FIELD_LABELS.emailId,            filter: "agSetColumnFilter",  cellClassRules: { ...cellClassRules, blueUnderline: () => true } },
     { field: "dob",                 headerName: MASTER_FIELD_LABELS.dob,               filter: "agSetColumnFilter", cellClassRules },
     { field: "passportNumber",      headerName: MASTER_FIELD_LABELS.passportNumber,     filter: "agSetColumnFilter",  cellClassRules,
@@ -484,7 +540,9 @@ export default function VisaDetailsList({ preloadedData }) {
     
 
     { field: "documentStatus",      headerName: MASTER_FIELD_LABELS.documentStatus,     filter: "agSetColumnFilter",  cellClassRules, cellStyle: statusCellStyle },
-    { field: "lcaNumber",           headerName: MASTER_FIELD_LABELS.lcaNumber,          filter: "agSetColumnFilter",  cellClassRules },
+    { field: "lcaNumber",           headerName: MASTER_FIELD_LABELS.lcaNumber,          filter: "agSetColumnFilter",  cellClassRules,
+      editable: (params) => !!params.data?.visaId,
+    },
     { field: "phone",               headerName: MASTER_FIELD_LABELS.phone,              filter: "agSetColumnFilter",  cellClassRules },
     // ── Hidden extras (available via Columns panel) ──
     { field: "ssn",                 headerName: MASTER_FIELD_LABELS.ssn,               filter: "agSetColumnFilter",  cellClassRules, hide: true },
@@ -529,7 +587,10 @@ export default function VisaDetailsList({ preloadedData }) {
           cellStyle: { textAlign: "center", fontWeight: 500 },
           cellClassRules,
         },
-        { field: "visaCategory",    headerName: DETAIL_FIELD_LABELS.visaCategory,    filter: "agSetColumnFilter", editable: true,  cellClassRules },
+        { field: "visaCategory",    headerName: DETAIL_FIELD_LABELS.visaCategory,    filter: "agSetColumnFilter", editable: true,  cellClassRules,
+          cellEditor: "agSelectCellEditor",
+          cellEditorParams: { values: VISA_CATEGORY_OPTIONS.map((o) => o.value) },
+        },
         { field: "visaSubCategory", headerName: DETAIL_FIELD_LABELS.visaSubCategory, filter: "agSetColumnFilter", editable: true,  cellClassRules,
           cellEditor: "agSelectCellEditor",
           cellEditorParams: { values: VISA_SUB_CATEGORY_VALUES },
@@ -578,7 +639,10 @@ export default function VisaDetailsList({ preloadedData }) {
         { field: "vendor",       headerName: DETAIL_FIELD_LABELS.vendor,       filter: "agSetColumnFilter", editable: true, cellClassRules },
         { field: "jobLocation",  headerName: DETAIL_FIELD_LABELS.jobLocation,  filter: "agSetColumnFilter", editable: true, cellClassRules },
         { field: "jobLocation2", headerName: DETAIL_FIELD_LABELS.jobLocation2, filter: "agSetColumnFilter", editable: true, cellClassRules },
-        { field: "status",       headerName: DETAIL_FIELD_LABELS.status,       filter: "agSetColumnFilter", editable: true, cellClassRules, cellStyle: statusCellStyle },
+        { field: "status",       headerName: DETAIL_FIELD_LABELS.status,       filter: "agSetColumnFilter", editable: true, cellClassRules, cellStyle: statusCellStyle,
+          cellEditor: "agSelectCellEditor",
+          cellEditorParams: { values: visaStatusList.map((o) => o.value) },
+        },
         { field: "startDate",    headerName: DETAIL_FIELD_LABELS.startDate,    filter: "agSetColumnFilter", editable: true, cellClassRules },
         { field: "endDate",      headerName: DETAIL_FIELD_LABELS.endDate,      filter: "agSetColumnFilter", editable: true, cellClassRules },
         { field: "lastUpdated",  headerName: DETAIL_FIELD_LABELS.lastUpdated,  filter: "agSetColumnFilter", editable: false, cellClassRules,
@@ -701,6 +765,8 @@ export default function VisaDetailsList({ preloadedData }) {
               rowHeight={48}
               rowData={filterData()}
               columnDefs={sizeColumnsForHeader(columnDefs)}
+              stopEditingWhenCellsLoseFocus={true}
+              onCellValueChanged={handleMasterCellValueChanged}
               domLayout="normal"
               pagination={true}
               paginationPageSize={100}
@@ -777,7 +843,21 @@ export default function VisaDetailsList({ preloadedData }) {
         onSave={handleVisaSave}
         onLcaChange={(selectedLcaId) => {
           const found = lcaOptions.find((o) => o.value === selectedLcaId);
-          visaForm.setFieldsValue({ lcaNumber: found?.lcaNumber ?? null });
+          const lca = found?.lca;
+          // Selecting an LCA auto-fills every field the visa shares with
+          // it — previously only lcaNumber was set, leaving job
+          // location/SOC code/wage/client/vendor blank even though the
+          // LCA record already has them.
+          visaForm.setFieldsValue({
+            lcaNumber: lca?.lcaNumber ?? null,
+            jobLocation: lca?.jobLocation ?? null,
+            jobLocation2: lca?.jobLocation2 ?? null,
+            socCode: lca?.socCode ?? null,
+            lcaWage: lca?.lcaWage ?? null,
+            client: lca?.client ?? null,
+            vendor: lca?.vendor ?? null,
+            jobTitle: lca?.jobTitle ?? null,
+          });
         }}
       />
       <PassportController ref={passportRef} onSuccess={fetchData} />

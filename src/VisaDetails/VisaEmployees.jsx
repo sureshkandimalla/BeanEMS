@@ -24,6 +24,7 @@ const VisaEmployees = () => {
   const [lcaSaving, setLcaSaving] = useState(false);
   const [h1bSaving, setH1bSaving] = useState(false);
   const [employeeOptions, setEmployeeOptions] = useState([]);
+  const [lcaOptions, setLcaOptions] = useState([]);
 
   // Fetch employee dropdown — same service as Create New Project
   useEffect(() => {
@@ -37,6 +38,25 @@ const VisaEmployees = () => {
         setEmployeeOptions(opts);
       })
       .catch(() => setEmployeeOptions([]));
+  }, []);
+
+  // Fetch the LCA dropdown for the "Add H1-B" modal — same shape as
+  // VisaMasterList.jsx/VisaDetailsList.jsx so onLcaChange below can
+  // auto-fill job location/SOC code/wage/client/vendor from the pick.
+  useEffect(() => {
+    axios.get(API_ENDPOINTS.getAllLCAs)
+      .then((res) => {
+        const raw = Array.isArray(res.data) ? res.data
+          : Array.isArray(res.data?.data) ? res.data.data
+          : [];
+        setLcaOptions(raw.map((l) => ({
+          value: l.lcaId,
+          label: `${l.lcaId} — ${l.lcaNumber || ""}`,
+          lcaNumber: l.lcaNumber || "",
+          lca: l,
+        })));
+      })
+      .catch(() => setLcaOptions([]));
   }, []);
 
   const fetchAllEmployees = () => {
@@ -267,7 +287,7 @@ const VisaEmployees = () => {
         open={h1bModalOpen}
         isNew={true}
         visaData={null}
-        lcaOptions={[]}
+        lcaOptions={lcaOptions}
         form={h1bForm}
         saving={h1bSaving}
         showEmployeeSelect={true}
@@ -292,7 +312,20 @@ const VisaEmployees = () => {
             .catch(() => message.error("Failed to create H1-B. Please try again."))
             .finally(() => setH1bSaving(false));
         }}
-        onLcaChange={() => {}}
+        onLcaChange={(selectedLcaId) => {
+          const found = lcaOptions.find((o) => o.value === selectedLcaId);
+          const lca = found?.lca;
+          h1bForm.setFieldsValue({
+            lcaNumber: lca?.lcaNumber ?? null,
+            jobLocation: lca?.jobLocation ?? null,
+            jobLocation2: lca?.jobLocation2 ?? null,
+            socCode: lca?.socCode ?? null,
+            lcaWage: lca?.lcaWage ?? null,
+            client: lca?.client ?? null,
+            vendor: lca?.vendor ?? null,
+            jobTitle: lca?.jobTitle ?? null,
+          });
+        }}
       />
 
     </div>

@@ -1,15 +1,21 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Card, Form, message } from "antd";
-import { PlusOutlined, FileExcelOutlined, ReloadOutlined } from "@ant-design/icons";
+import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
-import API_ENDPOINTS from "../config";
+import API_ENDPOINTS, { visaStatusList } from "../config";
 import VisaFormModal from "./VisaFormModal";
-import { DETAIL_FIELD_LABELS } from "./visaConstants";
+import {
+  DETAIL_FIELD_LABELS,
+  VISA_CATEGORY_OPTIONS,
+  VISA_SUB_CATEGORY_VALUES,
+  FILING_TYPE_VALUES,
+  FILING_TYPE_LABEL_MAP,
+} from "./visaConstants";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
@@ -23,6 +29,7 @@ const VisaMasterList = () => {
   const [visaSaving, setVisaSaving] = useState(false);
   const [employeeOptions, setEmployeeOptions] = useState([]);
   const [lcaOptions, setLcaOptions] = useState([]);
+  const [modifiedRows, setModifiedRows] = useState({});
 
   useEffect(() => {
     fetch(API_ENDPOINTS.getEmployees)
@@ -47,6 +54,7 @@ const VisaMasterList = () => {
           value: l.lcaId,
           label: `${l.lcaId} — ${l.lcaNumber || ""}`,
           lcaNumber: l.lcaNumber || "",
+          lca: l,
         })));
       })
       .catch(() => setLcaOptions([]));
@@ -158,6 +166,32 @@ const VisaMasterList = () => {
       .finally(() => setVisaSaving(false));
   };
 
+  // Inline cell editing — same modifiedRows/Save-Cancel pattern as
+  // ProjectsList.jsx/VendorDetails.jsx/LCADetails.jsx. rowData already
+  // carries the full Visa object per row, so PUTting the edited row back
+  // as-is is safe (VisaService#updateVisa is a partial/null-safe update).
+  const onCellValueChanged = (params) => {
+    const visaId = params.data?.visaId;
+    if (visaId === undefined || visaId === null) return;
+    setModifiedRows((prev) => ({ ...prev, [visaId]: params.data }));
+  };
+
+  const handleSaveChanges = () => {
+    const rows = Object.values(modifiedRows);
+    if (rows.length === 0) return;
+    Promise.all(rows.map((row) => axios.put(API_ENDPOINTS.updateVisa(row.visaId), row)))
+      .then(() => {
+        setModifiedRows({});
+        fetchData();
+      })
+      .catch(() => message.error("Failed to save changes. Please try again."));
+  };
+
+  const handleCancelChanges = () => {
+    setModifiedRows({});
+    fetchData();
+  };
+
   const cellClassRules = {
     darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
   };
@@ -190,12 +224,25 @@ const VisaMasterList = () => {
         );
       },
     },
-    { colId: "employeeName", field: "employeeName", headerName: "Employee Name", filter: "agSetColumnFilter", cellClassRules },
-    { colId: "visaCategory", field: "visaCategory", headerName: DETAIL_FIELD_LABELS.visaCategory, filter: "agSetColumnFilter", cellClassRules },
-    { colId: "visaSubCategory", field: "visaSubCategory", headerName: DETAIL_FIELD_LABELS.visaSubCategory, filter: "agSetColumnFilter", cellClassRules },
-    { colId: "filingType", field: "filingType", headerName: DETAIL_FIELD_LABELS.filingType, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "employeeName", field: "employeeName", headerName: "Employee Name", filter: "agSetColumnFilter", cellClassRules, editable: false },
+    { colId: "visaCategory", field: "visaCategory", headerName: DETAIL_FIELD_LABELS.visaCategory, filter: "agSetColumnFilter", cellClassRules,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: VISA_CATEGORY_OPTIONS.map((o) => o.value) },
+    },
+    { colId: "visaSubCategory", field: "visaSubCategory", headerName: DETAIL_FIELD_LABELS.visaSubCategory, filter: "agSetColumnFilter", cellClassRules,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: VISA_SUB_CATEGORY_VALUES },
+    },
+    { colId: "filingType", field: "filingType", headerName: DETAIL_FIELD_LABELS.filingType, filter: "agSetColumnFilter", cellClassRules,
+      valueFormatter: (p) => FILING_TYPE_LABEL_MAP[p.value] ?? p.value ?? "",
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: FILING_TYPE_VALUES },
+    },
     { colId: "filingYear", field: "filingYear", headerName: DETAIL_FIELD_LABELS.filingYear, filter: "agSetColumnFilter", cellClassRules },
-    { colId: "status", field: "status", headerName: DETAIL_FIELD_LABELS.status, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "status", field: "status", headerName: DETAIL_FIELD_LABELS.status, filter: "agSetColumnFilter", cellClassRules,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: visaStatusList.map((o) => o.value) },
+    },
     { colId: "jobTitle", field: "jobTitle", headerName: DETAIL_FIELD_LABELS.jobTitle, filter: "agSetColumnFilter", cellClassRules },
     { colId: "lcaNumber", field: "lcaNumber", headerName: DETAIL_FIELD_LABELS.lcaNumber, filter: "agSetColumnFilter", cellClassRules },
     { colId: "socCode", field: "socCode", headerName: DETAIL_FIELD_LABELS.socCode, filter: "agSetColumnFilter", cellClassRules },
@@ -209,7 +256,7 @@ const VisaMasterList = () => {
     { colId: "jobLocation2", field: "jobLocation2", headerName: DETAIL_FIELD_LABELS.jobLocation2, filter: "agSetColumnFilter", cellClassRules, hide: true },
     { colId: "startDate", field: "startDate", headerName: DETAIL_FIELD_LABELS.startDate, filter: "agSetColumnFilter", cellClassRules },
     { colId: "endDate", field: "endDate", headerName: DETAIL_FIELD_LABELS.endDate, filter: "agSetColumnFilter", cellClassRules },
-    { colId: "lastUpdated", field: "lastUpdated", headerName: DETAIL_FIELD_LABELS.lastUpdated, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "lastUpdated", field: "lastUpdated", headerName: DETAIL_FIELD_LABELS.lastUpdated, filter: "agSetColumnFilter", cellClassRules, editable: false },
   ];
 
   const columnDefsSized = sizeColumnsForHeader(columnDefs);
@@ -248,6 +295,25 @@ const VisaMasterList = () => {
             >
               <PlusOutlined /> Add New Visa
             </Button>
+            {Object.keys(modifiedRows).length > 0 && (
+              <>
+                <Button
+                  type="primary"
+                  icon={<SaveOutlined />}
+                  onClick={handleSaveChanges}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Save
+                </Button>
+                <Button
+                  icon={<CloseOutlined />}
+                  onClick={handleCancelChanges}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Cancel
+                </Button>
+              </>
+            )}
           </div>
           <div className="workforce-grid-wrapper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
             <AgGridReact
@@ -263,11 +329,14 @@ const VisaMasterList = () => {
               rowData={filterData()}
               columnDefs={columnDefsSized}
               getRowId={(params) => String(params.data.visaId)}
+              onCellValueChanged={onCellValueChanged}
+              stopEditingWhenCellsLoseFocus={true}
               defaultColDef={{
                 resizable: true,
                 filter: "agSetColumnFilter",
                 minWidth: 100,
                 maxWidth: 220,
+                editable: true,
               }}
               sideBar={{
                 toolPanels: [
@@ -314,7 +383,21 @@ const VisaMasterList = () => {
         onSave={handleVisaSave}
         onLcaChange={(selectedLcaId) => {
           const found = lcaOptions.find((o) => o.value === selectedLcaId);
-          visaForm.setFieldsValue({ lcaNumber: found?.lcaNumber ?? null });
+          const lca = found?.lca;
+          // Selecting an LCA auto-fills every field the visa shares with
+          // it — previously only lcaNumber was set, leaving job
+          // location/SOC code/wage/client/vendor blank even though the
+          // LCA record already has them.
+          visaForm.setFieldsValue({
+            lcaNumber: lca?.lcaNumber ?? null,
+            jobLocation: lca?.jobLocation ?? null,
+            jobLocation2: lca?.jobLocation2 ?? null,
+            socCode: lca?.socCode ?? null,
+            lcaWage: lca?.lcaWage ?? null,
+            client: lca?.client ?? null,
+            vendor: lca?.vendor ?? null,
+            jobTitle: lca?.jobTitle ?? null,
+          });
         }}
       />
     </div>

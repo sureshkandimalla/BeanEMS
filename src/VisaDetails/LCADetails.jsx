@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Card, Form, message } from "antd";
-import { PlusOutlined, FileExcelOutlined, ReloadOutlined } from "@ant-design/icons";
+import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
@@ -9,7 +9,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
 import LcaFormModal from "./LcaFormModal";
-import { LCA_FIELD_LABELS } from "./visaConstants";
+import { LCA_FIELD_LABELS, LCA_STATUS_OPTIONS } from "./visaConstants";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
@@ -22,6 +22,7 @@ const LCADetails = () => {
   const [lcaForm] = Form.useForm();
   const [lcaSaving, setLcaSaving] = useState(false);
   const [employeeOptions, setEmployeeOptions] = useState([]);
+  const [modifiedRows, setModifiedRows] = useState({});
 
   useEffect(() => {
     fetch(API_ENDPOINTS.getEmployees)
@@ -122,6 +123,32 @@ const LCADetails = () => {
       .finally(() => setLcaSaving(false));
   };
 
+  // Inline cell editing — same modifiedRows/Save-Cancel pattern as
+  // ProjectsList.jsx/VendorDetails.jsx. rowData already carries the full
+  // LCA object per row (not a flattened/denormalized view), so posting
+  // the edited row back as-is is safe.
+  const onCellValueChanged = (params) => {
+    const lcaId = params.data?.lcaId;
+    if (lcaId === undefined || lcaId === null) return;
+    setModifiedRows((prev) => ({ ...prev, [lcaId]: params.data }));
+  };
+
+  const handleSaveChanges = () => {
+    const rows = Object.values(modifiedRows);
+    if (rows.length === 0) return;
+    Promise.all(rows.map((row) => axios.post(API_ENDPOINTS.saveLCA, row)))
+      .then(() => {
+        setModifiedRows({});
+        fetchData();
+      })
+      .catch(() => message.error("Failed to save changes. Please try again."));
+  };
+
+  const handleCancelChanges = () => {
+    setModifiedRows({});
+    fetchData();
+  };
+
   const cellClassRules = {
     darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
   };
@@ -154,7 +181,7 @@ const LCADetails = () => {
         );
       },
     },
-    { colId: "employeeName", field: "employeeName", headerName: "Employee Name", filter: "agSetColumnFilter", cellClassRules },
+    { colId: "employeeName", field: "employeeName", headerName: "Employee Name", filter: "agSetColumnFilter", cellClassRules, editable: false },
     { colId: "jobTitle", field: "jobTitle", headerName: LCA_FIELD_LABELS.jobTitle, filter: "agSetColumnFilter", cellClassRules },
     { colId: "lcaCaseNumber", field: "lcaCaseNumber", headerName: LCA_FIELD_LABELS.lcaCaseNumber, filter: "agSetColumnFilter", cellClassRules },
     { colId: "socCode", field: "socCode", headerName: LCA_FIELD_LABELS.socCode, filter: "agSetColumnFilter", cellClassRules },
@@ -162,7 +189,10 @@ const LCADetails = () => {
       colId: "lcaWage", field: "lcaWage", headerName: LCA_FIELD_LABELS.lcaWage, filter: "agSetColumnFilter", cellClassRules,
       valueFormatter: (params) => params.value != null ? formatCurrency(params.value) : "",
     },
-    { colId: "status", field: "status", headerName: LCA_FIELD_LABELS.status, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "status", field: "status", headerName: LCA_FIELD_LABELS.status, filter: "agSetColumnFilter", cellClassRules,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: LCA_STATUS_OPTIONS.map((o) => o.value) },
+    },
     { colId: "client", field: "client", headerName: LCA_FIELD_LABELS.client, filter: "agSetColumnFilter", cellClassRules },
     { colId: "vendor", field: "vendor", headerName: LCA_FIELD_LABELS.vendor, filter: "agSetColumnFilter", cellClassRules },
     { colId: "jobLocation", field: "jobLocation", headerName: LCA_FIELD_LABELS.jobLocation, filter: "agSetColumnFilter", cellClassRules },
@@ -172,7 +202,7 @@ const LCADetails = () => {
     { colId: "lcaPostedFromDate", field: "lcaPostedFromDate", headerName: LCA_FIELD_LABELS.lcaPostedFromDate, filter: "agSetColumnFilter", cellClassRules, hide: true },
     { colId: "lcaPostedToDate", field: "lcaPostedToDate", headerName: LCA_FIELD_LABELS.lcaPostedToDate, filter: "agSetColumnFilter", cellClassRules, hide: true },
     { colId: "certifiedDate", field: "certifiedDate", headerName: LCA_FIELD_LABELS.certifiedDate, filter: "agSetColumnFilter", cellClassRules },
-    { colId: "lastUpdated", field: "lastUpdated", headerName: "Last Updated", filter: "agSetColumnFilter", cellClassRules },
+    { colId: "lastUpdated", field: "lastUpdated", headerName: "Last Updated", filter: "agSetColumnFilter", cellClassRules, editable: false },
   ];
 
   const columnDefsSized = sizeColumnsForHeader(columnDefs);
@@ -211,6 +241,25 @@ const LCADetails = () => {
             >
               <PlusOutlined /> Add New LCA
             </Button>
+            {Object.keys(modifiedRows).length > 0 && (
+              <>
+                <Button
+                  type="primary"
+                  icon={<SaveOutlined />}
+                  onClick={handleSaveChanges}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Save
+                </Button>
+                <Button
+                  icon={<CloseOutlined />}
+                  onClick={handleCancelChanges}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Cancel
+                </Button>
+              </>
+            )}
           </div>
           <div className="workforce-grid-wrapper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
             <AgGridReact
@@ -226,11 +275,14 @@ const LCADetails = () => {
               rowData={filterData()}
               columnDefs={columnDefsSized}
               getRowId={(params) => String(params.data.lcaId)}
+              onCellValueChanged={onCellValueChanged}
+              stopEditingWhenCellsLoseFocus={true}
               defaultColDef={{
                 resizable: true,
                 filter: "agSetColumnFilter",
                 minWidth: 100,
                 maxWidth: 220,
+                editable: true,
               }}
               sideBar={{
                 toolPanels: [
