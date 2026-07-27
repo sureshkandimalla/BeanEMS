@@ -15,6 +15,7 @@ import ReconciliationDetails from "../Reconciliation/ReconciliationDetails";
 import FinalReportDetails from "../Reconciliation/FinalReportDetails";
 import BillingDetails from "../Billings/BillingDetails";
 import PassportController from "../Passport/PassportController";
+import EmployeeTimesheetSummary from "../Timesheet/EmployeeTimesheetSummary";
 import { UpOutlined, DownOutlined,CalendarOutlined, DollarOutlined,MailOutlined,PhoneOutlined, UserOutlined } from "@ant-design/icons";
 import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message } from "antd";
 
@@ -87,6 +88,19 @@ const EmployeeFullDetails = () => {
       children: (
         <div className="employee-List-grid" style={{ height: "100%" }}>
           <PayrollDetails
+            employeeId={rowData.employeeId}
+            isCollapsed={isCollapsed}
+            gridHeight={gridHeight}
+          />
+        </div>
+      ),
+    },
+    {
+      key: 14,
+      label: "TIMESHEETS",
+      children: (
+        <div className="employee-List-grid" style={{ height: "100%" }}>
+          <EmployeeTimesheetSummary
             employeeId={rowData.employeeId}
             isCollapsed={isCollapsed}
             gridHeight={gridHeight}

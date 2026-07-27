@@ -34,6 +34,8 @@ import VisaMasterList from "./VisaDetails/VisaMasterList.jsx"
 import AdjustmentDetails from "./Adjustments/AdjustmentDetails";
 import PayrollSummary from "./Payroll/PayrollSummary";
 import HealthInsuranceSummary from "./HealthInsurance/HealthInsuranceSummary";
+import TimesheetEntry from "./Timesheet/TimesheetEntry";
+import MonthlyTimesheets from "./Timesheet/MonthlyTimesheets";
 const clientId = '206630439236-q0q2np2g72vf5rgodjk4hhv814i3q7ai.apps.googleusercontent.com';
 const { Content } = Layout;
 
@@ -64,6 +66,8 @@ const App = () => {
               <Route path="/companyreport" element={<CompanyFinalReportDetails />} />
               <Route path="/payrollsummary" element={<PayrollSummary />} />
               <Route path="/healthinsurance" element={<HealthInsuranceSummary />} />
+              <Route path="/timesheets" element={<TimesheetEntry />} />
+              <Route path="/monthlytimesheets" element={<MonthlyTimesheets />} />
               <Route
                 path="/employeeFullDetails"
                 element={<EmployeeFullDetailsComponent />}

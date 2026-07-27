@@ -1,8 +1,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import "@ag-grid-community/styles/ag-grid.css";
-import { DesktopOutlined, RiseOutlined, PlusOutlined } from "@ant-design/icons";
+import { DesktopOutlined, RiseOutlined, PlusOutlined, BellOutlined } from "@ant-design/icons";
 import RevenueCharts from "../RevenueCharts/RevenueCharts";
-import { Col, Row, Card, Button, Tabs,Collapse, Drawer, Spin } from "antd";
+import { Col, Row, Card, Button, Tabs, Collapse, Drawer, Spin, Popover, Badge, List, Empty } from "antd";
 import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
 import "./ProjectDashboard.css";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
@@ -64,9 +64,74 @@ const ProjectDashboard = () => {
     }
   };
 
+  const [employees, setEmployees] = useState([]);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.getAllEmployees);
+      const data = await response.json();
+      setEmployees(data || []);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    fetchEmployees();
   }, []);
+
+  // Two data-quality checks against the full employee roster: an Active
+  // employee with no active project row at all, or the reverse — someone
+  // who still has an active project assigned despite no longer being
+  // Active themselves. A Closed/Inactive project on an Inactive employee is
+  // a perfectly consistent state, not an alert — only the project's own
+  // status (not just its existence) counts as "has a project" here.
+  const projectAlerts = useMemo(() => {
+    if (!rowData || employees.length === 0) return [];
+    const employeeIdsWithActiveProjects = new Set(
+      rowData.filter((r) => (r.status || "").toUpperCase() === "ACTIVE").map((r) => r.employeeId).filter(Boolean),
+    );
+
+    const alerts = [];
+    employees.forEach((emp) => {
+      const isActive = (emp.status || "").toUpperCase() === "ACTIVE";
+      const hasProject = employeeIdsWithActiveProjects.has(emp.employeeId);
+      const employeeName = `${emp.firstName || ""} ${emp.lastName || ""}`.trim();
+      if (isActive && !hasProject) {
+        alerts.push({
+          employeeId: emp.employeeId,
+          employeeName,
+          reason: "Active employee with no active project assigned",
+        });
+      } else if (hasProject && !isActive) {
+        alerts.push({
+          employeeId: emp.employeeId,
+          employeeName,
+          reason: `Has an active project assigned but employee status is "${emp.status || "Unknown"}"`,
+        });
+      }
+    });
+    return alerts;
+  }, [rowData, employees]);
+
+  const alertContent = (
+    <div style={{ maxHeight: 320, overflowY: "auto", minWidth: 320 }}>
+      {projectAlerts.length === 0 ? (
+        <Empty description="No alerts" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <List
+          size="small"
+          dataSource={projectAlerts}
+          renderItem={(item) => (
+            <List.Item key={`${item.employeeId}-${item.reason}`}>
+              <List.Item.Meta title={item.employeeName} description={item.reason} />
+            </List.Item>
+          )}
+        />
+      )}
+    </div>
+  );
 
   const items = [
     {
@@ -152,13 +217,25 @@ const ProjectDashboard = () => {
               items={items}
               defaultActiveKey="0"
               tabBarExtraContent={
-                <Button
-                  type="primary"
-                  className="button-vendor"
-                  onClick={addNewProject}
-                >
-                  <PlusOutlined /> Add New Project
-                </Button>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Popover
+                    content={alertContent}
+                    title="Project Alerts"
+                    trigger="click"
+                    placement="bottomRight"
+                  >
+                    <Badge count={projectAlerts.length} size="small">
+                      <Button icon={<BellOutlined />} />
+                    </Badge>
+                  </Popover>
+                  <Button
+                    type="primary"
+                    className="button-vendor"
+                    onClick={addNewProject}
+                  >
+                    <PlusOutlined /> Add New Project
+                  </Button>
+                </div>
               }
             />
           </Card>

@@ -1,11 +1,13 @@
 import React, { useContext } from "react";
-import { UserOutlined, SettingOutlined, BellOutlined } from "@ant-design/icons";
+import { UserOutlined, SettingOutlined, BellOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { Button, Col, Row, Dropdown, Space, Flex } from "antd";
+import { useNavigate } from "react-router-dom";
 import logo from "../bean-logo.png";
 import AuthContext from "../Authentication/Context/AuthContext";
 
 const Header = () => {
   const { logout } = useContext(AuthContext); // Get logout function from context
+  const navigate = useNavigate();
 
   // Define logout handler
   const handleLogout = () => {
@@ -32,7 +34,7 @@ const Header = () => {
   return (
     <>
       <div className="headerDiv">
-        <Row justify="end">
+        <Row justify="end" align="middle">
           <Col flex="400px">
             <div className="headerLogo">
               <img src={logo} alt="logo" />
@@ -42,6 +44,11 @@ const Header = () => {
           <Col flex="auto">
             <Flex gap="small" vertical align="end">
               <Flex gap="small" wrap="wrap">
+                <Space>
+                  <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+                    Back
+                  </Button>
+                </Space>
                 <Space>
                   <Dropdown menu={{ items }} placement="bottomRight">
                     <Button icon={<SettingOutlined />} />

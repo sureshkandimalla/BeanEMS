@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Card, Drawer, message } from "antd";
+import { Button, Card, Drawer, message, Popover, Badge, List, Empty } from "antd";
 
-import { PlusOutlined, ReloadOutlined, FileExcelOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
+import { PlusOutlined, ReloadOutlined, FileExcelOutlined, SaveOutlined, CloseOutlined, BellOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -18,7 +18,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
-import { formatMonthYear } from "../Utils/dateFormat";
+import { formatMonthYear, formatDate } from "../Utils/dateFormat";
 
 // employeeId/projectId are optional — when provided (e.g. embedded in the
 // Employee Full Details "INVOICES" tab, or the Project Full Details
@@ -60,6 +60,98 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
   const projectsById = useMemo(
     () => Object.fromEntries(projects.map((project) => [project.projectId, project])),
     [projects],
+  );
+
+  // Page-level alert (only when not scoped to a single employee/project):
+  // for every employee with an active project, reuse the exact same
+  // per-employee "active projects for invoice" endpoint Generate Invoice
+  // itself relies on, and flag any (employee, project) pair with periods
+  // that still don't have an invoice — i.e. invoicing has fallen behind
+  // that project's own invoice-term cadence.
+  const [invoiceAlerts, setInvoiceAlerts] = useState([]);
+
+  useEffect(() => {
+    if (employeeId || projectId) return;
+    if (!projects || projects.length === 0) return;
+
+    const activeEmployeeIds = Array.from(
+      new Set(
+        projects
+          .filter((p) => (p.status || "").toUpperCase() === "ACTIVE")
+          .map((p) => p.employeeId)
+          .filter(Boolean),
+      ),
+    );
+    if (activeEmployeeIds.length === 0) {
+      setInvoiceAlerts([]);
+      return;
+    }
+
+    Promise.all(
+      activeEmployeeIds.map((empId) =>
+        axios
+          .get(API_ENDPOINTS.activeProjectsForInvoiceByEmployee(empId))
+          .then((response) => response.data || [])
+          .catch((error) => {
+            console.error("Error checking invoice status for employee " + empId, error);
+            return [];
+          }),
+      ),
+    ).then((results) => {
+      const today = new Date().toISOString().split("T")[0];
+      const missingByProject = {};
+      results.flat().forEach((row) => {
+        if (row.invoiceId) return; // already invoiced
+        if ((row.status || "").toUpperCase() !== "ACTIVE") return; // project itself isn't active
+        if (row.endDate && row.endDate > today) return; // period hasn't ended yet — nothing to invoice for it
+        const key = `${row.employeeId}_${row.projectId}`;
+        if (!missingByProject[key]) {
+          missingByProject[key] = {
+            employeeId: row.employeeId,
+            employeeName: row.employeeName,
+            projectName: row.projectName,
+            periods: [],
+          };
+        }
+        missingByProject[key].periods.push({ startDate: row.startDate, endDate: row.endDate });
+      });
+      Object.values(missingByProject).forEach((entry) => entry.periods.sort((a, b) => a.startDate.localeCompare(b.startDate)));
+      setInvoiceAlerts(Object.values(missingByProject));
+    });
+  }, [projects, employeeId, projectId]);
+
+  const invoiceAlertContent = (
+    <div style={{ maxHeight: 320, overflowY: "auto", minWidth: 320 }}>
+      {invoiceAlerts.length === 0 ? (
+        <Empty description="No alerts" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <List
+          size="small"
+          dataSource={invoiceAlerts}
+          renderItem={(item) => (
+            <List.Item key={`${item.employeeId}-${item.projectName}`}>
+              <List.Item.Meta
+                title={`${item.employeeName} — ${item.projectName}`}
+                description={
+                  <>
+                    <div>
+                      {item.periods.length} invoice period{item.periods.length === 1 ? "" : "s"} not yet generated:
+                    </div>
+                    <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
+                      {item.periods.map((period) => (
+                        <li key={`${period.startDate}-${period.endDate}`}>
+                          {formatDate(period.startDate)} – {formatDate(period.endDate)}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                }
+              />
+            </List.Item>
+          )}
+        />
+      )}
+    </div>
   );
 
   // Merge in each invoice's project-derived display fields as real
@@ -481,6 +573,18 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
           >
             <PlusOutlined /> Add New Invoice
           </Button>
+          {!employeeId && !projectId && (
+            <Popover
+              content={invoiceAlertContent}
+              title="Invoice Alerts"
+              trigger="click"
+              placement="bottomRight"
+            >
+              <Badge count={invoiceAlerts.length} size="small" style={{ marginLeft: "10px" }}>
+                <Button icon={<BellOutlined />} />
+              </Badge>
+            </Popover>
+          )}
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>
           <label style={{ marginBottom: 0 }}>Invoice Date:&nbsp;</label>

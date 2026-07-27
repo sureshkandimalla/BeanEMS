@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Alert } from "antd";
 import { ReloadOutlined, ArrowLeftOutlined, CloseOutlined } from "@ant-design/icons";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
@@ -21,6 +21,7 @@ import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
 const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {}) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { url: stateUrl, month: stateMonth } = location.state || {};
   const url = propUrl ?? stateUrl;
   const month = propMonth ?? stateMonth;
@@ -70,8 +71,10 @@ const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {})
         console.log(response.data);
         setLoading(false);
         setEmployeeName(response.data?.[0]?.employeeName || "");
-        setRowData(getFlattenedData(response.data));
+        const flattened = getFlattenedData(response.data);
+        setRowData(flattened);
         setHasFetched(true);
+        populateHoursFromTimesheets(flattened);
       })
       .catch((error) => {
         console.error(error);
@@ -79,6 +82,56 @@ const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {})
       .finally((x) => {
         setLoading(false);
       });
+  };
+
+  // For rows with no hours entered yet, sum any timesheet hours already
+  // logged for that employee/project within the row's own invoice period
+  // and use that as the starting hours — one fetch per employee (covering
+  // the widest date range across their rows) rather than one per row.
+  const populateHoursFromTimesheets = (rows) => {
+    const rowsByEmployee = {};
+    rows.forEach((row) => {
+      if (row.hours || !row.employeeId || !row.startDate || !row.endDate) return;
+      if (!rowsByEmployee[row.employeeId]) rowsByEmployee[row.employeeId] = [];
+      rowsByEmployee[row.employeeId].push(row);
+    });
+
+    const employeeIds = Object.keys(rowsByEmployee);
+    if (employeeIds.length === 0) return;
+
+    Promise.all(
+      employeeIds.map((employeeId) => {
+        const empRows = rowsByEmployee[employeeId];
+        const minStart = empRows.reduce((min, r) => (r.startDate < min ? r.startDate : min), empRows[0].startDate);
+        const maxEnd = empRows.reduce((max, r) => (r.endDate > max ? r.endDate : max), empRows[0].endDate);
+        return axios
+          .get(API_ENDPOINTS.getTimesheetsByEmployeeAndRange(employeeId, minStart, maxEnd))
+          .then((response) => ({ employeeId, entries: response.data || [] }))
+          .catch((error) => {
+            console.error("Error fetching timesheet hours for employee " + employeeId, error);
+            return { employeeId, entries: [] };
+          });
+      }),
+    ).then((results) => {
+      const entriesByEmployee = {};
+      results.forEach(({ employeeId, entries }) => {
+        entriesByEmployee[employeeId] = entries;
+      });
+
+      setRowData((prevRows) =>
+        prevRows.map((row) => {
+          if (row.hours || !row.employeeId || !row.startDate || !row.endDate) return row;
+          const entries = entriesByEmployee[row.employeeId] || [];
+          const totalHours = entries
+            .filter(
+              (e) => e.projectId === row.projectId && e.workDate >= row.startDate && e.workDate <= row.endDate,
+            )
+            .reduce((sum, e) => sum + (e.hours || 0), 0);
+          if (totalHours <= 0) return row;
+          return { ...row, hours: totalHours, total: totalHours * (row.billRate || 0) };
+        }),
+      );
+    });
   };
 
   useEffect(() => {
@@ -142,21 +195,15 @@ const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {})
     setIsModalOpen(true);
   };
 
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [isTimesheetOpen, setIsTimesheetOpen] = useState(false);
-
-  const handleOpenTimesheet = (employee) => {
-    setSelectedEmployee(employee);
-    setIsTimesheetOpen(true);
-  };
-
-  const handleSaveTimesheet = (totalHours) => {
-    setRowData((prevData) =>
-      prevData.map((emp) =>
-        emp.id === selectedEmployee.id ? { ...emp, hours: totalHours } : emp,
-      ),
-    );
-    setIsTimesheetOpen(false);
+  // Jumps to the per-project Timesheet page pre-filtered to this row's
+  // employee, project, and the calendar month its invoice period falls in,
+  // so the "Timesheet" link shows exactly what was (or wasn't) logged for
+  // that employee/project/month.
+  const handleOpenTimesheet = (row) => {
+    if (!row.employeeId || !row.startDate) return;
+    navigate("/timesheets", {
+      state: { employeeId: row.employeeId, projectId: row.projectId, yearMonth: row.startDate.substring(0, 7) },
+    });
   };
 
   const handleSaveModal = async (updatedData) => {

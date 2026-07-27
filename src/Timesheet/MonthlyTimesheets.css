@@ -1,0 +1,11 @@
+/* Day columns are narrow (64px) — center the date and make sure it's never
+   clipped by AG Grid's default header label truncation. */
+.timesheet-day-header .ag-header-cell-label {
+  justify-content: center;
+}
+
+.timesheet-day-header .ag-header-cell-text {
+  overflow: visible;
+  text-overflow: clip;
+  font-weight: 600;
+}

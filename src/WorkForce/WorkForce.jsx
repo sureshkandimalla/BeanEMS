@@ -34,10 +34,8 @@ const { Panel } = Collapse;
 
 const WorkForceContent = () => {
   const [open, setOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showNewHires, setShowNewHires] = useState(false);
- const pageSize = 10;
 
   const {
     data: reconcileData,
@@ -131,13 +129,6 @@ const WorkForceContent = () => {
     };
   }, [employeeData, showNewHires]);
 
-  const paginatedData = processedData.all
-    ? processedData.all.slice(
-        (currentPage - 1) * pageSize,
-        currentPage * pageSize,
-      )
-    : [];
-
   const workforceChartLabels = Array.isArray(workforceChartData)
     ? workforceChartData.map((item) => item.status)
     : [];
@@ -171,7 +162,7 @@ const WorkForceContent = () => {
     {
       key: "4",
       label: "Workforce",
-      children: <WorkForceList employees={paginatedData} isCollapsed={isCollapsed} onRefresh={refetchEmployees} />,
+      children: <WorkForceList employees={processedData.all} isCollapsed={isCollapsed} onRefresh={refetchEmployees} />,
     },
     {
       key: "5",
