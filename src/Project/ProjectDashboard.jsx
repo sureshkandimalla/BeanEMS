@@ -2,19 +2,21 @@ import React, { useMemo, useState, useEffect } from "react";
 import "@ag-grid-community/styles/ag-grid.css";
 import { DesktopOutlined, RiseOutlined, PlusOutlined, BellOutlined } from "@ant-design/icons";
 import RevenueCharts from "../RevenueCharts/RevenueCharts";
+import PieCharts, { getPieColors } from "../PieCharts/PieCharts";
+import PieLegend from "../PieCharts/PieLegend";
 import { Col, Row, Card, Button, Tabs, Collapse, Drawer, Spin, Popover, Badge, List, Empty } from "antd";
 import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
 import "./ProjectDashboard.css";
 import "@ag-grid-community/styles/ag-theme-quartz.css";
 import ProjectList from "./ProjectsList";
 import API_ENDPOINTS from "../config";
+import { formatCurrency } from "../Utils/CurrencyFormatter";
 
 const { Panel } = Collapse;
 
 const ProjectDashboard = () => {
   const [rowData, setRowData] = useState();
   const [activeKey, setActiveKey] = useState("0"); // State for active tab
-  const projectsSize = rowData ? rowData.length : 0;
   const thisMonthData = [50000, 43000, 60000, 70000, 55000];
   const lastMonthData = [25000, 28000, 20000, 15000, 50000];
   const [isEmployeesLoading, setEmployeeLoading] = useState(true);
@@ -40,6 +42,38 @@ const ProjectDashboard = () => {
       active: rowData.filter(({ status }) => (status || "").toUpperCase() === "ACTIVE"),
     };
   }, [rowData]);
+
+  // Total Bill Rate across active projects, split into where it goes:
+  // Employee Pay, Bean Net Internal, External expense, and Internal expense.
+  const billRateBreakdown = useMemo(() => {
+    const activeRows = processedData.active || [];
+    const totalBillRate = activeRows.reduce((sum, r) => sum + (r.billRate || 0), 0);
+    const totalEmployeePay = activeRows.reduce((sum, r) => sum + (r.employeePay || 0), 0);
+    const totalNetInternal = activeRows.reduce((sum, r) => sum + (r.net || 0), 0);
+    const totalExternal = activeRows.reduce((sum, r) => sum + (r.expenseExternal || 0), 0);
+    const totalInternal = activeRows.reduce((sum, r) => sum + (r.expenseInternal || 0), 0);
+    return { totalBillRate, totalEmployeePay, totalNetInternal, totalExternal, totalInternal };
+  }, [processedData]);
+
+  // Same slice order/values feed both the donut (via PieCharts) and the
+  // hand-built legend beside it — kept as one array so they can't drift.
+  const billRateSlices = useMemo(() => {
+    const colors = getPieColors(4);
+    return [
+      { label: "Employee Pay", value: billRateBreakdown.totalEmployeePay, color: colors[0] },
+      { label: "Net", value: billRateBreakdown.totalNetInternal, color: colors[1] },
+      { label: "External", value: billRateBreakdown.totalExternal, color: colors[2] },
+      { label: "Taxes", value: billRateBreakdown.totalInternal, color: colors[3] },
+    ];
+  }, [billRateBreakdown]);
+
+  // rowData has one row per bill-rate/wage period, so a project with
+  // several wage periods would otherwise be counted more than once —
+  // count distinct project IDs among the active rows instead.
+  const activeProjectCount = useMemo(
+    () => new Set((processedData.active || []).map((r) => r.projectId)).size,
+    [processedData],
+  );
 
   const getFlattenedData = (data) => {
     let updatedData = data.map((dataObj) => {
@@ -172,7 +206,7 @@ const ProjectDashboard = () => {
                   </Row>
                   <Row justify="space-between" className="mrgtop145">
                     <Col>
-                      <span className="totalProjectsCount">{projectsSize}</span>
+                      <span className="totalProjectsCount">{activeProjectCount}</span>
                     </Col>                    
                     <Col className="projectStatcol">
                       <RiseOutlined className="riseIcon" />{" "}
@@ -182,7 +216,7 @@ const ProjectDashboard = () => {
                 </Card>
               </Col>
              
-              <Col xs={24} sm={17}>
+              <Col xs={24} sm={10}>
                 <Card className="totalRevenceCard">
                   <>
                     <span className="totalRevenueLabel">Total Revenue</span>
@@ -192,6 +226,32 @@ const ProjectDashboard = () => {
                     thisMonthData={thisMonthData}
                     lastMonthData={lastMonthData}
                   />
+                </Card>
+              </Col>
+
+              <Col xs={24} sm={7}>
+                <Card className="totalRevenceCard">
+                  <span className="totalRevenueLabel">
+                    Bill Rate: {formatCurrency(billRateBreakdown.totalBillRate)}
+                  </span>
+                  {billRateBreakdown.totalBillRate > 0 ? (
+                    <Row align="middle">
+                      <Col span={14}>
+                        <div style={{ width: "100%", height: 320 }}>
+                          <PieCharts
+                            chartData={billRateSlices.map((s) => Math.round(s.value))}
+                            chartLabels={billRateSlices.map((s) => s.label)}
+                            showLegend={false}
+                          />
+                        </div>
+                      </Col>
+                      <Col span={10}>
+                        <PieLegend slices={billRateSlices} valueFormatter={formatCurrency} />
+                      </Col>
+                    </Row>
+                  ) : (
+                    <Empty description="No bill rate data" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                  )}
                 </Card>
               </Col>
             </Row>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Card, Drawer, message, Popover, Badge, List, Empty } from "antd";
+import { Button, Card, Drawer, message, Popover, Badge, List, Empty, Collapse, Row, Col } from "antd";
 
 import { PlusOutlined, ReloadOutlined, FileExcelOutlined, SaveOutlined, CloseOutlined, BellOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +19,13 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatMonthYear, formatDate } from "../Utils/dateFormat";
+import RevenueCharts from "../RevenueCharts/RevenueCharts";
+import TrendLineChart from "../RevenueCharts/TrendLineChart";
+import ChartCard from "../Utils/ChartCard";
+import PieCharts, { getPieColors } from "../PieCharts/PieCharts";
+import PieLegend from "../PieCharts/PieLegend";
+
+const { Panel } = Collapse;
 
 // employeeId/projectId are optional — when provided (e.g. embedded in the
 // Employee Full Details "INVOICES" tab, or the Project Full Details
@@ -33,6 +40,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
   const [selectedDate, setSelectedDate] = useState(null);
   const [rowData, setRowData] = useState();
   const [projects, setProjectsData] = useState([]);
+  const [referralEmployeeIds, setReferralEmployeeIds] = useState(new Set());
   const navigate = useNavigate();
   const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
@@ -57,6 +65,20 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       .catch((error) => console.error("Error fetching projects:", error));
   }, []);
 
+  // Referral-company employees aren't run through invoicing — exclude them
+  // from the page-level invoice alert below.
+  useEffect(() => {
+    axios
+      .get(API_ENDPOINTS.getAllEmployees)
+      .then((response) => {
+        const ids = (response.data || [])
+          .filter((emp) => (emp.companyName || "").trim().toLowerCase() === "referral")
+          .map((emp) => emp.employeeId);
+        setReferralEmployeeIds(new Set(ids));
+      })
+      .catch((error) => console.error("Error fetching employees:", error));
+  }, []);
+
   const projectsById = useMemo(
     () => Object.fromEntries(projects.map((project) => [project.projectId, project])),
     [projects],
@@ -79,7 +101,8 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
         projects
           .filter((p) => (p.status || "").toUpperCase() === "ACTIVE")
           .map((p) => p.employeeId)
-          .filter(Boolean),
+          .filter(Boolean)
+          .filter((empId) => !referralEmployeeIds.has(empId)),
       ),
     );
     if (activeEmployeeIds.length === 0) {
@@ -118,7 +141,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       Object.values(missingByProject).forEach((entry) => entry.periods.sort((a, b) => a.startDate.localeCompare(b.startDate)));
       setInvoiceAlerts(Object.values(missingByProject));
     });
-  }, [projects, employeeId, projectId]);
+  }, [projects, employeeId, projectId, referralEmployeeIds]);
 
   const invoiceAlertContent = (
     <div style={{ maxHeight: 320, overflowY: "auto", minWidth: 320 }}>
@@ -189,6 +212,123 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
     }
     return scoped;
   }, [rowData, projectsById, employeeId, projectId, statusFilter]);
+
+  // Page-level "Invoice Overview" (only rendered when not scoped to a
+  // single employee/project): a monthly Invoiced-vs-Paid bar chart, plus a
+  // pie chart of total invoiced amount by vendor — same pattern as the
+  // Projects Overview panel on /projects.
+  const monthlyInvoiceChart = useMemo(() => {
+    if (!enrichedRowData || enrichedRowData.length === 0) return { categories: [], invoiced: [], paid: [] };
+    const byMonth = {};
+    enrichedRowData.forEach((inv) => {
+      if (!inv.invoiceMonth) return;
+      const key = inv.invoiceMonth.substring(0, 7);
+      if (!byMonth[key]) byMonth[key] = { invoiced: 0, paid: 0 };
+      byMonth[key].invoiced += inv.total || 0;
+      byMonth[key].paid += inv.invoicePaidAmount || 0;
+    });
+    const sortedKeys = Object.keys(byMonth).sort().slice(-12);
+    return {
+      categories: sortedKeys.map((k) => formatMonthYear(k)),
+      invoiced: sortedKeys.map((k) => Math.round(byMonth[k].invoiced)),
+      paid: sortedKeys.map((k) => Math.round(byMonth[k].paid)),
+    };
+  }, [enrichedRowData]);
+
+  // Flags any month (across the full history, not just the chart's last-12
+  // window) where the invoiced total and paid total don't match — i.e.
+  // that month still has outstanding/partially-paid invoices.
+  const monthlyPaymentAlerts = useMemo(() => {
+    if (!enrichedRowData || enrichedRowData.length === 0) return [];
+    const byMonth = {};
+    enrichedRowData.forEach((inv) => {
+      if (!inv.invoiceMonth) return;
+      const key = inv.invoiceMonth.substring(0, 7);
+      if (!byMonth[key]) byMonth[key] = { invoiced: 0, paid: 0 };
+      byMonth[key].invoiced += inv.total || 0;
+      byMonth[key].paid += inv.invoicePaidAmount || 0;
+    });
+    return Object.keys(byMonth)
+      .filter((key) => Math.round(byMonth[key].invoiced) !== Math.round(byMonth[key].paid))
+      .sort()
+      .map((key) => ({
+        month: formatMonthYear(key),
+        invoiced: byMonth[key].invoiced,
+        paid: byMonth[key].paid,
+        outstanding: byMonth[key].invoiced - byMonth[key].paid,
+      }));
+  }, [enrichedRowData]);
+
+  const monthlyPaymentAlertContent = (
+    <div style={{ maxHeight: 320, overflowY: "auto", minWidth: 320 }}>
+      {monthlyPaymentAlerts.length === 0 ? (
+        <Empty description="No alerts" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <List
+          size="small"
+          dataSource={monthlyPaymentAlerts}
+          renderItem={(item) => (
+            <List.Item key={item.month}>
+              <List.Item.Meta
+                title={item.month}
+                description={`Invoiced ${formatCurrency(item.invoiced)} vs Paid ${formatCurrency(item.paid)} — outstanding ${formatCurrency(item.outstanding)}`}
+              />
+            </List.Item>
+          )}
+        />
+      )}
+    </div>
+  );
+
+  const monthlyInvoiceCountChart = useMemo(() => {
+    if (!enrichedRowData || enrichedRowData.length === 0) return { categories: [], counts: [] };
+    const byMonth = {};
+    enrichedRowData.forEach((inv) => {
+      if (!inv.invoiceMonth) return;
+      const key = inv.invoiceMonth.substring(0, 7);
+      byMonth[key] = (byMonth[key] || 0) + 1;
+    });
+    const sortedKeys = Object.keys(byMonth).sort();
+    return {
+      categories: sortedKeys.map((k) => formatMonthYear(k)),
+      counts: sortedKeys.map((k) => byMonth[k]),
+    };
+  }, [enrichedRowData]);
+
+  const byVendorTotals = useMemo(() => {
+    const byVendor = {};
+    (enrichedRowData || []).forEach((inv) => {
+      const vendor = inv.vendorName || "Unknown";
+      if (!byVendor[vendor]) byVendor[vendor] = { invoiced: 0, paid: 0 };
+      byVendor[vendor].invoiced += inv.total || 0;
+      byVendor[vendor].paid += inv.invoicePaidAmount || 0;
+    });
+    return byVendor;
+  }, [enrichedRowData]);
+
+  const vendorInvoiceSlices = useMemo(() => {
+    const vendors = Object.keys(byVendorTotals);
+    const colors = getPieColors(vendors.length);
+    return vendors.map((vendor, i) => ({ label: vendor, value: byVendorTotals[vendor].invoiced, color: colors[i] }));
+  }, [byVendorTotals]);
+
+  // Same vendor totals, reshaped for a grouped Invoiced-vs-Paid bar chart —
+  // sorted by amount still due (invoiced minus paid) so vendors owing the
+  // most show up first.
+  const vendorBarChart = useMemo(() => {
+    // Ascending, not descending — the chart auto-scrolls to the right edge
+    // on load, so the vendor owing the most should be last (rightmost),
+    // not first (off-screen to the left).
+    const due = (v) => byVendorTotals[v].invoiced - byVendorTotals[v].paid;
+    const vendors = Object.keys(byVendorTotals).sort((a, b) => due(a) - due(b));
+    return {
+      categories: vendors,
+      invoiced: vendors.map((v) => Math.round(byVendorTotals[v].invoiced)),
+      paid: vendors.map((v) => Math.round(byVendorTotals[v].paid)),
+    };
+  }, [byVendorTotals]);
+
+  const totalInvoicedAllVendors = vendorInvoiceSlices.reduce((sum, s) => sum + s.value, 0);
 
   const fetchData = () => {
     //default status =viewAll
@@ -505,6 +645,80 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       overflow: "hidden",
     }}
   >
+    {!employeeId && !projectId && (
+      <Collapse style={{ marginBottom: 10 }}>
+        <Panel header="Invoice Overview" key="1">
+          <Row gutter={[16, 16]} justify="center">
+            <Col xs={24} sm={14}>
+              <ChartCard
+                title="Invoices by Month"
+                extra={
+                  <Popover content={monthlyPaymentAlertContent} title="Invoiced vs Paid Alerts" trigger="click" placement="bottomRight">
+                    <Badge count={monthlyPaymentAlerts.length} size="small">
+                      <Button icon={<BellOutlined />} size="small" />
+                    </Badge>
+                  </Popover>
+                }
+              >
+                <RevenueCharts
+                  thisMonthData={monthlyInvoiceChart.invoiced}
+                  lastMonthData={monthlyInvoiceChart.paid}
+                  categories={monthlyInvoiceChart.categories}
+                  series1Name="Invoiced"
+                  series2Name="Paid"
+                  visibleCategories={8}
+                  pxPerCategory={110}
+                />
+              </ChartCard>
+            </Col>
+            <Col xs={24} sm={10}>
+              <ChartCard title={`Total Invoiced: ${formatCurrency(totalInvoicedAllVendors)}`}>
+                {vendorInvoiceSlices.length > 0 ? (
+                  <Row align="middle">
+                    <Col span={14}>
+                      <div style={{ width: "100%", height: 280 }}>
+                        <PieCharts
+                          chartData={vendorInvoiceSlices.map((s) => Math.round(s.value))}
+                          chartLabels={vendorInvoiceSlices.map((s) => s.label)}
+                          showLegend={false}
+                        />
+                      </div>
+                    </Col>
+                    <Col span={10} style={{ maxHeight: 280, overflowY: "auto" }}>
+                      <PieLegend slices={vendorInvoiceSlices} valueFormatter={formatCurrency} />
+                    </Col>
+                  </Row>
+                ) : (
+                  <Empty description="No invoice data" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                )}
+              </ChartCard>
+            </Col>
+            <Col xs={24} sm={8}>
+              <ChartCard title="Invoice Count by Month">
+                <TrendLineChart
+                  data={monthlyInvoiceCountChart.counts}
+                  categories={monthlyInvoiceCountChart.categories}
+                  seriesName="Invoices"
+                />
+              </ChartCard>
+            </Col>
+            <Col xs={24} sm={16}>
+              <ChartCard title="Invoices by Vendor">
+                <RevenueCharts
+                  thisMonthData={vendorBarChart.invoiced}
+                  lastMonthData={vendorBarChart.paid}
+                  categories={vendorBarChart.categories}
+                  series1Name="Invoiced"
+                  series2Name="Paid"
+                  xaxisLabelRotate={0}
+                  maxLabelLength={12}
+                />
+              </ChartCard>
+            </Col>
+          </Row>
+        </Panel>
+      </Collapse>
+    )}
     <div className="ag-theme-alpine employee-List-grid">
     <Card className="employeeTableCard" style={{ height: "100%" }}>
       <Drawer

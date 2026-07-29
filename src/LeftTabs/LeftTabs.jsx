@@ -15,6 +15,7 @@ import {
   ProjectOutlined,
   DollarOutlined,
   BankOutlined,
+  AuditOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -42,6 +43,7 @@ const leftTabNames = [
   getItem("LCA Details", "/lcaDetails", <FileTextOutlined />),
   getItem("Visa Details", "/visaDetails", <FileTextOutlined />),
   getItem("Payroll Summary", "/payrollsummary", <BoxPlotOutlined />),
+  getItem("Payroll Eligibility", "/payrolleligibility", <AuditOutlined />),
   getItem("Health Insurance", "/healthinsurance", <MedicineBoxOutlined />),
   getItem("Timesheets", "/timesheets", <ClockCircleOutlined />),
   getItem("Monthly Timesheets", "/monthlytimesheets", <ClockCircleOutlined />),

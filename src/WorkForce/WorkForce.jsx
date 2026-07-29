@@ -7,7 +7,8 @@ import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persist
 import Newemployee from "../Newemployee/Newemployee";
 import WorkForceList from "./WorkForceList";
 import WorkForceReconcileList from "./WorkForceReconcileList"
-import PieCharts from "../PieCharts/PieCharts";
+import PieCharts, { getPieColors } from "../PieCharts/PieCharts";
+import PieLegend from "../PieCharts/PieLegend";
 import "../WorkForce/WorkForce.css"
 import API_ENDPOINTS from "../config";
 
@@ -142,6 +143,19 @@ const WorkForceContent = () => {
     ? invoicesChartData.map((item) => item.count)
     : [];
 
+  // Same slice order/values feed both the donut (via PieCharts, legend
+  // hidden) and the custom legend beside it, so colors always match.
+  const workforceSlices = workforceChartLabels.map((label, i) => ({
+    label,
+    value: workforceChartValues[i] || 0,
+    color: getPieColors(workforceChartLabels.length)[i],
+  }));
+  const invoicesSlices = invoicesChartLabels.map((label, i) => ({
+    label,
+    value: invoicesChartValues[i] || 0,
+    color: getPieColors(invoicesChartLabels.length)[i],
+  }));
+
   const items = [
     {
       key: "0",
@@ -232,28 +246,48 @@ const WorkForceContent = () => {
     <Row gutter={[16, 16]} justify="center">
       {/* Billing Card */}
       <Col xs={24} sm={8}>
-        <Card className="billingCard">
-          <Typography.Text className="invoiceCardTitle">Billing</Typography.Text>
-          {isInvoicesLoading ? <Spin /> : <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />}
+        <Card className="billingCard" style={{ height: 370, minHeight: 370, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: "100%" }}>
+            <Typography.Text className="invoiceCardTitle">Billing</Typography.Text>
+            {isInvoicesLoading ? (
+              <Spin />
+            ) : (
+              <Row align="middle">
+                <Col span={14}>
+                  <div style={{ width: "100%", height: 260 }}>
+                    <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} showLegend={false} />
+                  </div>
+                </Col>
+                <Col span={10}>
+                  <PieLegend slices={invoicesSlices} />
+                </Col>
+              </Row>
+            )}
+          </div>
         </Card>
       </Col>
 
       {/* Workforce Status Card */}
       <Col xs={24} sm={8}>
         <Card className="totalworkForceCard1" style={{ height: 370, minHeight: 370, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-              {isWorkforceLoading ? <Spin /> : <PieCharts chartData={workforceChartValues} chartLabels={workforceChartLabels} />}
-            </div>
-            <div style={{ marginLeft: 40, display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center" }}>
-              <Typography.Text className="invoiceCardTitle" style={{ fontSize: 22, fontWeight: 600, marginBottom: 16 }}>Workforce Status</Typography.Text>
-              {workforceChartLabels.map((label, idx) => (
-                <div key={label} style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", background: "#E9A94B", display: "inline-block", marginRight: 10 }}></span>
-                  <span style={{ fontSize: 18 }}>{label}</span>
-                </div>
-              ))}
-            </div>
+          <div style={{ width: "100%" }}>
+            <Typography.Text className="invoiceCardTitle" style={{ fontSize: 22, fontWeight: 600, marginBottom: 16, display: "block" }}>
+              Workforce Status
+            </Typography.Text>
+            {isWorkforceLoading ? (
+              <Spin />
+            ) : (
+              <Row align="middle">
+                <Col span={14}>
+                  <div style={{ width: "100%", height: 260 }}>
+                    <PieCharts chartData={workforceChartValues} chartLabels={workforceChartLabels} showLegend={false} />
+                  </div>
+                </Col>
+                <Col span={10}>
+                  <PieLegend slices={workforceSlices} fontSize={18} />
+                </Col>
+              </Row>
+            )}
           </div>
         </Card>
       </Col>
@@ -261,19 +295,24 @@ const WorkForceContent = () => {
       {/* Invoice Status Card */}
       <Col xs={24} sm={8}>
         <Card className="invoiceStatusCard1" style={{ height: 370, minHeight: 370, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
-              {isInvoicesLoading ? <Spin /> : <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} />}
-            </div>
-            <div style={{ marginLeft: 40, display: "flex", flexDirection: "column", alignItems: "flex-start", justifyContent: "center" }}>
-              <Typography.Text className="invoiceCardTitle" style={{ fontSize: 22, fontWeight: 600, marginBottom: 16 }}>Invoice Status</Typography.Text>
-              {invoicesChartLabels.map((label, idx) => (
-                <div key={label} style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", background: "#E9A94B", display: "inline-block", marginRight: 10 }}></span>
-                  <span style={{ fontSize: 18 }}>{label}</span>
-                </div>
-              ))}
-            </div>
+          <div style={{ width: "100%" }}>
+            <Typography.Text className="invoiceCardTitle" style={{ fontSize: 22, fontWeight: 600, marginBottom: 16, display: "block" }}>
+              Invoice Status
+            </Typography.Text>
+            {isInvoicesLoading ? (
+              <Spin />
+            ) : (
+              <Row align="middle">
+                <Col span={14}>
+                  <div style={{ width: "100%", height: 260 }}>
+                    <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} showLegend={false} />
+                  </div>
+                </Col>
+                <Col span={10}>
+                  <PieLegend slices={invoicesSlices} fontSize={18} />
+                </Col>
+              </Row>
+            )}
           </div>
         </Card>
       </Col>

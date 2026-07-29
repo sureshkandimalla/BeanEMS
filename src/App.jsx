@@ -33,6 +33,7 @@ import LCADetails from "./VisaDetails/LCADetails.jsx"
 import VisaMasterList from "./VisaDetails/VisaMasterList.jsx"
 import AdjustmentDetails from "./Adjustments/AdjustmentDetails";
 import PayrollSummary from "./Payroll/PayrollSummary";
+import PayrollEligibility from "./Payroll/PayrollEligibility";
 import HealthInsuranceSummary from "./HealthInsurance/HealthInsuranceSummary";
 import TimesheetEntry from "./Timesheet/TimesheetEntry";
 import MonthlyTimesheets from "./Timesheet/MonthlyTimesheets";
@@ -65,6 +66,7 @@ const App = () => {
               <Route path="/expensedetails" element={<ExpenseDetails />} />
               <Route path="/companyreport" element={<CompanyFinalReportDetails />} />
               <Route path="/payrollsummary" element={<PayrollSummary />} />
+              <Route path="/payrolleligibility" element={<PayrollEligibility />} />
               <Route path="/healthinsurance" element={<HealthInsuranceSummary />} />
               <Route path="/timesheets" element={<TimesheetEntry />} />
               <Route path="/monthlytimesheets" element={<MonthlyTimesheets />} />

@@ -152,9 +152,9 @@ const WorkForceReconcileList = ({ employees, isCollapsed, onRefresh }) => {
       {
         headerName: "#",
         valueGetter: (params) => params.node.rowIndex + 1,
-        width: 60,
-        minWidth: 60,
-        maxWidth: 60,
+        width: 120,
+        minWidth: 120,
+        maxWidth: 120,
         pinned: "left",
         lockPosition: true,
         suppressMovable: true,

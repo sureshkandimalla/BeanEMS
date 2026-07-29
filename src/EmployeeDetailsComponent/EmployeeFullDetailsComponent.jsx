@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import API_ENDPOINTS from "../config";
+import { formatCurrency } from "../Utils/CurrencyFormatter";
+import { formatMonthYear } from "../Utils/dateFormat";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -31,14 +34,41 @@ const EmployeeFullDetails = () => {
   const handleClick = () => {
     console.log("Button clicked!");
   };
-  const thisMonthData = [50000, 43000, 60000, 70000, 55000];
-  const lastMonthData = [25000, 28000, 20000, 15000, 50000];
   const location = useLocation();
   const { rowData, activeTab } = location.state || {};
   console.log(location.state);
   const [responseData, setResponseData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState();
+
+  // Monthly Invoiced vs Paid amounts for this employee, across all their
+  // projects — replaces the old hardcoded "Total Revenue" bar chart.
+  const [monthlyInvoiceChart, setMonthlyInvoiceChart] = useState({ categories: [], invoiced: [], paid: [] });
+  useEffect(() => {
+    if (!rowData?.employeeId) return;
+    axios
+      .get(API_ENDPOINTS.getInvoicesForEmployee, { params: { employeeId: rowData.employeeId } })
+      .then((response) => {
+        const invoices = response.data || [];
+        const byMonth = {};
+        invoices.forEach((inv) => {
+          if (!inv.invoiceMonth) return;
+          const key = inv.invoiceMonth.substring(0, 7);
+          if (!byMonth[key]) byMonth[key] = { invoiced: 0, paid: 0 };
+          byMonth[key].invoiced += inv.total || 0;
+          byMonth[key].paid += inv.invoicePaidAmount || 0;
+        });
+        const sortedKeys = Object.keys(byMonth).sort();
+        setMonthlyInvoiceChart({
+          categories: sortedKeys.map((k) => formatMonthYear(k)),
+          invoiced: sortedKeys.map((k) => Math.round(byMonth[k].invoiced)),
+          paid: sortedKeys.map((k) => Math.round(byMonth[k].paid)),
+        });
+      })
+      .catch((error) => console.error("Error fetching invoices for employee:", error));
+  }, [rowData?.employeeId]);
+
+  const totalInvoiced = monthlyInvoiceChart.invoiced.reduce((sum, v) => sum + v, 0);
 
   useEffect(() => {
     console.log("rowData:", rowData);
@@ -267,12 +297,21 @@ const EmployeeFullDetails = () => {
                 </div> 
               </Col>             
 
-            {/* Total Revenue & Chart */}
+            {/* Invoiced vs Paid, by month */}
             <Col xs={24} sm={16}>
               <Card className="totalRevenceCard">
-                <span className="totalRevenueLabel">Total Revenue</span>
-                <span className="totalRevenueCount">$66,143.00</span>
-                <RevenueCharts thisMonthData={thisMonthData} lastMonthData={lastMonthData} />
+                <span className="totalRevenueLabel">Revenue</span>
+                <span className="totalRevenueCount">{formatCurrency(totalInvoiced)}</span>
+                <RevenueCharts
+                  thisMonthData={monthlyInvoiceChart.invoiced}
+                  lastMonthData={monthlyInvoiceChart.paid}
+                  categories={monthlyInvoiceChart.categories}
+                  series1Name="Invoiced"
+                  series2Name="Paid"
+                  scrollable
+                  visibleCategories={8}
+                  pxPerCategory={110}
+                />
               </Card>
             </Col>
           </Row>

@@ -116,7 +116,13 @@ const TimesheetEntry = () => {
   useEffect(() => {
     axios
       .get(API_ENDPOINTS.getAllEmployees)
-      .then((response) => setEmployees(response.data || []))
+      .then((response) => {
+        // Referral-company employees aren't tracked through Timesheets.
+        const eligible = (response.data || []).filter(
+          (emp) => (emp.companyName || "").trim().toLowerCase() !== "referral",
+        );
+        setEmployees(eligible);
+      })
       .catch((error) => console.error("Error fetching employees:", error));
   }, []);
 
@@ -139,6 +145,12 @@ const TimesheetEntry = () => {
             ? data.find((a) => a.assignmentId === location.state.assignmentId)
             : data.find((a) => a.projectId === location.state.projectId);
           if (match) setSelectedAssignmentId(match.assignmentId);
+        } else if (data.length > 0) {
+          // No pre-selection came in via route state — default to the
+          // employee's most recent project (latest start date) instead of
+          // leaving the picker empty.
+          const latest = [...data].sort((a, b) => (b.startDate || "").localeCompare(a.startDate || ""))[0];
+          setSelectedAssignmentId(latest.assignmentId);
         }
       })
       .catch((error) => console.error("Error fetching assignments:", error));
@@ -401,7 +413,7 @@ const TimesheetEntry = () => {
             >
               {employees.map((emp) => (
                 <Option key={emp.employeeId} value={emp.employeeId}>
-                  {emp.firstName} {emp.lastName}
+                  {`${emp.firstName} ${emp.lastName}`}
                 </Option>
               ))}
             </Select>

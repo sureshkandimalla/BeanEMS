@@ -4,7 +4,8 @@ import { Tabs, Card, Row, Col, Button, Flex, Drawer, Space, Tag } from "antd";
 import { DesktopOutlined, RiseOutlined, PlusOutlined } from "@ant-design/icons";
 import Newemployee from "../Newemployee/Newemployee";
 import Newvendor from "../Vendor/NewVendor";
-import PieCharts from "../PieCharts/PieCharts";
+import PieCharts, { getPieColors } from "../PieCharts/PieCharts";
+import PieLegend from "../PieCharts/PieLegend";
 import RevenueCharts from "../RevenueCharts/RevenueCharts";
 import InvoiceCard from "../InvoiceCard/InvoiceCard";
 import CurrentEmployeeCard from "../CurrentEmployeeCard/CurrentEmployeeCard";
@@ -58,6 +59,19 @@ const Dashboard = () => {
     workForceChartData[2] +
     workForceChartData[3];
   const projectsSize = rowData ? rowData.length : 0;
+
+  // Same slice order/values feed both the donut (via PieCharts, legend
+  // hidden) and the custom legend beside it, so colors always match.
+  const invoicesSlices = invoicesChartLabels.map((label, i) => ({
+    label,
+    value: invoicesChartData[i] || 0,
+    color: getPieColors(invoicesChartLabels.length)[i],
+  }));
+  const workForceSlices = workForceChartLabels.map((label, i) => ({
+    label,
+    value: workForceChartData[i] || 0,
+    color: getPieColors(workForceChartLabels.length)[i],
+  }));
 
   const [employeeDrawerVisible, setEmployeeDrawerVisible] = useState(false);
   const [vendorDrawerVisible, setVendorDrawerVisible] = useState(false);
@@ -226,29 +240,34 @@ const Dashboard = () => {
               <Col span={10}>
                 <Card className="invoiceStatusCard">
                   <span className="invoiceCardTitle">Invoice Status</span>
-                  <PieCharts
-                    chartData={invoicesChartData}
-                    chartLabels={invoicesChartLabels}
-                  />
+                  <Row align="middle">
+                    <Col span={14}>
+                      <div style={{ width: "100%", height: 180 }}>
+                        <PieCharts chartData={invoicesChartData} chartLabels={invoicesChartLabels} showLegend={false} />
+                      </div>
+                    </Col>
+                    <Col span={10}>
+                      <PieLegend slices={invoicesSlices} fontSize={13} rowGap={6} />
+                    </Col>
+                  </Row>
                 </Card>
               </Col>
               <Col span={14}>
                 <Card className="totalworkForceCard">
-                  <Row>
-                    <Col span={18}>
-                      <PieCharts
-                        chartData={workForceChartData}
-                        chartLabels={workForceChartLabels}
-                      />
+                  <span className="totalWorkTitle" style={{ marginTop: "10px" }}>
+                    Total Work Force
+                  </span>
+                  <Row align="middle">
+                    <Col span={10}>
+                      <div style={{ width: "100%", height: 180 }}>
+                        <PieCharts chartData={workForceChartData} chartLabels={workForceChartLabels} showLegend={false} />
+                      </div>
+                    </Col>
+                    <Col span={8}>
+                      <PieLegend slices={workForceSlices} fontSize={13} rowGap={6} />
                     </Col>
                     <Col span={6}>
                       <div className="totalWorkFrcDiv">
-                        <span
-                          className="totalWorkTitle"
-                          style={{ marginTop: "10px" }}
-                        >
-                          Total Work Force
-                        </span>
                         <Row justify="space-between">
                           <span className="totalWorkForceCount">
                             {totalParamCount}

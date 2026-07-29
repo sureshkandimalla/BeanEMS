@@ -97,9 +97,9 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         colId: "rowNum",
         headerName: "#",
         valueGetter: (params) => params.node.rowIndex + 1,
-        width: 60,
-        minWidth: 60,
-        maxWidth: 60,
+        width: 120,
+        minWidth: 120,
+        maxWidth: 120,
         pinned: "left",
         lockPosition: true,
         suppressMovable: true,
@@ -184,6 +184,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         sortable: isSortable,
         editable: true,
         filter: "agSetColumnFilter",
+        aggFunc: "sum",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
       },
@@ -193,6 +194,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         sortable: isSortable,
         editable: false,
         filter: "agSetColumnFilter",
+        aggFunc: "sum",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
       },
@@ -202,6 +204,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         sortable: isSortable,
         editable: false,
         filter: "agSetColumnFilter",
+        aggFunc: "sum",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
       },
@@ -211,24 +214,17 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         sortable: isSortable,
         editable: false,
         filter: "agSetColumnFilter",
+        aggFunc: "sum",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
       },
       {
-        headerName: "Internal",
+        headerName: "Taxes",
         field: "expenseInternal",
         sortable: isSortable,
         editable: false,
         filter: "agSetColumnFilter",
-        valueFormatter: (params) =>
-          `$${params.value ? params.value.toFixed(2) : "0.00"}`,
-      },
-      {
-        headerName: "Bean Net",
-        field: "net",
-        sortable: isSortable,
-        editable: false,
-        filter: "agSetColumnFilter",
+        aggFunc: "sum",
         valueFormatter: (params) =>
           `$${params.value ? params.value.toFixed(2) : "0.00"}`,
       },
