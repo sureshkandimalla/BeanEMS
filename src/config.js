@@ -126,6 +126,7 @@ export const API_ENDPOINTS = {
   savePotentialEmployees: `${API_BASE_URL}/visa/savePotentialEmployees`,
   addInvoices: `${API_BASE_URL}/invoice/addInvoices`,
   getAllInvoices: `${API_BASE_URL}/invoice/getAllInvoices`,
+  getAllBills: `${API_BASE_URL}/bills/getAllBills`,
   invoiceById: (invoiceId) => `${API_BASE_URL}/invoice/invoices/${invoiceId}`,
   reconcileRecords: `${API_BASE_URL}/reconcile/getReconcileRecords`,
   saveOnBoardDetails: `${API_BASE_URL}/employees/saveOnBoardDetails`,

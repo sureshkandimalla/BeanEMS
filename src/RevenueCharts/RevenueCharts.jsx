@@ -17,7 +17,11 @@ const formatWholeCurrency = (value) =>
 const truncateLabel = (value, maxLength) =>
   maxLength && value && value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
 
-const RevenueCharts = ({
+// `chartRef`, when given (e.g. via forwardRef from a caller wanting a PNG
+// download button), is attached straight to the underlying ReactApexChart
+// instance — `chartRef.current.chart.dataURI()` is the standard
+// react-apexcharts way to export the rendered chart as an image.
+const RevenueCharts = React.forwardRef(({
   thisMonthData,
   lastMonthData,
   categories = ["Company 1", "Company 2", "Company 3", "Company 4", "Company 5"],
@@ -37,7 +41,8 @@ const RevenueCharts = ({
   scrollable = true,
   visibleCategories = 12,
   pxPerCategory = 70,
-}) => {
+  height = 250,
+}, chartRef) => {
   // Defaults the scroll position to the far right — the most recent
   // categories (e.g. latest months) — rather than the oldest, since that's
   // what's most relevant on load. Re-runs whenever the category count
@@ -53,6 +58,14 @@ const RevenueCharts = ({
   // (e.g. a plain monthly count) instead of the usual two-series comparison.
   const series = [{ name: series1Name, data: thisMonthData }];
   if (lastMonthData) series.push({ name: series2Name, data: lastMonthData });
+
+  // The horizontal scrollbar needs its own slice of the wrapper's height —
+  // without it, the ancestor ChartCard/Resizable box (which clips overflow
+  // to whatever height it was given) can end up exactly as tall as the
+  // chart itself, with no room left for the scrollbar strip, so it gets
+  // clipped away entirely instead of just squeezing the chart a bit.
+  const scrollbarReserve = scrollable ? 20 : 0;
+  const chartHeight = Math.max(height - scrollbarReserve, 100);
 
   const chartOptions = {
     options: {
@@ -75,7 +88,8 @@ const RevenueCharts = ({
       colors: ["#63abfd", "#e697ff"],
       chart: {
         type: "bar",
-        height: 250,
+        height: chartHeight,
+        toolbar: { show: false },
       },
       xaxis: {
         categories,
@@ -97,10 +111,11 @@ const RevenueCharts = ({
 
   const chart = (
     <ReactApexChart
+      ref={chartRef}
       options={chartOptions?.options}
       series={chartOptions?.series}
       type="bar"
-      height={250}
+      height={chartHeight}
       width={scrollable ? Math.max(categories.length, visibleCategories) * pxPerCategory : "100%"}
     />
   );
@@ -108,10 +123,10 @@ const RevenueCharts = ({
   if (!scrollable) return chart;
 
   return (
-    <div ref={scrollRef} style={{ width: "100%", overflowX: "auto", overflowY: "hidden" }}>
+    <div ref={scrollRef} style={{ width: "100%", height, overflowX: "auto", overflowY: "hidden" }}>
       {chart}
     </div>
   );
-};
+});
 
 export default RevenueCharts;

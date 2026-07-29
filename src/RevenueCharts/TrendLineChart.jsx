@@ -8,7 +8,9 @@ import ReactApexChart from "react-apexcharts";
 // category count, auto-scrolled to the right (most recent) edge, so a long
 // history stays scannable at a fixed zoom level instead of squeezing every
 // point into the card's width.
-const TrendLineChart = ({
+// `chartRef`, when given, is attached straight to the underlying
+// ReactApexChart instance — see RevenueCharts for why (PNG export).
+const TrendLineChart = React.forwardRef(({
   data,
   categories,
   seriesName = "Count",
@@ -17,7 +19,8 @@ const TrendLineChart = ({
   scrollable = true,
   visibleCategories = 12,
   pxPerCategory = 70,
-}) => {
+  height = 250,
+}, chartRef) => {
   const scrollRef = useRef(null);
   useEffect(() => {
     if (scrollable && scrollRef.current) {
@@ -25,10 +28,15 @@ const TrendLineChart = ({
     }
   }, [scrollable, categories.length]);
 
+  // See RevenueCharts for why the scrollbar needs its own reserved slice of
+  // the wrapper's height instead of sharing the chart's own height exactly.
+  const scrollbarReserve = scrollable ? 20 : 0;
+  const chartHeight = Math.max(height - scrollbarReserve, 100);
+
   const chartOptions = {
     chart: {
       type: "area",
-      height: 250,
+      height: chartHeight,
       toolbar: { show: false },
       zoom: { enabled: false },
     },
@@ -79,10 +87,11 @@ const TrendLineChart = ({
 
   const chart = (
     <ReactApexChart
+      ref={chartRef}
       options={chartOptions}
       series={[{ name: seriesName, data }]}
       type="area"
-      height={250}
+      height={chartHeight}
       width={scrollable ? Math.max(categories.length, visibleCategories) * pxPerCategory : "100%"}
     />
   );
@@ -90,10 +99,10 @@ const TrendLineChart = ({
   if (!scrollable) return chart;
 
   return (
-    <div ref={scrollRef} style={{ width: "100%", overflowX: "auto", overflowY: "hidden" }}>
+    <div ref={scrollRef} style={{ width: "100%", height, overflowX: "auto", overflowY: "hidden" }}>
       {chart}
     </div>
   );
-};
+});
 
 export default TrendLineChart;

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message, Checkbox } from "antd";
+import { Tabs, Card, Collapse, Row, Col, Button, Drawer, Spin, message, Checkbox } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
@@ -9,6 +9,7 @@ import WorkForceList from "./WorkForceList";
 import WorkForceReconcileList from "./WorkForceReconcileList"
 import PieCharts, { getPieColors } from "../PieCharts/PieCharts";
 import PieLegend from "../PieCharts/PieLegend";
+import { useChartOverview, ChartSettingsIcon } from "../Utils/ChartOverviewPanel";
 import "../WorkForce/WorkForce.css"
 import API_ENDPOINTS from "../config";
 
@@ -156,6 +157,76 @@ const WorkForceContent = () => {
     color: getPieColors(invoicesChartLabels.length)[i],
   }));
 
+  // Chart definitions for the Company Overview area — useChartOverview
+  // handles show/hide, drag-to-reorder, drag-to-resize, and PNG download
+  // generically from this list.
+  const companyOverviewCharts = [
+    {
+      key: "billing",
+      label: "Billing",
+      filename: "billing",
+      defaultSize: { width: 480, height: 370 },
+      render: (innerHeight, setChartRef) =>
+        isInvoicesLoading ? (
+          <Spin />
+        ) : (
+          <Row align="middle">
+            <Col span={14}>
+              <div style={{ width: "100%", height: innerHeight }}>
+                <PieCharts ref={setChartRef} chartData={invoicesChartValues} chartLabels={invoicesChartLabels} showLegend={false} />
+              </div>
+            </Col>
+            <Col span={10}>
+              <PieLegend slices={invoicesSlices} />
+            </Col>
+          </Row>
+        ),
+    },
+    {
+      key: "workforceStatus",
+      label: "Workforce Status",
+      filename: "workforce-status",
+      defaultSize: { width: 480, height: 370 },
+      render: (innerHeight, setChartRef) =>
+        isWorkforceLoading ? (
+          <Spin />
+        ) : (
+          <Row align="middle">
+            <Col span={14}>
+              <div style={{ width: "100%", height: innerHeight }}>
+                <PieCharts ref={setChartRef} chartData={workforceChartValues} chartLabels={workforceChartLabels} showLegend={false} />
+              </div>
+            </Col>
+            <Col span={10}>
+              <PieLegend slices={workforceSlices} fontSize={18} />
+            </Col>
+          </Row>
+        ),
+    },
+    {
+      key: "invoiceStatus",
+      label: "Invoice Status",
+      filename: "invoice-status",
+      defaultSize: { width: 480, height: 370 },
+      render: (innerHeight, setChartRef) =>
+        isInvoicesLoading ? (
+          <Spin />
+        ) : (
+          <Row align="middle">
+            <Col span={14}>
+              <div style={{ width: "100%", height: innerHeight }}>
+                <PieCharts ref={setChartRef} chartData={invoicesChartValues} chartLabels={invoicesChartLabels} showLegend={false} />
+              </div>
+            </Col>
+            <Col span={10}>
+              <PieLegend slices={invoicesSlices} fontSize={18} />
+            </Col>
+          </Row>
+        ),
+    },
+  ];
+  const { settingsContent, contentNode } = useChartOverview(companyOverviewCharts);
+
   const items = [
     {
       key: "0",
@@ -242,81 +313,16 @@ const WorkForceContent = () => {
     transition: "flex 0.3s ease-in-out", /* Smooth transition */
   }}
 >
-  <Panel header="Company Overview" key="1">
-    <Row gutter={[16, 16]} justify="center">
-      {/* Billing Card */}
-      <Col xs={24} sm={8}>
-        <Card className="billingCard" style={{ height: 370, minHeight: 370, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ width: "100%" }}>
-            <Typography.Text className="invoiceCardTitle">Billing</Typography.Text>
-            {isInvoicesLoading ? (
-              <Spin />
-            ) : (
-              <Row align="middle">
-                <Col span={14}>
-                  <div style={{ width: "100%", height: 260 }}>
-                    <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} showLegend={false} />
-                  </div>
-                </Col>
-                <Col span={10}>
-                  <PieLegend slices={invoicesSlices} />
-                </Col>
-              </Row>
-            )}
-          </div>
-        </Card>
-      </Col>
-
-      {/* Workforce Status Card */}
-      <Col xs={24} sm={8}>
-        <Card className="totalworkForceCard1" style={{ height: 370, minHeight: 370, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ width: "100%" }}>
-            <Typography.Text className="invoiceCardTitle" style={{ fontSize: 22, fontWeight: 600, marginBottom: 16, display: "block" }}>
-              Workforce Status
-            </Typography.Text>
-            {isWorkforceLoading ? (
-              <Spin />
-            ) : (
-              <Row align="middle">
-                <Col span={14}>
-                  <div style={{ width: "100%", height: 260 }}>
-                    <PieCharts chartData={workforceChartValues} chartLabels={workforceChartLabels} showLegend={false} />
-                  </div>
-                </Col>
-                <Col span={10}>
-                  <PieLegend slices={workforceSlices} fontSize={18} />
-                </Col>
-              </Row>
-            )}
-          </div>
-        </Card>
-      </Col>
-
-      {/* Invoice Status Card */}
-      <Col xs={24} sm={8}>
-        <Card className="invoiceStatusCard1" style={{ height: 370, minHeight: 370, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ width: "100%" }}>
-            <Typography.Text className="invoiceCardTitle" style={{ fontSize: 22, fontWeight: 600, marginBottom: 16, display: "block" }}>
-              Invoice Status
-            </Typography.Text>
-            {isInvoicesLoading ? (
-              <Spin />
-            ) : (
-              <Row align="middle">
-                <Col span={14}>
-                  <div style={{ width: "100%", height: 260 }}>
-                    <PieCharts chartData={invoicesChartValues} chartLabels={invoicesChartLabels} showLegend={false} />
-                  </div>
-                </Col>
-                <Col span={10}>
-                  <PieLegend slices={invoicesSlices} fontSize={18} />
-                </Col>
-              </Row>
-            )}
-          </div>
-        </Card>
-      </Col>
-    </Row>
+  <Panel
+    header="Company Overview"
+    key="1"
+    extra={
+      <div onClick={(e) => e.stopPropagation()}>
+        <ChartSettingsIcon settingsContent={settingsContent} />
+      </div>
+    }
+  >
+    {contentNode}
   </Panel>
 </Collapse>
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Card, Drawer, message, Popover, Badge, List, Empty, Collapse, Row, Col } from "antd";
+import { Button, Card, Drawer, message, Popover, Badge, List, Empty, Row, Col } from "antd";
 
 import { PlusOutlined, ReloadOutlined, FileExcelOutlined, SaveOutlined, CloseOutlined, BellOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -21,11 +21,9 @@ import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatMonthYear, formatDate } from "../Utils/dateFormat";
 import RevenueCharts from "../RevenueCharts/RevenueCharts";
 import TrendLineChart from "../RevenueCharts/TrendLineChart";
-import ChartCard from "../Utils/ChartCard";
 import PieCharts, { getPieColors } from "../PieCharts/PieCharts";
 import PieLegend from "../PieCharts/PieLegend";
-
-const { Panel } = Collapse;
+import ChartOverviewPanel from "../Utils/ChartOverviewPanel";
 
 // employeeId/projectId are optional — when provided (e.g. embedded in the
 // Employee Full Details "INVOICES" tab, or the Project Full Details
@@ -329,6 +327,92 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
   }, [byVendorTotals]);
 
   const totalInvoicedAllVendors = vendorInvoiceSlices.reduce((sum, s) => sum + s.value, 0);
+
+  // Chart definitions for the Invoice Overview panel — ChartOverviewPanel
+  // handles show/hide, drag-to-reorder, drag-to-resize, and PNG download
+  // generically from this list.
+  const invoiceOverviewCharts = [
+    {
+      key: "monthly",
+      label: "Invoices by Month",
+      filename: "invoices-by-month",
+      defaultSize: { width: 700, height: 340 },
+      render: (innerHeight, setChartRef) => (
+        <RevenueCharts
+          ref={setChartRef}
+          thisMonthData={monthlyInvoiceChart.invoiced}
+          lastMonthData={monthlyInvoiceChart.paid}
+          categories={monthlyInvoiceChart.categories}
+          series1Name="Invoiced"
+          series2Name="Paid"
+          visibleCategories={8}
+          pxPerCategory={110}
+          height={innerHeight}
+        />
+      ),
+    },
+    {
+      key: "vendorPie",
+      label: "Total Invoiced (by Vendor)",
+      title: `Total Invoiced: ${formatCurrency(totalInvoicedAllVendors)}`,
+      filename: "total-invoiced-by-vendor",
+      defaultSize: { width: 500, height: 340 },
+      render: (innerHeight, setChartRef) =>
+        vendorInvoiceSlices.length > 0 ? (
+          <Row align="middle">
+            <Col span={14}>
+              <div style={{ width: "100%", height: innerHeight }}>
+                <PieCharts
+                  ref={setChartRef}
+                  chartData={vendorInvoiceSlices.map((s) => Math.round(s.value))}
+                  chartLabels={vendorInvoiceSlices.map((s) => s.label)}
+                  showLegend={false}
+                />
+              </div>
+            </Col>
+            <Col span={10} style={{ maxHeight: innerHeight, overflowY: "auto" }}>
+              <PieLegend slices={vendorInvoiceSlices} valueFormatter={formatCurrency} />
+            </Col>
+          </Row>
+        ) : (
+          <Empty description="No invoice data" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+        ),
+    },
+    {
+      key: "invoiceCount",
+      label: "Invoice Count by Month",
+      filename: "invoice-count-by-month",
+      defaultSize: { width: 420, height: 340 },
+      render: (innerHeight, setChartRef) => (
+        <TrendLineChart
+          ref={setChartRef}
+          data={monthlyInvoiceCountChart.counts}
+          categories={monthlyInvoiceCountChart.categories}
+          seriesName="Invoices"
+          height={innerHeight}
+        />
+      ),
+    },
+    {
+      key: "vendorBar",
+      label: "Invoices by Vendor",
+      filename: "invoices-by-vendor",
+      defaultSize: { width: 800, height: 340 },
+      render: (innerHeight, setChartRef) => (
+        <RevenueCharts
+          ref={setChartRef}
+          thisMonthData={vendorBarChart.invoiced}
+          lastMonthData={vendorBarChart.paid}
+          categories={vendorBarChart.categories}
+          series1Name="Invoiced"
+          series2Name="Paid"
+          xaxisLabelRotate={0}
+          maxLabelLength={12}
+          height={innerHeight}
+        />
+      ),
+    },
+  ];
 
   const fetchData = () => {
     //default status =viewAll
@@ -646,78 +730,24 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
     }}
   >
     {!employeeId && !projectId && (
-      <Collapse style={{ marginBottom: 10 }}>
-        <Panel header="Invoice Overview" key="1">
-          <Row gutter={[16, 16]} justify="center">
-            <Col xs={24} sm={14}>
-              <ChartCard
-                title="Invoices by Month"
-                extra={
-                  <Popover content={monthlyPaymentAlertContent} title="Invoiced vs Paid Alerts" trigger="click" placement="bottomRight">
-                    <Badge count={monthlyPaymentAlerts.length} size="small">
-                      <Button icon={<BellOutlined />} size="small" />
-                    </Badge>
-                  </Popover>
-                }
-              >
-                <RevenueCharts
-                  thisMonthData={monthlyInvoiceChart.invoiced}
-                  lastMonthData={monthlyInvoiceChart.paid}
-                  categories={monthlyInvoiceChart.categories}
-                  series1Name="Invoiced"
-                  series2Name="Paid"
-                  visibleCategories={8}
-                  pxPerCategory={110}
-                />
-              </ChartCard>
-            </Col>
-            <Col xs={24} sm={10}>
-              <ChartCard title={`Total Invoiced: ${formatCurrency(totalInvoicedAllVendors)}`}>
-                {vendorInvoiceSlices.length > 0 ? (
-                  <Row align="middle">
-                    <Col span={14}>
-                      <div style={{ width: "100%", height: 280 }}>
-                        <PieCharts
-                          chartData={vendorInvoiceSlices.map((s) => Math.round(s.value))}
-                          chartLabels={vendorInvoiceSlices.map((s) => s.label)}
-                          showLegend={false}
-                        />
-                      </div>
-                    </Col>
-                    <Col span={10} style={{ maxHeight: 280, overflowY: "auto" }}>
-                      <PieLegend slices={vendorInvoiceSlices} valueFormatter={formatCurrency} />
-                    </Col>
-                  </Row>
-                ) : (
-                  <Empty description="No invoice data" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                )}
-              </ChartCard>
-            </Col>
-            <Col xs={24} sm={8}>
-              <ChartCard title="Invoice Count by Month">
-                <TrendLineChart
-                  data={monthlyInvoiceCountChart.counts}
-                  categories={monthlyInvoiceCountChart.categories}
-                  seriesName="Invoices"
-                />
-              </ChartCard>
-            </Col>
-            <Col xs={24} sm={16}>
-              <ChartCard title="Invoices by Vendor">
-                <RevenueCharts
-                  thisMonthData={vendorBarChart.invoiced}
-                  lastMonthData={vendorBarChart.paid}
-                  categories={vendorBarChart.categories}
-                  series1Name="Invoiced"
-                  series2Name="Paid"
-                  xaxisLabelRotate={0}
-                  maxLabelLength={12}
-                />
-              </ChartCard>
-            </Col>
-          </Row>
-        </Panel>
-      </Collapse>
+      <ChartOverviewPanel
+        panelTitle="Invoice Overview"
+        charts={invoiceOverviewCharts}
+        alerts={
+          <>
+            <Popover content={invoiceAlertContent} title="Invoice Alerts" trigger="click" placement="bottomRight">
+              <Badge count={invoiceAlerts.length} size="small">
+                <Button icon={<BellOutlined />} size="small" />
+              </Badge>
+            </Popover>
+            <Popover content={monthlyPaymentAlertContent} title="Invoiced vs Paid Alerts" trigger="click" placement="bottomRight">
+              <Badge count={monthlyPaymentAlerts.length} size="small">
+                <Button icon={<BellOutlined />} size="small" />
+              </Badge>
+            </Popover>
+          </>
+        }
+      />
     )}
     <div className="ag-theme-alpine employee-List-grid">
     <Card className="employeeTableCard" style={{ height: "100%" }}>
@@ -787,18 +817,6 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
           >
             <PlusOutlined /> Add New Invoice
           </Button>
-          {!employeeId && !projectId && (
-            <Popover
-              content={invoiceAlertContent}
-              title="Invoice Alerts"
-              trigger="click"
-              placement="bottomRight"
-            >
-              <Badge count={invoiceAlerts.length} size="small" style={{ marginLeft: "10px" }}>
-                <Button icon={<BellOutlined />} />
-              </Badge>
-            </Popover>
-          )}
         </div>
         <div style={{ display: "flex", alignItems: "center" }}>
           <label style={{ marginBottom: 0 }}>Invoice Date:&nbsp;</label>

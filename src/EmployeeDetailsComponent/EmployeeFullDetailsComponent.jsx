@@ -11,6 +11,7 @@ import ProjectGrid from "../Project/ProjectGrid";
 import { useLocation } from "react-router-dom";
 import EmployeePersonnelFilePage from "../EmployeeDetailsComponent/EmployeePersonnelFilePage";
 import RevenueCharts from "../RevenueCharts/RevenueCharts";
+import { useChartOverview, ChartSettingsIcon } from "../Utils/ChartOverviewPanel";
 import InvoiceDetails from "../Invoice/InvoiceDetails";
 import PayrollDetails from "../Payroll/PayrollDetails";
 import AdjustementDetails from "../Adjustments/AdjustmentDetails";
@@ -69,6 +70,34 @@ const EmployeeFullDetails = () => {
   }, [rowData?.employeeId]);
 
   const totalInvoiced = monthlyInvoiceChart.invoiced.reduce((sum, v) => sum + v, 0);
+
+  // Just the one chart, but still wrapped in useChartOverview so it gets
+  // the same resize/download controls as every other Overview panel's
+  // charts.
+  const employeeOverviewCharts = [
+    {
+      key: "revenue",
+      label: "Revenue",
+      title: `Revenue: ${formatCurrency(totalInvoiced)}`,
+      filename: "revenue-by-month",
+      defaultSize: { width: 700, height: 340 },
+      render: (innerHeight, setChartRef) => (
+        <RevenueCharts
+          ref={setChartRef}
+          thisMonthData={monthlyInvoiceChart.invoiced}
+          lastMonthData={monthlyInvoiceChart.paid}
+          categories={monthlyInvoiceChart.categories}
+          series1Name="Invoiced"
+          series2Name="Paid"
+          visibleCategories={8}
+          pxPerCategory={110}
+          height={innerHeight}
+        />
+      ),
+    },
+  ];
+  const { settingsContent: revenueSettingsContent, contentNode: revenueContentNode } =
+    useChartOverview(employeeOverviewCharts);
 
   useEffect(() => {
     console.log("rowData:", rowData);
@@ -227,11 +256,16 @@ const EmployeeFullDetails = () => {
           header={
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontWeight: "bold" }}>Employee Overview</span>
-              <Button
-                type="text"
-                icon={isCollapsed ? <UpOutlined /> : <DownOutlined />}
-                onClick={handleCollapseChange}
-              />
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <span onClick={(e) => e.stopPropagation()}>
+                  <ChartSettingsIcon settingsContent={revenueSettingsContent} />
+                </span>
+                <Button
+                  type="text"
+                  icon={isCollapsed ? <UpOutlined /> : <DownOutlined />}
+                  onClick={handleCollapseChange}
+                />
+              </div>
             </div>
           }
           key="1"
@@ -299,20 +333,7 @@ const EmployeeFullDetails = () => {
 
             {/* Invoiced vs Paid, by month */}
             <Col xs={24} sm={16}>
-              <Card className="totalRevenceCard">
-                <span className="totalRevenueLabel">Revenue</span>
-                <span className="totalRevenueCount">{formatCurrency(totalInvoiced)}</span>
-                <RevenueCharts
-                  thisMonthData={monthlyInvoiceChart.invoiced}
-                  lastMonthData={monthlyInvoiceChart.paid}
-                  categories={monthlyInvoiceChart.categories}
-                  series1Name="Invoiced"
-                  series2Name="Paid"
-                  scrollable
-                  visibleCategories={8}
-                  pxPerCategory={110}
-                />
-              </Card>
+              {revenueContentNode}
             </Col>
           </Row>
         </Panel>

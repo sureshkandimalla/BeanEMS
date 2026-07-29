@@ -270,58 +270,42 @@ export default function FinalReportDetails({ employeeId }) {
       .filter((row) => !(row.detailType === "payroll" && payrollCutoffDate && row.payRecords.length === 0));
   }, [rowData, invoiceCutoffDate, payrollCutoffDate]);
 
-  // Totals must reflect whatever's currently visible in the grid — not
-  // just the cutoff-date filters above, but any column filter the user
-  // applies interactively too. The mixed ag-grid-enterprise v31 (registered
-  // globally via the plain `import "ag-grid-enterprise"` below) alongside
-  // the v32 @ag-grid-community packages this file's AgGridReact actually
-  // comes from breaks newer GridApi methods like forEachNodeAfterFilter —
-  // its legacy compat shim (VanillaFrameworkOverrides) doesn't proxy them
-  // through. So instead of iterating filtered leaf rows directly, this
-  // reads each top-level group row's own aggData — ag-Grid's built-in
-  // grouping/aggFunc engine already recomputes those sums to reflect only
-  // the currently-filtered rows, and getDisplayedRowCount/RowAtIndex are
-  // old enough to survive the shim. Group rows stay in the displayed list
-  // regardless of expand/collapse state, so this is unaffected by that too.
-  const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
-  const recomputeTotals = () => {
-    const api = gridRef.current;
-    if (!api) return;
-    let rowCount = 0;
-    let hours = 0;
-    let paidHours = 0;
-    let income = 0;
-    let incomePaid = 0;
-    let totalPayment = 0;
-    const displayedCount = api.getDisplayedRowCount();
-    for (let i = 0; i < displayedCount; i++) {
-      const node = api.getDisplayedRowAtIndex(i);
-      if (!node || node.level !== 0 || !node.group) continue;
-      const agg = node.aggData || {};
-      rowCount += 1;
-      hours += agg.hours || 0;
-      paidHours += agg.paidHours || 0;
-      income += agg.income || 0;
-      incomePaid += agg.incomePaid || 0;
-      totalPayment += agg.totalPayment || 0;
-    }
-    setPinnedTopRowData(
-      rowCount > 0
+  // Totals reflect the cutoff-date filters above (filteredRowData). They
+  // don't react to interactive AG Grid column filters — two different
+  // attempts at reading that live from the grid API (forEachNodeAfterFilter,
+  // then getDisplayedRowCount/RowAtIndex) both crashed, because this
+  // environment mixes ag-grid-enterprise v31 (registered globally via the
+  // plain `import "ag-grid-enterprise"` below) with the v32
+  // @ag-grid-community packages this file's AgGridReact actually comes
+  // from — its legacy compat shim (VanillaFrameworkOverrides) doesn't
+  // proxy newer GridApi methods through correctly, so nothing that queries
+  // the live grid instance can be trusted here. Plain React state is the
+  // safe option.
+  const pinnedTopRowData = useMemo(
+    () =>
+      filteredRowData.length > 0
         ? [
-            {
-              description: "Total",
-              hours,
-              paidHours,
-              income,
-              incomePaid,
-              totalPayment,
-              balancePaid: incomePaid - totalPayment,
-              balance: income - totalPayment,
-            },
+            (() => {
+              const hours = filteredRowData.reduce((sum, row) => sum + (row.hours || 0), 0);
+              const paidHours = filteredRowData.reduce((sum, row) => sum + (row.paidHours || 0), 0);
+              const income = filteredRowData.reduce((sum, row) => sum + (row.income || 0), 0);
+              const incomePaid = filteredRowData.reduce((sum, row) => sum + (row.incomePaid || 0), 0);
+              const totalPayment = filteredRowData.reduce((sum, row) => sum + (row.totalPayment || 0), 0);
+              return {
+                description: "Total",
+                hours,
+                paidHours,
+                income,
+                incomePaid,
+                totalPayment,
+                balancePaid: incomePaid - totalPayment,
+                balance: income - totalPayment,
+              };
+            })(),
           ]
         : [],
-    );
-  };
+    [filteredRowData],
+  );
 
   const columnDefs = [
     {
@@ -553,10 +537,7 @@ export default function FinalReportDetails({ employeeId }) {
               try {
                 params.api.autoSizeAllColumns();
               } catch (e) {}
-              recomputeTotals();
             }}
-            onRowDataUpdated={recomputeTotals}
-            onFilterChanged={recomputeTotals}
             autoSizeStrategy={{ type: "fitCellContents" }}
             rowHeight={48}
             rowData={filteredRowData}

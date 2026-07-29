@@ -10,84 +10,89 @@ const PIE_PALETTE = ["#f8aa4e", "#6bcbe2", "#78a0ed", "#596b4e", "#e07a5f", "#3d
 export const getPieColors = (count) =>
   Array.from({ length: count || 0 }, (_, i) => PIE_PALETTE[i % PIE_PALETTE.length]);
 
-const PieCharts = ({ chartData, chartLabels, valueFormatter, legendPosition = "right", showLegend = true }) => {
-  const labels = chartLabels;
-  const series = chartData;
-  const colors = getPieColors(chartData?.length);
+// `chartRef`, when given, is attached straight to the underlying
+// ReactApexChart instance — see RevenueCharts for why (PNG export).
+const PieCharts = React.forwardRef(
+  ({ chartData, chartLabels, valueFormatter, legendPosition = "right", showLegend = true }, chartRef) => {
+    const labels = chartLabels;
+    const series = chartData;
+    const colors = getPieColors(chartData?.length);
 
-  const chartOptions = {
-    chart: {
-      type: "donut",
-      width: "100%",
-      height: "100%", // Ensure it respects parent height
-    },
-    labels: labels,
-    colors: colors,
-    dataLabels: {
-      enabled: false,
-    },
-    legend: {
-      show: showLegend,
-      position: legendPosition,
-      fontSize: "14px",
-      formatter: (seriesName, opts) => {
-        const value = opts.w.globals.series[opts.seriesIndex];
-        return `${seriesName}: ${valueFormatter ? valueFormatter(value) : value}`;
+    const chartOptions = {
+      chart: {
+        type: "donut",
+        width: "100%",
+        height: "100%", // Ensure it respects parent height
       },
-    },
-    responsive: [
-      {
-        breakpoint: 1024,
-        options: {
-          chart: {
-            width: "100%",
-            height: "100%",
-          },
-          legend: {
-            position: "bottom",
-          },
+      labels: labels,
+      colors: colors,
+      dataLabels: {
+        enabled: false,
+      },
+      legend: {
+        show: showLegend,
+        position: legendPosition,
+        fontSize: "14px",
+        formatter: (seriesName, opts) => {
+          const value = opts.w.globals.series[opts.seriesIndex];
+          return `${seriesName}: ${valueFormatter ? valueFormatter(value) : value}`;
         },
       },
-      {
-        breakpoint: 768,
-        options: {
-          chart: {
-            width: "100%",
-            height: "100%",
-          },
-          legend: {
-            position: "bottom",
-            fontSize: "12px",
-          },
-        },
-      },
-      {
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: "100%",
-            height: "100%",
-          },
-          legend: {
-            position: "bottom",
-            fontSize: "10px",
+      responsive: [
+        {
+          breakpoint: 1024,
+          options: {
+            chart: {
+              width: "100%",
+              height: "100%",
+            },
+            legend: {
+              position: "bottom",
+            },
           },
         },
-      },
-    ],
-  };
+        {
+          breakpoint: 768,
+          options: {
+            chart: {
+              width: "100%",
+              height: "100%",
+            },
+            legend: {
+              position: "bottom",
+              fontSize: "12px",
+            },
+          },
+        },
+        {
+          breakpoint: 480,
+          options: {
+            chart: {
+              width: "100%",
+              height: "100%",
+            },
+            legend: {
+              position: "bottom",
+              fontSize: "10px",
+            },
+          },
+        },
+      ],
+    };
 
-  return (
-    <div className="pie-chart-container">
-      <ReactApexChart
-        options={chartOptions}
-        series={series}
-        type="donut"
-        width="100%"
-        height="100%" // Ensure height is fully contained
-      />
-    </div>
-  );
-};
+    return (
+      <div className="pie-chart-container">
+        <ReactApexChart
+          ref={chartRef}
+          options={chartOptions}
+          series={series}
+          type="donut"
+          width="100%"
+          height="100%" // Ensure height is fully contained
+        />
+      </div>
+    );
+  },
+);
 
 export default PieCharts;
