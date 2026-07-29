@@ -186,7 +186,7 @@ const AdjustementDetails = ({ employeeId, isCollapsed }) => {
         <Button
           style={{ marginLeft: "20px" }}
           type="primary"
-          className="button-vendor"
+          className="button-customer"
           onClick={addNewInvoice}
         >
           <PlusOutlined /> Add New Adjustment

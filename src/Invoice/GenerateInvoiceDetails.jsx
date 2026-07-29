@@ -296,8 +296,8 @@ const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {})
       },
       { headerName: "Client", field: "clientName", sortable: true },
       {
-        headerName: "Vendor",
-        field: "vendorName",
+        headerName: "Customer",
+        field: "customerName",
         sortable: true,
         editable: false,
       },

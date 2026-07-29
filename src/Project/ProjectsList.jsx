@@ -161,8 +161,8 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         filter: "agSetColumnFilter",
       },
       {
-        headerName: "Vendor Name",
-        field: "vendorName",
+        headerName: "Customer Name",
+        field: "customerName",
         sortable: isSortable,
         editable: false,
         filter: "agSetColumnFilter",

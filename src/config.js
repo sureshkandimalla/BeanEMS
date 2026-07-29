@@ -130,7 +130,7 @@ export const API_ENDPOINTS = {
   invoiceById: (invoiceId) => `${API_BASE_URL}/invoice/invoices/${invoiceId}`,
   reconcileRecords: `${API_BASE_URL}/reconcile/getReconcileRecords`,
   saveOnBoardDetails: `${API_BASE_URL}/employees/saveOnBoardDetails`,
-  saveOnBoardDetailsVendor: `${API_BASE_URL}/customers/saveOnBoardDetails`,
+  saveOnBoardDetailsCustomer: `${API_BASE_URL}/customers/saveOnBoardDetails`,
   getInvoicesForProject: (projectId) => `${API_BASE_URL}/invoice/getInvoicesForProject?projectId=${projectId}`,
   getInvoicesForEmployee: `${API_BASE_URL}/invoice/getInvoicesForEmployee`,
   addExpense: `${API_BASE_URL}/expense/addExpense`,
@@ -174,6 +174,9 @@ export const API_ENDPOINTS = {
   createPotentialEmployee: `${API_BASE_URL}/visa/potentialEmployees`,
   activeProjects: (endDate, selectedDate) => `${API_BASE_URL}/activeProjects?endDate=${endDate}&selectedDate=${selectedDate}`,
   activeProjectsForInvoiceByEmployee: (employeeId) => `${API_BASE_URL}/activeProjectsForInvoiceByEmployee?employeeId=${employeeId}`,
+  masterDataTemplate: (entityType) => `${API_BASE_URL}/masterdata/template/${entityType}`,
+  masterDataImport: (entityType) => `${API_BASE_URL}/masterdata/import/${entityType}`,
+  importPayrollSummaryCsv: `${API_BASE_URL}/payrollsummary/import`,
 };
 
 export const employeeTypeOptions = [

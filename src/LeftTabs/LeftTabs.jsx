@@ -16,6 +16,7 @@ import {
   DollarOutlined,
   BankOutlined,
   AuditOutlined,
+  CloudUploadOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -34,7 +35,7 @@ const leftTabNames = [
   getItem("Dashboard", "/dashboard", <ProfileOutlined />),
   getItem("Work Force", "/workforce", <UserOutlined />),
   getItem("Employee Onboarding", "/employeeonboard", <UsergroupAddOutlined />),
-  getItem("Vendor", "/vendordetails", <BlockOutlined />),
+  getItem("Customer", "/customerdetails", <BlockOutlined />),
   getItem("Invoice", "/invoicedetails", <FileTextOutlined />),
   getItem("Expenses", "/expensedetails", <DollarOutlined />),
   getItem("Projects", "/projects", <ProjectOutlined />),
@@ -48,6 +49,7 @@ const leftTabNames = [
   getItem("Timesheets", "/timesheets", <ClockCircleOutlined />),
   getItem("Monthly Timesheets", "/monthlytimesheets", <ClockCircleOutlined />),
   getItem("Company Report", "/companyreport", <BankOutlined />),
+  getItem("Master Data Load", "/masterdataload", <CloudUploadOutlined />),
 ];
 const LeftTabs = () => {
   const [collapsed, setCollapsed] = useState(true);

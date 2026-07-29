@@ -42,7 +42,7 @@ const VisaEmployees = () => {
 
   // Fetch the LCA dropdown for the "Add H1-B" modal — same shape as
   // VisaMasterList.jsx/VisaDetailsList.jsx so onLcaChange below can
-  // auto-fill job location/SOC code/wage/client/vendor from the pick.
+  // auto-fill job location/SOC code/wage/client/customer from the pick.
   useEffect(() => {
     axios.get(API_ENDPOINTS.getAllLCAs)
       .then((res) => {
@@ -322,7 +322,7 @@ const VisaEmployees = () => {
             socCode: lca?.socCode ?? null,
             lcaWage: lca?.lcaWage ?? null,
             client: lca?.client ?? null,
-            vendor: lca?.vendor ?? null,
+            customer: lca?.customer ?? null,
             jobTitle: lca?.jobTitle ?? null,
           });
         }}

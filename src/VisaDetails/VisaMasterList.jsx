@@ -141,7 +141,7 @@ const VisaMasterList = () => {
       lcaNumber:       values.lcaNumber     ?? null,
       socCode:         values.socCode       ?? null,
       client:          values.client        ?? null,
-      vendor:          values.vendor        ?? null,
+      customer:          values.customer        ?? null,
       jobLocation:     values.jobLocation   ?? null,
       jobLocation2:    values.jobLocation2  ?? null,
       lcaWage:         values.lcaWage       ?? null,
@@ -167,7 +167,7 @@ const VisaMasterList = () => {
   };
 
   // Inline cell editing — same modifiedRows/Save-Cancel pattern as
-  // ProjectsList.jsx/VendorDetails.jsx/LCADetails.jsx. rowData already
+  // ProjectsList.jsx/CustomerDetails.jsx/LCADetails.jsx. rowData already
   // carries the full Visa object per row, so PUTting the edited row back
   // as-is is safe (VisaService#updateVisa is a partial/null-safe update).
   const onCellValueChanged = (params) => {
@@ -251,7 +251,7 @@ const VisaMasterList = () => {
       valueFormatter: (params) => params.value != null ? formatCurrency(params.value) : "",
     },
     { colId: "client", field: "client", headerName: DETAIL_FIELD_LABELS.client, filter: "agSetColumnFilter", cellClassRules },
-    { colId: "vendor", field: "vendor", headerName: DETAIL_FIELD_LABELS.vendor, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "customer", field: "customer", headerName: DETAIL_FIELD_LABELS.customer, filter: "agSetColumnFilter", cellClassRules },
     { colId: "jobLocation", field: "jobLocation", headerName: DETAIL_FIELD_LABELS.jobLocation, filter: "agSetColumnFilter", cellClassRules },
     { colId: "jobLocation2", field: "jobLocation2", headerName: DETAIL_FIELD_LABELS.jobLocation2, filter: "agSetColumnFilter", cellClassRules, hide: true },
     { colId: "startDate", field: "startDate", headerName: DETAIL_FIELD_LABELS.startDate, filter: "agSetColumnFilter", cellClassRules },
@@ -386,7 +386,7 @@ const VisaMasterList = () => {
           const lca = found?.lca;
           // Selecting an LCA auto-fills every field the visa shares with
           // it — previously only lcaNumber was set, leaving job
-          // location/SOC code/wage/client/vendor blank even though the
+          // location/SOC code/wage/client/customer blank even though the
           // LCA record already has them.
           visaForm.setFieldsValue({
             lcaNumber: lca?.lcaNumber ?? null,
@@ -395,7 +395,7 @@ const VisaMasterList = () => {
             socCode: lca?.socCode ?? null,
             lcaWage: lca?.lcaWage ?? null,
             client: lca?.client ?? null,
-            vendor: lca?.vendor ?? null,
+            customer: lca?.customer ?? null,
             jobTitle: lca?.jobTitle ?? null,
           });
         }}

@@ -91,7 +91,7 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
   };
 
   const getColumnsDefList = (isSortable, isEditable, hasFilter) => {
-    /// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Vendor','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
+    /// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Customer','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
     var columns = [
       { headerName: "Wage Id", field: "wageId" },
       {
@@ -165,7 +165,7 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
           </Drawer>
           <Button
             type="primary"
-            className="button-vendor"
+            className="button-customer"
             onClick={addNewProject}
           >
             <PlusOutlined /> Add New WorkOrder

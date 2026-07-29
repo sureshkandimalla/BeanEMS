@@ -2,6 +2,13 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Deployment
+
+BeanEMS runs in production as: Vercel (frontend) → CloudFront (HTTPS) → Elastic Beanstalk
+(Spring Boot backend) → RDS MySQL, all in AWS `us-east-2`. See
+[DEPLOYMENT.md](./DEPLOYMENT.md) for the full architecture diagram, component details,
+environment variables, and redeploy instructions.
+
 ## Available Scripts
 
 In the project directory, you can run:

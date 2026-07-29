@@ -27,20 +27,20 @@ const ProjectOnBoardingForm = ({ onClose }) => {
   const [form] = Form.useForm();
   const [rowData, setRowData] = useState();
   const [selectedEmployeeId, setSelectedEmployeeId] = useState();
-  const [selectedVendorId, setSelectedVendorId] = useState();
+  const [selectedCustomerId, setSelectedCustomerId] = useState();
   const [employees, setEmployeesData] = useState();
-  const [vendors, setVendorsData] = useState();
+  const [customers, setCustomersData] = useState();
   const [loading, setLoading] = useState(true);
 
-  const fetchEmployeesAndVendors = async () => {
+  const fetchEmployeesAndCustomers = async () => {
     try {
-      const [employeesData, vendorsData] = await Promise.all([
+      const [employeesData, customersData] = await Promise.all([
         fetch(API_ENDPOINTS.getEmployees).then((response) => response.json()),
         fetch(API_ENDPOINTS.getAllCustomers).then((response) => response.json()),
       ]);
 
       setEmployeesData(getFlattenedData(employeesData));
-      setVendorsData(getFlattenedData(vendorsData));
+      setCustomersData(getFlattenedData(customersData));
     } catch (error) {
       console.error("Error fetching data:", error);
       Modal.error({
@@ -54,16 +54,16 @@ const ProjectOnBoardingForm = ({ onClose }) => {
 
   // Call fetchEmployeesAndCustomers when the component mounts
   useEffect(() => {
-    fetchEmployeesAndVendors();
+    fetchEmployeesAndCustomers();
   }, []);
   console.log(employees);
-  console.log(vendors);
+  console.log(customers);
   const handleEmployeeChange = (value) => {
     setSelectedEmployeeId(value);
   };
 
-  const handleVendorChange = (value) => {
-    setSelectedVendorId(value);
+  const handleCustomerChange = (value) => {
+    setSelectedCustomerId(value);
   };
 
   //const history = useHistory();
@@ -74,8 +74,8 @@ const ProjectOnBoardingForm = ({ onClose }) => {
     projectName: "",
     employeeId: null,
     employeeName: "",
-    vendorName: "",
-    vendorId: null,
+    customerName: "",
+    customerId: null,
     clientName: "",
     client: "",
     clientId: null,
@@ -147,8 +147,8 @@ const ProjectOnBoardingForm = ({ onClose }) => {
       projectName: "",
       employeeId: null,
       employeeName: "",
-      vendorName: "",
-      vendorId: null,
+      customerName: "",
+      customerId: null,
       clientName: "",
       client: "",
       clientId: null,
@@ -178,14 +178,14 @@ const ProjectOnBoardingForm = ({ onClose }) => {
   };
 
   const handleSubmit = () => {
-    if (selectedEmployeeId && selectedVendorId) {
+    if (selectedEmployeeId && selectedCustomerId) {
       generalDetails.employeeId = selectedEmployeeId;
-      generalDetails.vendorId = selectedVendorId;
+      generalDetails.customerId = selectedCustomerId;
     }
     // Validate the form data
     if (
-      !generalDetails.vendorId ||
-      !generalDetails.vendorId ||
+      !generalDetails.customerId ||
+      !generalDetails.customerId ||
       !generalDetails.client ||
       !generalDetails.projectName ||
       !generalDetails.status ||
@@ -281,23 +281,23 @@ const ProjectOnBoardingForm = ({ onClose }) => {
             </Col>
             <Col span={8} className="form-row">
               <Form.Item
-                label="Vendor"
-                name="vendorId"
-                rules={[{ required: true, message: "Please select a vendor" }]}
+                label="Customer"
+                name="customerId"
+                rules={[{ required: true, message: "Please select a customer" }]}
               >
                 <Select
                   showSearch
-                  value={selectedVendorId}
-                  onChange={handleVendorChange}
+                  value={selectedCustomerId}
+                  onChange={handleCustomerChange}
                   filterOption={(input, option) =>
                     option?.children
                       ?.toLowerCase()
                       .includes(input.toLowerCase())
                   }
                 >
-                  {vendors.map((vendor) => (
-                    <Option key={vendor.customerId} value={vendor.customerId}>
-                      {vendor.customerCompanyName}
+                  {customers.map((customer) => (
+                    <Option key={customer.customerId} value={customer.customerId}>
+                      {customer.customerCompanyName}
                     </Option>
                   ))}
                 </Select>

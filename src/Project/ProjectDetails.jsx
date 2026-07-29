@@ -136,7 +136,7 @@ const TwoPartPage = () => {
                                                                           {responseData.projectId +' - '+responseData.projectName} </h4></span>
                                                                           <button style={{ float: 'right' ,position: 'responsive', top: '4', right: '0', background: '#ffffff',border: 'none',cursor: 'pointer' }}  onClick={handleClick}>...</button><br />
                                                                           <h4> Employee Name : {responseData.employee.firstName + ' '+responseData.employee.lastName}
-                                                                           Vendor Name : {responseData.customer.customerCompanyName}</h4>
+                                                                           Customer Name : {responseData.customer.customerCompanyName}</h4>
                                                                           <span className="designation-style">{responseData.designation}</span>
                                                                           <span style={{ float: 'right', position: 'responsive',  right: '0', color: 'black', padding: '5px' ,fontSize: '10px'}}> {responseData.employmentType}</span>
                                                                   </div>

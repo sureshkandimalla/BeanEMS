@@ -487,7 +487,7 @@ const MonthlyTimesheets = () => {
             employeeName: a.employeeName,
             projectId: a.projectId,
             projectName: a.projectName,
-            vendorName: a.vendorName,
+            customerName: a.customerName,
             startDate: a.startDate,
             endDate: a.endDate,
             dayStatus: {},
@@ -577,7 +577,7 @@ const MonthlyTimesheets = () => {
               employeeName: a.employeeName,
               projectId: a.projectId,
               projectName: a.projectName,
-              vendorName: a.vendorName,
+              customerName: a.customerName,
               startDate: a.startDate,
               endDate: a.endDate,
               yearMonth,
@@ -897,7 +897,7 @@ const MonthlyTimesheets = () => {
 
     return [
       { headerName: "Employee", field: "employeeName", pinned: "left", minWidth: 160, editable: false },
-      { headerName: "Vendor", field: "vendorName", pinned: "left", minWidth: 160, editable: false },
+      { headerName: "Customer", field: "customerName", pinned: "left", minWidth: 160, editable: false },
       { headerName: "Month", field: "monthLabel", pinned: "left", minWidth: 100, editable: false },
       {
         headerName: "Hours",
@@ -1025,8 +1025,8 @@ const MonthlyTimesheets = () => {
         editable: false,
       },
       {
-        headerName: "Vendor",
-        field: "vendorName",
+        headerName: "Customer",
+        field: "customerName",
         pinned: "left",
         minWidth: 160,
         editable: false,

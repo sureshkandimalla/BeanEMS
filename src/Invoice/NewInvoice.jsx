@@ -10,18 +10,18 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
   const { Option } = Select;
   const [form] = Form.useForm();
   const [selectedEmployeeId, setSelectedEmployeeId] = useState();
-  const [selectedVendorId, setSelectedVendorId] = useState();
+  const [selectedCustomerId, setSelectedCustomerId] = useState();
   const [selectedProjectId, setSelectedProjectId] = useState();
   const [employees, setEmployeesData] = useState([]);
-  const [vendors, setVendorsData] = useState([]);
+  const [customers, setCustomersData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [projects, setProjectsData] = useState([]);
 
   const initialGeneralDetails = {
     employeeId: null,
     employeeName: "",
-    vendorName: "",
-    vendorId: null,
+    customerName: "",
+    customerId: null,
     projectId: null,
     projectName: "",
     startDate: "",
@@ -39,25 +39,25 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
     form.resetFields(); // Reset Ant Design form fields
     setGeneralDetails(initialGeneralDetails); // Reset state
     setSelectedEmployeeId(null); // Clear dropdown selection
-    setSelectedVendorId(null);
+    setSelectedCustomerId(null);
     setSelectedProjectId(null);
   };
 
-  // Fetch employees and vendors
-  const fetchEmployeesAndVendors = async () => {
+  // Fetch employees and customers
+  const fetchEmployeesAndCustomers = async () => {
     try {
-      const [employeesData, vendorsData, projectsData] = await Promise.all([
+      const [employeesData, customersData, projectsData] = await Promise.all([
         fetch(API_ENDPOINTS.getEmployees).then((response) => response.json()),
         fetch(API_ENDPOINTS.getAllCustomers).then((response) => response.json()),
         fetch(API_ENDPOINTS.getProjects).then((response) => response.json()),
       ]);
       setEmployeesData(getFlattenedData(employeesData));
-      setVendorsData(getFlattenedData(vendorsData));
+      setCustomersData(getFlattenedData(customersData));
       setProjectsData(getFlattenedData(projectsData));
     } catch (error) {
       console.error("Error fetching data:", error);
       Modal.error({
-        content: "Error fetching employees or vendors. Please try again later.",
+        content: "Error fetching employees or customers. Please try again later.",
       });
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
 
   useEffect(() => {
     handleAddNew();
-    fetchEmployeesAndVendors();
+    fetchEmployeesAndCustomers();
   }, []);
 
   // Handle form submission
@@ -80,7 +80,7 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
 
     // Validate required fields
     if (
-      !generalDetails.vendorId ||
+      !generalDetails.customerId ||
       !generalDetails.invoiceId ||
       !generalDetails.billRate ||
       !generalDetails.invoiceMonth ||
@@ -95,7 +95,7 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
     // Final guard: Start/End Date must still fall within the currently
     // selected project's own date range. The per-field pickers already
     // reject/clamp out-of-range values as they're entered, but dates set
-    // for a *different* project (before switching Employee/Vendor/Project)
+    // for a *different* project (before switching Employee/Customer/Project)
     // are never automatically revalidated, so this catches anything stale.
     const submittingProject = projects.find(
       (project) => project.projectId === generalDetails.projectId,
@@ -176,7 +176,7 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
     form.resetFields();
     setGeneralDetails(initialGeneralDetails);
     setSelectedEmployeeId(null);
-    setSelectedVendorId(null);
+    setSelectedCustomerId(null);
     setSelectedProjectId(null);
   };
 
@@ -212,18 +212,18 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
     return new Date(year, month - 1, day);
   };
 
-  // Projects/vendors tied to the currently selected employee — falls back to
+  // Projects/customers tied to the currently selected employee — falls back to
   // the full lists when no employee is selected yet.
   const projectsForEmployee = useMemo(() => {
     if (!selectedEmployeeId) return projects;
     return projects.filter((project) => project.employeeId === selectedEmployeeId);
   }, [projects, selectedEmployeeId]);
 
-  const vendorsForEmployee = useMemo(() => {
-    if (!selectedEmployeeId) return vendors;
-    const vendorIds = new Set(projectsForEmployee.map((project) => project.vendorId));
-    return vendors.filter((vendor) => vendorIds.has(vendor.customerId));
-  }, [vendors, projectsForEmployee, selectedEmployeeId]);
+  const customersForEmployee = useMemo(() => {
+    if (!selectedEmployeeId) return customers;
+    const customerIds = new Set(projectsForEmployee.map((project) => project.customerId));
+    return customers.filter((customer) => customerIds.has(customer.customerId));
+  }, [customers, projectsForEmployee, selectedEmployeeId]);
 
   // When more than one project matches a selection, default to the most
   // recently started one (user can still switch via the Project dropdown,
@@ -237,12 +237,12 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
     })[0];
   };
 
-  // Fill employee/vendor/project/billRate fields from a resolved project record.
+  // Fill employee/customer/project/billRate fields from a resolved project record.
   const applyProjectSelection = (project) => {
     const employeeId = project?.employeeId ?? null;
     const employeeName = project?.employeeName ?? "";
-    const vendorId = project?.vendorId ?? null;
-    const vendorName = project?.vendorName ?? "";
+    const customerId = project?.customerId ?? null;
+    const customerName = project?.customerName ?? "";
     const projectId = project?.projectId ?? null;
     const projectName = project?.projectName ?? "";
     const billRate = project?.billRate ?? 0;
@@ -252,20 +252,20 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
       project?.invoiceTerm != null ? Number(project.invoiceTerm) : null;
 
     setSelectedEmployeeId(employeeId);
-    setSelectedVendorId(vendorId);
+    setSelectedCustomerId(customerId);
     setSelectedProjectId(projectId);
-    form.setFieldsValue({ employeeId, vendorId, projectId, billRate, invoiceTerm });
+    form.setFieldsValue({ employeeId, customerId, projectId, billRate, invoiceTerm });
     handleGeneralData(employeeId, "employeeId");
     handleGeneralData(employeeName, "employeeName");
-    handleGeneralData(vendorId, "vendorId");
-    handleGeneralData(vendorName, "vendorName");
+    handleGeneralData(customerId, "customerId");
+    handleGeneralData(customerName, "customerName");
     handleGeneralData(projectId, "projectId");
     handleGeneralData(projectName, "projectName");
     handleGeneralData(billRate, "billRate");
     handleGeneralData(invoiceTerm, "invoiceTerm");
 
     // A Start/End Date already picked for a *different* project may not
-    // fall within this one's own date range (switching Employee/Vendor/
+    // fall within this one's own date range (switching Employee/Customer/
     // Project never used to revalidate them, letting a stale, now-invalid
     // date slip through all the way to submit). Clamp back into range
     // rather than leaving them stale.
@@ -313,7 +313,7 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
     );
 
     // If this employee has one or more projects, auto-fill the latest one
-    // (and its vendor/bill rate) — the Project dropdown still lets the user
+    // (and its customer/bill rate) — the Project dropdown still lets the user
     // switch to any other project belonging to this employee.
     const matchingProjects = projects.filter(
       (project) => project.employeeId === value,
@@ -323,12 +323,12 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
       return;
     }
 
-    // Otherwise, a previously selected vendor/project (and its bill rate) may not apply to the new employee.
-    setSelectedVendorId(null);
+    // Otherwise, a previously selected customer/project (and its bill rate) may not apply to the new employee.
+    setSelectedCustomerId(null);
     setSelectedProjectId(null);
-    form.setFieldsValue({ vendorId: null, projectId: null, billRate: 0, invoiceTerm: null });
-    handleGeneralData(null, "vendorId");
-    handleGeneralData("", "vendorName");
+    form.setFieldsValue({ customerId: null, projectId: null, billRate: 0, invoiceTerm: null });
+    handleGeneralData(null, "customerId");
+    handleGeneralData("", "customerName");
     handleGeneralData(null, "projectId");
     handleGeneralData("", "projectName");
     handleGeneralData(0, "billRate");
@@ -338,7 +338,7 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
   // When opened from a context that already knows the employee (e.g. the
   // Employee Full Details "INVOICES" tab), pre-select them by default —
   // same cascade as picking them from the dropdown (auto-fills their latest
-  // project/vendor/bill rate), but the dropdown still lets the user switch.
+  // project/customer/bill rate), but the dropdown still lets the user switch.
   // Re-runs on every reopen (`open` in the deps) since the Drawer doesn't
   // unmount this form on close — after a successful submit, handleClear()
   // resets selectedEmployeeId to null, so without `open` as a dependency
@@ -358,20 +358,20 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
     applyProjectSelection(selectedProject);
   };
 
-  const handleVendorChange = (value) => {
-    const selectedVendor = vendors.find(
-      (vendor) => vendor.customerId === value,
+  const handleCustomerChange = (value) => {
+    const selectedCustomer = customers.find(
+      (customer) => customer.customerId === value,
     );
-    setSelectedVendorId(value);
-    handleGeneralData(value, "vendorId");
-    handleGeneralData(selectedVendor?.customerCompanyName || "", "vendorName");
+    setSelectedCustomerId(value);
+    handleGeneralData(value, "customerId");
+    handleGeneralData(selectedCustomer?.customerCompanyName || "", "customerName");
 
-    // If this vendor (scoped to the current employee, if any) has one or more
+    // If this customer (scoped to the current employee, if any) has one or more
     // matching projects, auto-fill the latest one (and its employee/bill rate)
     // — the Project dropdown still lets the user switch to any other match.
     const matchingProjects = projects.filter(
       (project) =>
-        project.vendorId === value &&
+        project.customerId === value &&
         (!selectedEmployeeId || project.employeeId === selectedEmployeeId),
     );
     if (matchingProjects.length > 0) {
@@ -439,21 +439,21 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
 
           <Col span={12}>
             <Form.Item
-              label="Vendor"
-              name="vendorId"
-              rules={[{ required: true, message: "Please select a vendor" }]}
+              label="Customer"
+              name="customerId"
+              rules={[{ required: true, message: "Please select a customer" }]}
             >
               <Select
                 showSearch
-                value={selectedVendorId}
-                onChange={handleVendorChange}
+                value={selectedCustomerId}
+                onChange={handleCustomerChange}
                 filterOption={(input, option) =>
                   option?.children?.toLowerCase().includes(input.toLowerCase())
                 }
               >
-                {vendorsForEmployee.map((vendor) => (
-                  <Option key={vendor.customerId} value={vendor.customerId}>
-                    {vendor.customerCompanyName}
+                {customersForEmployee.map((customer) => (
+                  <Option key={customer.customerId} value={customer.customerId}>
+                    {customer.customerCompanyName}
                   </Option>
                 ))}
               </Select>

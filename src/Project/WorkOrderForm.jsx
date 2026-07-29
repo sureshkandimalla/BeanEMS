@@ -29,8 +29,8 @@ const WorkOrderForm = ({ onClose }) => {
     wageId: null,
     wageType: "",
     projectId: projectId,
-    // vendorName: "",
-    // vendorId: null,
+    // customerName: "",
+    // customerId: null,
     // clientName: "",
     // clientId: null,
     startDate: "",
@@ -46,7 +46,7 @@ const WorkOrderForm = ({ onClose }) => {
   };
 
   const handleSubmit = () => {
-    // Add selected employee and vendor IDs to generalDetails
+    // Add selected employee and customer IDs to generalDetails
     const updatedDetails = {
       ...generalDetails,
     };
@@ -100,8 +100,8 @@ const WorkOrderForm = ({ onClose }) => {
       wageId: null,
       projectId: projectId,
       wageType: "",
-      // vendorName: "",
-      // vendorId: null,
+      // customerName: "",
+      // customerId: null,
       // clientName: "",
       // clientId: null,
       startDate: "",
@@ -147,11 +147,11 @@ const WorkOrderForm = ({ onClose }) => {
             </Col> */}
 
             {/* <Col span={8} className='form-row'>
-              <Form.Item label="Vendor" name="vendorId">
-                <Select value={selectedVendorId} onChange={handleVendorChange}>
-                  {vendors.map((vendor) => (
-                    <Option key={vendor.customerId} value={vendor.customerId}>
-                      {vendor.customerCompanyName}
+              <Form.Item label="Customer" name="customerId">
+                <Select value={selectedCustomerId} onChange={handleCustomerChange}>
+                  {customers.map((customer) => (
+                    <Option key={customer.customerId} value={customer.customerId}>
+                      {customer.customerCompanyName}
                     </Option>
                   ))}
                 </Select>

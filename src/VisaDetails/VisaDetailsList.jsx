@@ -88,7 +88,7 @@ export default function VisaDetailsList({ preloadedData }) {
       lcaNumber:       v.lcaNumber       ?? v.lca?.lcaNumber     ?? null,
       socCode:         v.socCode         ?? v.lca?.socCode       ?? null,
       client:          v.client          ?? v.lca?.client        ?? null,
-      vendor:          v.vendor          ?? v.lca?.vendor        ?? null,
+      customer:          v.customer          ?? v.lca?.customer        ?? null,
       jobLocation:     v.jobLocation     ?? v.lca?.jobLocation   ?? null,
       jobLocation2:    v.jobLocation2    ?? v.lca?.jobLocation2  ?? null,
       lcaWage:         v.lcaWage         ?? v.lca?.lcaWage       ?? null,
@@ -154,7 +154,7 @@ export default function VisaDetailsList({ preloadedData }) {
       lcaNumber:     values.lcaNumber     ?? null,
       socCode:       values.socCode       ?? null,
       client:        values.client        ?? null,
-      vendor:        values.vendor        ?? null,
+      customer:        values.customer        ?? null,
       jobLocation:   values.jobLocation   ?? null,
       jobLocation2:  values.jobLocation2  ?? null,
       lcaWage:       values.lcaWage       ?? null,
@@ -271,7 +271,7 @@ export default function VisaDetailsList({ preloadedData }) {
           lcaNumber:       row.lcaNumber       ?? null,
           socCode:         row.socCode         ?? null,
           client:          row.client          ?? null,
-          vendor:          row.vendor          ?? null,
+          customer:          row.customer          ?? null,
           jobLocation:     row.jobLocation     ?? null,
           jobLocation2:    row.jobLocation2    ?? null,
           lcaWage:         row.lcaWage         ?? null,
@@ -636,7 +636,7 @@ export default function VisaDetailsList({ preloadedData }) {
         { field: "lcaWage",       headerName: DETAIL_FIELD_LABELS.lcaWage,       filter: "agSetColumnFilter", editable: true,  cellClassRules,
           valueFormatter: (params) => params.value != null && params.value !== "" ? `$${Number(params.value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "" },
         { field: "client",       headerName: DETAIL_FIELD_LABELS.client,       filter: "agSetColumnFilter", editable: true, cellClassRules },
-        { field: "vendor",       headerName: DETAIL_FIELD_LABELS.vendor,       filter: "agSetColumnFilter", editable: true, cellClassRules },
+        { field: "customer",       headerName: DETAIL_FIELD_LABELS.customer,       filter: "agSetColumnFilter", editable: true, cellClassRules },
         { field: "jobLocation",  headerName: DETAIL_FIELD_LABELS.jobLocation,  filter: "agSetColumnFilter", editable: true, cellClassRules },
         { field: "jobLocation2", headerName: DETAIL_FIELD_LABELS.jobLocation2, filter: "agSetColumnFilter", editable: true, cellClassRules },
         { field: "status",       headerName: DETAIL_FIELD_LABELS.status,       filter: "agSetColumnFilter", editable: true, cellClassRules, cellStyle: statusCellStyle,
@@ -704,7 +704,7 @@ export default function VisaDetailsList({ preloadedData }) {
         lcaCaseNumber: v.lca?.lcaCaseNumber    ?? "",   // ← nested in lca sub-object
         socCode:       v.socCode               ?? v.lca?.socCode       ?? "",
         client:        v.client                ?? v.lca?.client        ?? "",
-        vendor:        v.vendor                ?? v.lca?.vendor        ?? "",
+        customer:        v.customer                ?? v.lca?.customer        ?? "",
         jobLocation:   v.jobLocation           ?? v.lca?.jobLocation   ?? "",
         jobLocation2:  v.jobLocation2          ?? v.lca?.jobLocation2  ?? "",
         lcaWage:       v.lcaWage               ?? v.lca?.lcaWage       ?? "",
@@ -846,7 +846,7 @@ export default function VisaDetailsList({ preloadedData }) {
           const lca = found?.lca;
           // Selecting an LCA auto-fills every field the visa shares with
           // it — previously only lcaNumber was set, leaving job
-          // location/SOC code/wage/client/vendor blank even though the
+          // location/SOC code/wage/client/customer blank even though the
           // LCA record already has them.
           visaForm.setFieldsValue({
             lcaNumber: lca?.lcaNumber ?? null,
@@ -855,7 +855,7 @@ export default function VisaDetailsList({ preloadedData }) {
             socCode: lca?.socCode ?? null,
             lcaWage: lca?.lcaWage ?? null,
             client: lca?.client ?? null,
-            vendor: lca?.vendor ?? null,
+            customer: lca?.customer ?? null,
             jobTitle: lca?.jobTitle ?? null,
           });
         }}

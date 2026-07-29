@@ -251,7 +251,7 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
               <Button
                 style={{ marginLeft: "20px" }}
                 type="primary"
-                className="button-vendor"
+                className="button-customer"
                 onClick={addNewExpense}
               >
                 <PlusOutlined /> Add New Expense

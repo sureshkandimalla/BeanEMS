@@ -13,7 +13,7 @@ import {
   Space,
   Modal,
 } from "antd";
-import "./Vendor.css";
+import "./Customer.css";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
 import { useNavigate } from "react-router-dom";
@@ -35,12 +35,12 @@ const usCountryTelList = [
     label: "IN",
   },
 ];
-const NewVendor = () => {
+const NewCustomer = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [generalDetails, setGeneralDetails] = useState({
-    vendorName: "",
-    vendorCompanyName: "",
+    customerName: "",
+    customerCompanyName: "",
     ein: "",
     phone: "",
     phoneCountry: "USA",
@@ -55,7 +55,7 @@ const NewVendor = () => {
     zipCode: "",
     country: "USA",
   });
-  // Vendor Company Name auto-fills from Vendor Name until the user directly
+  // Customer Company Name auto-fills from Customer Name until the user directly
   // edits Company Name themselves — then it stops following.
   const companyNameEditedRef = useRef(false);
 
@@ -63,8 +63,8 @@ const NewVendor = () => {
     console.log("generalDetails: " + generalDetails);
     // Validate the form data
     if (
-      !generalDetails.vendorName ||
-      !generalDetails.vendorCompanyName ||
+      !generalDetails.customerName ||
+      !generalDetails.customerCompanyName ||
       !generalDetails.ein ||
       !generalDetails.phone ||
       !generalDetails.emailId
@@ -77,7 +77,7 @@ const NewVendor = () => {
   const handleFormSubmit = (generalDetails) => {
     axios
       .post(
-        API_ENDPOINTS.saveOnBoardDetailsVendor,
+        API_ENDPOINTS.saveOnBoardDetailsCustomer,
         generalDetails,
       )
       .then((response) => {
@@ -130,49 +130,49 @@ const NewVendor = () => {
         <Row gutter={25}>
           <Col span={12}>
             <Form.Item
-              label="Vendor Name"
-              name="vendorName"
+              label="Customer Name"
+              name="customerName"
               rules={[
                 {
                   required: true,
-                  message: "Please Enter Vendor Name",
+                  message: "Please Enter Customer Name",
                 },
               ]}
             >
               <Input
-                placeholder="Vendor Name"
+                placeholder="Customer Name"
                 onChange={(e) => {
                   const value = e.target.value;
-                  handleGeneralData(value, "vendorName");
-                  // Auto-fill Company Name from Vendor Name until the user
+                  handleGeneralData(value, "customerName");
+                  // Auto-fill Company Name from Customer Name until the user
                   // edits Company Name directly themselves.
                   if (!companyNameEditedRef.current) {
-                    handleGeneralData(value, "vendorCompanyName");
-                    form.setFieldsValue({ vendorCompanyName: value });
+                    handleGeneralData(value, "customerCompanyName");
+                    form.setFieldsValue({ customerCompanyName: value });
                   }
                 }}
-                value={generalDetails.vendorName}
+                value={generalDetails.customerName}
               />
             </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item
-              label="Vendor Company Name"
-              name="vendorCompanyName"
+              label="Customer Company Name"
+              name="customerCompanyName"
               rules={[
                 {
                   required: true,
-                  message: "Please Enter vendor Company Name",
+                  message: "Please Enter Customer Company Name",
                 },
               ]}
             >
               <Input
-                placeholder="Vendor Company Name"
+                placeholder="Customer Company Name"
                 onChange={(e) => {
                   companyNameEditedRef.current = true;
-                  handleGeneralData(e.target.value, "vendorCompanyName");
+                  handleGeneralData(e.target.value, "customerCompanyName");
                 }}
-                value={generalDetails.vendorCompanyName}
+                value={generalDetails.customerCompanyName}
               />
             </Form.Item>
           </Col>
@@ -393,4 +393,4 @@ const NewVendor = () => {
     </>
   );
 };
-export default NewVendor;
+export default NewCustomer;

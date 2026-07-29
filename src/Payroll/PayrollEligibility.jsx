@@ -108,7 +108,7 @@ const PayrollEligibility = () => {
             employeeType: a.employeeType,
             taxTerm: a.taxTerm,
             projectName: a.projectName,
-            vendorName: a.vendorName,
+            customerName: a.customerName,
             assignmentStartDate: a.startDate,
             assignmentEndDate: a.endDate,
             wage: a.wage,
@@ -154,7 +154,7 @@ const PayrollEligibility = () => {
       { headerName: "Employee", field: "employeeName", sortable: true, minWidth: 180, enableRowGroup: true },
       { headerName: "Employee Type", field: "employeeType", sortable: true, enableRowGroup: true },
       { headerName: "Tax Term", field: "taxTerm", sortable: true, enableRowGroup: true },
-      { headerName: "Vendor", field: "vendorName", sortable: true, minWidth: 160, enableRowGroup: true },
+      { headerName: "Customer", field: "customerName", sortable: true, minWidth: 160, enableRowGroup: true },
       {
         headerName: "Bill Rate",
         field: "wage",

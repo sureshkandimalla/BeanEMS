@@ -54,7 +54,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
     }
   }, []);
 
-  // Projects carry their own employeeName/projectName/vendorName — used to
+  // Projects carry their own employeeName/projectName/customerName — used to
   // look up those display columns for each invoice by its projectId.
   useEffect(() => {
     fetch(API_ENDPOINTS.getProjects)
@@ -186,7 +186,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
         ...row,
         employeeName: project?.employeeName || "",
         projectName: project?.projectName || "",
-        vendorName: project?.vendorName || "",
+        customerName: project?.customerName || "",
       };
     });
     let scoped = enriched;
@@ -213,7 +213,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
 
   // Page-level "Invoice Overview" (only rendered when not scoped to a
   // single employee/project): a monthly Invoiced-vs-Paid bar chart, plus a
-  // pie chart of total invoiced amount by vendor — same pattern as the
+  // pie chart of total invoiced amount by customer — same pattern as the
   // Projects Overview panel on /projects.
   const monthlyInvoiceChart = useMemo(() => {
     if (!enrichedRowData || enrichedRowData.length === 0) return { categories: [], invoiced: [], paid: [] };
@@ -293,40 +293,40 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
     };
   }, [enrichedRowData]);
 
-  const byVendorTotals = useMemo(() => {
-    const byVendor = {};
+  const byCustomerTotals = useMemo(() => {
+    const byCustomer = {};
     (enrichedRowData || []).forEach((inv) => {
-      const vendor = inv.vendorName || "Unknown";
-      if (!byVendor[vendor]) byVendor[vendor] = { invoiced: 0, paid: 0 };
-      byVendor[vendor].invoiced += inv.total || 0;
-      byVendor[vendor].paid += inv.invoicePaidAmount || 0;
+      const customer = inv.customerName || "Unknown";
+      if (!byCustomer[customer]) byCustomer[customer] = { invoiced: 0, paid: 0 };
+      byCustomer[customer].invoiced += inv.total || 0;
+      byCustomer[customer].paid += inv.invoicePaidAmount || 0;
     });
-    return byVendor;
+    return byCustomer;
   }, [enrichedRowData]);
 
-  const vendorInvoiceSlices = useMemo(() => {
-    const vendors = Object.keys(byVendorTotals);
-    const colors = getPieColors(vendors.length);
-    return vendors.map((vendor, i) => ({ label: vendor, value: byVendorTotals[vendor].invoiced, color: colors[i] }));
-  }, [byVendorTotals]);
+  const customerInvoiceSlices = useMemo(() => {
+    const customers = Object.keys(byCustomerTotals);
+    const colors = getPieColors(customers.length);
+    return customers.map((customer, i) => ({ label: customer, value: byCustomerTotals[customer].invoiced, color: colors[i] }));
+  }, [byCustomerTotals]);
 
-  // Same vendor totals, reshaped for a grouped Invoiced-vs-Paid bar chart —
-  // sorted by amount still due (invoiced minus paid) so vendors owing the
+  // Same customer totals, reshaped for a grouped Invoiced-vs-Paid bar chart —
+  // sorted by amount still due (invoiced minus paid) so customers owing the
   // most show up first.
-  const vendorBarChart = useMemo(() => {
+  const customerBarChart = useMemo(() => {
     // Ascending, not descending — the chart auto-scrolls to the right edge
-    // on load, so the vendor owing the most should be last (rightmost),
+    // on load, so the customer owing the most should be last (rightmost),
     // not first (off-screen to the left).
-    const due = (v) => byVendorTotals[v].invoiced - byVendorTotals[v].paid;
-    const vendors = Object.keys(byVendorTotals).sort((a, b) => due(a) - due(b));
+    const due = (v) => byCustomerTotals[v].invoiced - byCustomerTotals[v].paid;
+    const customers = Object.keys(byCustomerTotals).sort((a, b) => due(a) - due(b));
     return {
-      categories: vendors,
-      invoiced: vendors.map((v) => Math.round(byVendorTotals[v].invoiced)),
-      paid: vendors.map((v) => Math.round(byVendorTotals[v].paid)),
+      categories: customers,
+      invoiced: customers.map((v) => Math.round(byCustomerTotals[v].invoiced)),
+      paid: customers.map((v) => Math.round(byCustomerTotals[v].paid)),
     };
-  }, [byVendorTotals]);
+  }, [byCustomerTotals]);
 
-  const totalInvoicedAllVendors = vendorInvoiceSlices.reduce((sum, s) => sum + s.value, 0);
+  const totalInvoicedAllCustomers = customerInvoiceSlices.reduce((sum, s) => sum + s.value, 0);
 
   // Chart definitions for the Invoice Overview panel — ChartOverviewPanel
   // handles show/hide, drag-to-reorder, drag-to-resize, and PNG download
@@ -352,26 +352,26 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       ),
     },
     {
-      key: "vendorPie",
-      label: "Total Invoiced (by Vendor)",
-      title: `Total Invoiced: ${formatCurrency(totalInvoicedAllVendors)}`,
-      filename: "total-invoiced-by-vendor",
+      key: "customerPie",
+      label: "Total Invoiced (by Customer)",
+      title: `Total Invoiced: ${formatCurrency(totalInvoicedAllCustomers)}`,
+      filename: "total-invoiced-by-customer",
       defaultSize: { width: 500, height: 340 },
       render: (innerHeight, setChartRef) =>
-        vendorInvoiceSlices.length > 0 ? (
+        customerInvoiceSlices.length > 0 ? (
           <Row align="middle">
             <Col span={14}>
               <div style={{ width: "100%", height: innerHeight }}>
                 <PieCharts
                   ref={setChartRef}
-                  chartData={vendorInvoiceSlices.map((s) => Math.round(s.value))}
-                  chartLabels={vendorInvoiceSlices.map((s) => s.label)}
+                  chartData={customerInvoiceSlices.map((s) => Math.round(s.value))}
+                  chartLabels={customerInvoiceSlices.map((s) => s.label)}
                   showLegend={false}
                 />
               </div>
             </Col>
             <Col span={10} style={{ maxHeight: innerHeight, overflowY: "auto" }}>
-              <PieLegend slices={vendorInvoiceSlices} valueFormatter={formatCurrency} />
+              <PieLegend slices={customerInvoiceSlices} valueFormatter={formatCurrency} />
             </Col>
           </Row>
         ) : (
@@ -394,16 +394,16 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       ),
     },
     {
-      key: "vendorBar",
-      label: "Invoices by Vendor",
-      filename: "invoices-by-vendor",
+      key: "customerBar",
+      label: "Invoices by Customer",
+      filename: "invoices-by-customer",
       defaultSize: { width: 800, height: 340 },
       render: (innerHeight, setChartRef) => (
         <RevenueCharts
           ref={setChartRef}
-          thisMonthData={vendorBarChart.invoiced}
-          lastMonthData={vendorBarChart.paid}
-          categories={vendorBarChart.categories}
+          thisMonthData={customerBarChart.invoiced}
+          lastMonthData={customerBarChart.paid}
+          categories={customerBarChart.categories}
           series1Name="Invoiced"
           series2Name="Paid"
           xaxisLabelRotate={0}
@@ -527,7 +527,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
         },
       },
       { headerName: "Employee Name", field: "employeeName", sortable: isSortable, enableRowGroup: true },
-      { headerName: "Vendor Name", field: "vendorName", sortable: isSortable, enableRowGroup: true },
+      { headerName: "Customer Name", field: "customerName", sortable: isSortable, enableRowGroup: true },
       {
         headerName: "Year",
         field: "invoiceMonth",
@@ -812,7 +812,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
           <Button
             style={{ marginLeft: "20px" }}
             type="primary"
-            className="button-vendor"
+            className="button-customer"
             onClick={addNewInvoice}
           >
             <PlusOutlined /> Add New Invoice
@@ -832,7 +832,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
           <Button
             type="primary"
             style={{ marginLeft: "10px" }}
-            className="button-vendor"
+            className="button-customer"
             // Scoped to an employee (e.g. the employeeFullDetails Invoices
             // tab), generateInvoice() doesn't need a month — it's only
             // required for the generic/bulk (no employeeId) path below.

@@ -25,7 +25,7 @@ export const VISA_FIELD_LABELS = {
   socCode:         "SOC Code",
   lcaWage:         "LCA Wage",
   client:          "Client",
-  vendor:          "Vendor",
+  customer:          "Customer",
   jobLocation:     "Job Location",
   jobLocation2:    "Job Location 2",
   startDate:       "Start Date",
@@ -44,7 +44,7 @@ export const LCA_FIELD_LABELS = {
   lcaWage:                "LCA Wage",
   status:                 "Status",
   client:                 "Client",
-  vendor:                 "Vendor",
+  customer:                 "Customer",
   jobLocation:            "Job Location",
   jobLocation2:           "Job Location 2",
   noticePostedLocation:   "Notice Posted Location",
@@ -112,7 +112,7 @@ export const DETAIL_FIELD_LABELS = {
   socCode:         "SOC Code",
   lcaWage:         "LCA Wage",
   client:          "Client",
-  vendor:          "Vendor",
+  customer:          "Customer",
   jobLocation:     "Job Location",
   jobLocation2:    "Job Location 2",
   status:          "Status",
@@ -175,7 +175,7 @@ export const LCA_STATUS_OPTIONS = [
 // ─────────────────────────────────────────────
 
 export const LCA_EDITABLE_FIELDS = [
-  "lcaCaseNumber", "socCode", "lcaWage", "client", "vendor",
+  "lcaCaseNumber", "socCode", "lcaWage", "client", "customer",
   "jobLocation", "jobLocation2", "jobTitle",
 ];
 

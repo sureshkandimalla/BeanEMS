@@ -22,7 +22,7 @@ Purpose: grid of auto-generated, per-period invoice-candidate rows for a project
 
 ## 3. Invoice Month column & grouping
 
-- **R3.1** An "Invoice Month" column is shown (before Client/Vendor), sourced from `invoiceMonth` (the row's original period-start date), formatted via `formatMonthYear` (e.g. "March 2025").
+- **R3.1** An "Invoice Month" column is shown (before Client/Customer), sourced from `invoiceMonth` (the row's original period-start date), formatted via `formatMonthYear` (e.g. "March 2025").
 - **R3.2** The column has `enableRowGroup: true`, and the grid's row-group drop panel is always visible (`rowGroupPanelShow="always"`) — a "Drag here to set row groups" bar sits above the header row. Dragging the Invoice Month column there groups all rows by month; this is opt-in (not grouped by default).
 - **R3.3** The Columns side-panel also exposes row-group toggling (`suppressRowGroups: false`) as an alternate way to group, in addition to drag-and-drop.
 

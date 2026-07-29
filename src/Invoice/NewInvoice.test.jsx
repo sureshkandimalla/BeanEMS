@@ -45,7 +45,7 @@ beforeAll(() => {
 });
 
 // ---- Fixtures -------------------------------------------------------------
-// Employee One  -> exactly one project (Project A / Vendor A)
+// Employee One  -> exactly one project (Project A / Customer A)
 // Employee Two  -> two projects (Project B older, Project C newer) -> latest = C
 // Employee Three -> zero projects
 // Employee Four -> one project (Project D) with a bounded start/end date
@@ -53,7 +53,7 @@ beforeAll(() => {
 // Employee Five -> one project (Project F) that starts *mid-month*, used
 //                  for the "same month as project start, after the 1st"
 //                  Invoice Month exception.
-// Vendor D      -> zero projects (never referenced by any project fixture)
+// Customer D      -> zero projects (never referenced by any project fixture)
 const employees = [
   { employeeId: 1, name: "Employee One", status: "Active" },
   { employeeId: 2, name: "Employee Two", status: "Active" },
@@ -62,13 +62,13 @@ const employees = [
   { employeeId: 5, name: "Employee Five", status: "Active" },
 ];
 
-const vendors = [
-  { customerId: 10, customerCompanyName: "Vendor A" },
-  { customerId: 20, customerCompanyName: "Vendor B" },
-  { customerId: 30, customerCompanyName: "Vendor C" },
-  { customerId: 40, customerCompanyName: "Vendor D" },
-  { customerId: 50, customerCompanyName: "Vendor E" },
-  { customerId: 60, customerCompanyName: "Vendor F" },
+const customers = [
+  { customerId: 10, customerCompanyName: "Customer A" },
+  { customerId: 20, customerCompanyName: "Customer B" },
+  { customerId: 30, customerCompanyName: "Customer C" },
+  { customerId: 40, customerCompanyName: "Customer D" },
+  { customerId: 50, customerCompanyName: "Customer E" },
+  { customerId: 60, customerCompanyName: "Customer F" },
 ];
 
 const projects = [
@@ -77,8 +77,8 @@ const projects = [
     projectName: "Project A",
     employeeId: 1,
     employeeName: "Employee One",
-    vendorId: 10,
-    vendorName: "Vendor A",
+    customerId: 10,
+    customerName: "Customer A",
     billRate: 50,
     invoiceTerm: "3", // Monthly -> 30 days, per Utils/invoiceTerm.js
     startDate: "2024-01-01",
@@ -88,8 +88,8 @@ const projects = [
     projectName: "Project B",
     employeeId: 2,
     employeeName: "Employee Two",
-    vendorId: 20,
-    vendorName: "Vendor B",
+    customerId: 20,
+    customerName: "Customer B",
     billRate: 60,
     startDate: "2023-01-01",
   },
@@ -98,8 +98,8 @@ const projects = [
     projectName: "Project C",
     employeeId: 2,
     employeeName: "Employee Two",
-    vendorId: 30,
-    vendorName: "Vendor C",
+    customerId: 30,
+    customerName: "Customer C",
     billRate: 70,
     startDate: "2024-06-01",
   },
@@ -108,8 +108,8 @@ const projects = [
     projectName: "Project D",
     employeeId: 4,
     employeeName: "Employee Four",
-    vendorId: 50,
-    vendorName: "Vendor E",
+    customerId: 50,
+    customerName: "Customer E",
     billRate: 40,
     invoiceTerm: "1", // Weekly -> 7 days
     startDate: "2026-06-01",
@@ -120,8 +120,8 @@ const projects = [
     projectName: "Project F",
     employeeId: 5,
     employeeName: "Employee Five",
-    vendorId: 60,
-    vendorName: "Vendor F",
+    customerId: 60,
+    customerName: "Customer F",
     billRate: 45,
     invoiceTerm: "1", // Weekly -> 7 days
     startDate: "2026-06-15", // starts mid-month
@@ -134,8 +134,8 @@ const projects = [
     projectName: "Project G",
     employeeId: 4,
     employeeName: "Employee Four",
-    vendorId: 50,
-    vendorName: "Vendor E",
+    customerId: 50,
+    customerName: "Customer E",
     billRate: 35,
     invoiceTerm: "1", // Weekly -> 7 days
     startDate: "2026-01-01",
@@ -152,7 +152,7 @@ const jsonResponse = (data, status = 200) =>
 
 const buildFetchMock = ({
   failEmployees = false,
-  failVendors = false,
+  failCustomers = false,
   failProjects = false,
   submitStatus = 201,
 } = {}) =>
@@ -163,9 +163,9 @@ const buildFetchMock = ({
         : jsonResponse(employees);
     }
     if (url === API_ENDPOINTS.getAllCustomers) {
-      return failVendors
+      return failCustomers
         ? Promise.reject(new Error("network error"))
-        : jsonResponse(vendors);
+        : jsonResponse(customers);
     }
     if (url === API_ENDPOINTS.getProjects) {
       return failProjects
@@ -272,7 +272,7 @@ const getLastCallBody = (fetchMock, url) => {
 };
 
 describe("NewInvoice — R1 Data loading", () => {
-  it("R1.1 shows a spinner then the form once employees/vendors/projects load", async () => {
+  it("R1.1 shows a spinner then the form once employees/customers/projects load", async () => {
     global.fetch = buildFetchMock();
     render(<NewInvoice onClose={jest.fn()} />);
     expect(document.querySelector(".ant-spin")).toBeInTheDocument();
@@ -289,7 +289,7 @@ describe("NewInvoice — R1 Data loading", () => {
     render(<NewInvoice onClose={jest.fn()} />);
 
     await screen.findByText(
-      "Error fetching employees or vendors. Please try again later.",
+      "Error fetching employees or customers. Please try again later.",
     );
     expect(document.querySelector(".ant-spin")).not.toBeInTheDocument();
   });
@@ -303,18 +303,18 @@ describe("NewInvoice — R1 Data loading", () => {
     expect(screen.getByPlaceholderText("Bill Amount")).toHaveValue(null);
     expect(screen.getByPlaceholderText("Hours")).toHaveValue("");
     expect(getSelectedLabel("Employee")).toBeUndefined();
-    expect(getSelectedLabel("Vendor")).toBeUndefined();
+    expect(getSelectedLabel("Customer")).toBeUndefined();
     expect(getSelectedLabel("Project")).toBeUndefined();
   });
 });
 
 describe("NewInvoice — R2 Employee selection", () => {
-  it("R2.1/R2.2 auto-fills the single project, its vendor, and bill rate for an employee with one project", async () => {
+  it("R2.1/R2.2 auto-fills the single project, its customer, and bill rate for an employee with one project", async () => {
     await renderForm();
     await selectDropdownOption("Employee", "Employee One");
 
     await waitFor(() => expect(getSelectedLabel("Project")).toBe("Project A"));
-    expect(getSelectedLabel("Vendor")).toBe("Vendor A");
+    expect(getSelectedLabel("Customer")).toBe("Customer A");
     expect(screen.getByPlaceholderText("Bill Amount")).toHaveValue(50);
   });
 
@@ -324,16 +324,16 @@ describe("NewInvoice — R2 Employee selection", () => {
 
     // Project C (2024-06-01) is newer than Project B (2023-01-01).
     await waitFor(() => expect(getSelectedLabel("Project")).toBe("Project C"));
-    expect(getSelectedLabel("Vendor")).toBe("Vendor C");
+    expect(getSelectedLabel("Customer")).toBe("Customer C");
     expect(screen.getByPlaceholderText("Bill Amount")).toHaveValue(70);
 
     // Switch to the other matching project via the Project dropdown.
     await selectDropdownOption("Project", "Project B");
-    await waitFor(() => expect(getSelectedLabel("Vendor")).toBe("Vendor B"));
+    await waitFor(() => expect(getSelectedLabel("Customer")).toBe("Customer B"));
     expect(screen.getByPlaceholderText("Bill Amount")).toHaveValue(60);
   });
 
-  it("R2.4 clears Vendor/Project/Bill Rate for an employee with zero projects", async () => {
+  it("R2.4 clears Customer/Project/Bill Rate for an employee with zero projects", async () => {
     await renderForm();
     // First select an employee with a project so fields are populated...
     await selectDropdownOption("Employee", "Employee One");
@@ -342,7 +342,7 @@ describe("NewInvoice — R2 Employee selection", () => {
     // ...then switch to an employee with none.
     await selectDropdownOption("Employee", "Employee Three");
     await waitFor(() => expect(getSelectedLabel("Project")).toBeUndefined());
-    expect(getSelectedLabel("Vendor")).toBeUndefined();
+    expect(getSelectedLabel("Customer")).toBeUndefined();
     expect(screen.getByPlaceholderText("Bill Amount")).toHaveValue(0);
   });
 
@@ -356,31 +356,31 @@ describe("NewInvoice — R2 Employee selection", () => {
   });
 });
 
-describe("NewInvoice — R3 Vendor selection", () => {
-  it("R3.1 scopes the Vendor list to the selected employee's projects", async () => {
+describe("NewInvoice — R3 Customer selection", () => {
+  it("R3.1 scopes the Customer list to the selected employee's projects", async () => {
     await renderForm();
     await selectDropdownOption("Employee", "Employee One");
     await waitFor(() => expect(getSelectedLabel("Project")).toBe("Project A"));
 
-    const vendorCombo = screen.getByRole("combobox", { name: "Vendor" });
-    await userEvent.click(vendorCombo);
-    const container = await waitForOptionListContainer(vendorCombo);
-    expect(await within(container).findByTitle("Vendor A")).toBeInTheDocument();
-    expect(within(container).queryByTitle("Vendor D")).not.toBeInTheDocument();
+    const customerCombo = screen.getByRole("combobox", { name: "Customer" });
+    await userEvent.click(customerCombo);
+    const container = await waitForOptionListContainer(customerCombo);
+    expect(await within(container).findByTitle("Customer A")).toBeInTheDocument();
+    expect(within(container).queryByTitle("Customer D")).not.toBeInTheDocument();
   });
 
-  it("R3.1 lists every vendor when no employee is selected", async () => {
+  it("R3.1 lists every customer when no employee is selected", async () => {
     await renderForm();
-    const vendorCombo = screen.getByRole("combobox", { name: "Vendor" });
-    await userEvent.click(vendorCombo);
-    const container = await waitForOptionListContainer(vendorCombo);
-    expect(await within(container).findByTitle("Vendor D")).toBeInTheDocument();
+    const customerCombo = screen.getByRole("combobox", { name: "Customer" });
+    await userEvent.click(customerCombo);
+    const container = await waitForOptionListContainer(customerCombo);
+    expect(await within(container).findByTitle("Customer D")).toBeInTheDocument();
   });
 
-  it("R3.3/R3.4 auto-fills the latest matching project (and employee) when a vendor is picked with no employee selected yet", async () => {
+  it("R3.3/R3.4 auto-fills the latest matching project (and employee) when a customer is picked with no employee selected yet", async () => {
     await renderForm();
-    // Vendor C only belongs to Employee Two's Project C.
-    await selectDropdownOption("Vendor", "Vendor C");
+    // Customer C only belongs to Employee Two's Project C.
+    await selectDropdownOption("Customer", "Customer C");
 
     await waitFor(() =>
       expect(getSelectedLabel("Employee")).toBe("Employee Two"),
@@ -389,24 +389,24 @@ describe("NewInvoice — R3 Vendor selection", () => {
     expect(screen.getByPlaceholderText("Bill Amount")).toHaveValue(70);
   });
 
-  it("R3.5 leaves Employee/Project/Bill Rate untouched (still blank) when a vendor with zero matching projects is picked on a pristine form", async () => {
+  it("R3.5 leaves Employee/Project/Bill Rate untouched (still blank) when a customer with zero matching projects is picked on a pristine form", async () => {
     await renderForm();
-    // Vendor D has zero projects for any employee, so no auto-fill fires.
-    await selectDropdownOption("Vendor", "Vendor D");
+    // Customer D has zero projects for any employee, so no auto-fill fires.
+    await selectDropdownOption("Customer", "Customer D");
 
     expect(getSelectedLabel("Employee")).toBeUndefined();
     expect(getSelectedLabel("Project")).toBeUndefined();
     expect(screen.getByPlaceholderText("Bill Amount")).toHaveValue(null);
   });
 
-  it("finding: once an employee with zero projects is selected, the Vendor dropdown itself becomes empty (vendorsForEmployee has nothing to scope to)", async () => {
+  it("finding: once an employee with zero projects is selected, the Customer dropdown itself becomes empty (customersForEmployee has nothing to scope to)", async () => {
     await renderForm();
     await selectDropdownOption("Employee", "Employee Three");
     await waitFor(() => expect(getSelectedLabel("Project")).toBeUndefined());
 
-    const vendorCombo = screen.getByRole("combobox", { name: "Vendor" });
-    await userEvent.click(vendorCombo);
-    const container = await waitForOptionListContainer(vendorCombo);
+    const customerCombo = screen.getByRole("combobox", { name: "Customer" });
+    await userEvent.click(customerCombo);
+    const container = await waitForOptionListContainer(customerCombo);
     expect(await within(container).findByText("No data")).toBeInTheDocument();
   });
 });
@@ -424,14 +424,14 @@ describe("NewInvoice — R4 Project selection", () => {
     expect(within(container).queryByTitle("Project A")).not.toBeInTheDocument();
   });
 
-  it("R4.2/R4.3 selecting a project fills Employee, Vendor, and Bill Rate from that project's own record", async () => {
+  it("R4.2/R4.3 selecting a project fills Employee, Customer, and Bill Rate from that project's own record", async () => {
     await renderForm();
     await selectDropdownOption("Project", "Project A");
 
     await waitFor(() =>
       expect(getSelectedLabel("Employee")).toBe("Employee One"),
     );
-    expect(getSelectedLabel("Vendor")).toBe("Vendor A");
+    expect(getSelectedLabel("Customer")).toBe("Customer A");
     expect(screen.getByPlaceholderText("Bill Amount")).toHaveValue(50);
   });
 });
@@ -707,7 +707,7 @@ describe("NewInvoice — R6 Required fields / submission", () => {
 
   it("R6.2/R6.4 submits with computed total and clears the form on success", async () => {
     const { onClose } = await renderForm({ submitStatus: 201 });
-    await selectDropdownOption("Vendor", "Vendor A");
+    await selectDropdownOption("Customer", "Customer A");
     await fillRequiredScalarFields({ invoiceId: "INV-9", hours: "10" });
     await setInvoiceMonth("07/2026");
 
@@ -729,7 +729,7 @@ describe("NewInvoice — R6 Required fields / submission", () => {
 
   it("R6.3 shows an error modal and preserves data when submit fails", async () => {
     await renderForm({ submitStatus: 500 });
-    await selectDropdownOption("Vendor", "Vendor A");
+    await selectDropdownOption("Customer", "Customer A");
     await fillRequiredScalarFields({ invoiceId: "INV-9", hours: "10" });
     await setInvoiceMonth("07/2026");
 
@@ -758,7 +758,7 @@ describe("NewInvoice — R7 Clear / Cancel", () => {
     await userEvent.click(screen.getByRole("button", { name: "Clear" }));
 
     expect(getSelectedLabel("Employee")).toBeUndefined();
-    expect(getSelectedLabel("Vendor")).toBeUndefined();
+    expect(getSelectedLabel("Customer")).toBeUndefined();
     expect(getSelectedLabel("Project")).toBeUndefined();
     // form.resetFields() clears back to Form.Item's unset state (blank),
     // same as the pristine-mount state asserted in R1.3.
@@ -781,7 +781,7 @@ describe("NewInvoice — R7 Clear / Cancel", () => {
 });
 
 describe("NewInvoice — Known gaps", () => {
-  it("finding: an employee with zero projects can never actually submit — the Vendor lockout (R3.5 finding) blocks Vendor selection entirely, so the required-field check always fails", async () => {
+  it("finding: an employee with zero projects can never actually submit — the Customer lockout (R3.5 finding) blocks Customer selection entirely, so the required-field check always fails", async () => {
     await renderForm();
     await selectDropdownOption("Employee", "Employee Three");
     await waitFor(() => expect(getSelectedLabel("Project")).toBeUndefined());
@@ -790,7 +790,7 @@ describe("NewInvoice — Known gaps", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));
 
-    // Vendor was never selectable (dropdown was empty — see the R3
+    // Customer was never selectable (dropdown was empty — see the R3
     // "finding" test), so the required-field guard blocks submission and
     // addInvoices is never called.
     await screen.findByText(

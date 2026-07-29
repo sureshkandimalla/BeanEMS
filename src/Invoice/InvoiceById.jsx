@@ -198,7 +198,7 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
         <Button
           type="primary"
           style={{ marginLeft: "10px" }}
-          className="button-vendor"
+          className="button-customer"
           onClick={generateInvoice}
         >
           <PlusOutlined /> Generate Invoice

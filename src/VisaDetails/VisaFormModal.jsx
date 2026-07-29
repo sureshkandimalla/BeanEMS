@@ -154,7 +154,7 @@ export default function VisaFormModal({
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="vendor" label={VISA_FIELD_LABELS.vendor}>
+            <Form.Item name="customer" label={VISA_FIELD_LABELS.customer}>
               <Input />
             </Form.Item>
           </Col>

@@ -259,7 +259,7 @@ const PotentialEmployees = () => {
       >
     <div className="ag-theme-alpine project-List-grid">
     <Card className="employeeTableCard" style={{ height: "100%" }}>
-      <Drawer title="Vendor Onboarding" placement="right" size="large" onClose={handleCloseDrawer} open={open}>
+      <Drawer title="Customer Onboarding" placement="right" size="large" onClose={handleCloseDrawer} open={open}>
         <NewPotentialEmployee onClose={handleCloseDrawer} />
       </Drawer>
 

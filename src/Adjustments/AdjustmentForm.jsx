@@ -25,9 +25,9 @@ const AdjustmentForm = ({ onClose }) => {
   const [employees, setEmployeesData] = useState();
   const [loading, setLoading] = useState(true);
 
-    const fetchEmployeesAndVendors = async () => {
+    const fetchEmployeesAndCustomers = async () => {
         try {
-            const [employeesData, vendorsData] = await Promise.all([
+            const [employeesData, customersData] = await Promise.all([
                 fetch(API_ENDPOINTS.getEmployees).then(response => response.json()),
             ]);            
             setEmployeesData(getFlattenedData(employeesData));
@@ -43,14 +43,14 @@ const AdjustmentForm = ({ onClose }) => {
     
     // Call fetchEmployeesAndCustomers when the component mounts
     useEffect(() => {
-        fetchEmployeesAndVendors();
+        fetchEmployeesAndCustomers();
     }, []);
     console.log(employees);   
     const handleEmployeeChange = (value) => {
         setSelectedFromId(value);
       };
       
-    const handleVendorChange = (value) => {
+    const handleCustomerChange = (value) => {
         setSelectedToId(value);
       };
 
@@ -200,7 +200,7 @@ const AdjustmentForm = ({ onClose }) => {
                             </Col>
                             <Col span={8} className='form-row'>
                             <Form.Item label="ToName" name="toId" rules={[{ required: true, message: 'Please select a ToName' }]}>
-        <Select showSearch value={selectedToId} onChange={handleVendorChange} filterOption={(input, option) =>
+        <Select showSearch value={selectedToId} onChange={handleCustomerChange} filterOption={(input, option) =>
       option?.children?.toLowerCase().includes(input.toLowerCase())
     }>
         {employees.map((employee) => (

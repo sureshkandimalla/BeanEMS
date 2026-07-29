@@ -19,9 +19,9 @@ const AssignmentForm = ({ onClose }) => {
   const { Option } = Select;
   const [form] = Form.useForm();
   const [selectedEmployeeId, setSelectedEmployeeId] = useState();
-  const [selectedVendorId, setSelectedVendorId] = useState();
+  const [selectedCustomerId, setSelectedCustomerId] = useState();
   const [employees, setEmployeesData] = useState([]);
-  const [vendors, setVendorsData] = useState([]);
+  const [customers, setCustomersData] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const assignmentTypes = [
@@ -39,8 +39,8 @@ const AssignmentForm = ({ onClose }) => {
     employeeId: null,
     projectId: projectId,
     projectName: projectName || "",
-    // vendorName: "",
-    // vendorId: null,
+    // customerName: "",
+    // customerId: null,
     // clientName: "",
     // clientId: null,
     startDate: "",
@@ -54,15 +54,15 @@ const AssignmentForm = ({ onClose }) => {
   });
 
   useEffect(() => {
-    const fetchEmployeesAndVendors = async () => {
+    const fetchEmployeesAndCustomers = async () => {
       try {
-        const [employeesData, vendorsData] = await Promise.all([
+        const [employeesData, customersData] = await Promise.all([
           fetch(API_ENDPOINTS.getEmployees).then((response) => response.json()),
           fetch(API_ENDPOINTS.getAllCustomers).then((response) => response.json()),
         ]);
 
         setEmployeesData(employeesData);
-        setVendorsData(vendorsData);
+        setCustomersData(customersData);
       } catch (error) {
         console.error("Error fetching data:", error);
         Modal.error({
@@ -74,15 +74,15 @@ const AssignmentForm = ({ onClose }) => {
       }
     };
 
-    fetchEmployeesAndVendors();
+    fetchEmployeesAndCustomers();
   }, []);
 
   const handleEmployeeChange = (value) => {
     setSelectedEmployeeId(value);
   };
 
-  const handleVendorChange = (value) => {
-    setSelectedVendorId(value);
+  const handleCustomerChange = (value) => {
+    setSelectedCustomerId(value);
   };
 
   const handleAssignmentChange = (value) => {
@@ -106,7 +106,7 @@ const AssignmentForm = ({ onClose }) => {
   };
 
   const handleSubmit = () => {
-    // Add selected employee and vendor IDs to generalDetails
+    // Add selected employee and customer IDs to generalDetails
     const updatedDetails = {
       ...generalDetails,
       employeeId: selectedEmployeeId,
@@ -159,15 +159,15 @@ const AssignmentForm = ({ onClose }) => {
   const handleClear = () => {
     form.resetFields(); // Resets the Ant Design form fields
     setSelectedEmployeeId(null); // Clear selected employee
-    setSelectedVendorId(null); // Clear selected vendor
+    setSelectedCustomerId(null); // Clear selected customer
     setGeneralDetails({
       employeeId: null,
       projectId: null,
       projectName: projectName || "", // Retain the project name from localStorage
       assignmentType: "",
       status: "",
-      //   vendorName: "",
-      //   vendorId: null,
+      //   customerName: "",
+      //   customerId: null,
       //   clientName: "",
       //   clientId: null,
       startDate: "",
@@ -238,11 +238,11 @@ const AssignmentForm = ({ onClose }) => {
             </Col>
 
             {/* <Col span={8} className='form-row'>
-              <Form.Item label="Vendor" name="vendorId">
-                <Select value={selectedVendorId} onChange={handleVendorChange}>
-                  {vendors.map((vendor) => (
-                    <Option key={vendor.customerId} value={vendor.customerId}>
-                      {vendor.customerCompanyName}
+              <Form.Item label="Customer" name="customerId">
+                <Select value={selectedCustomerId} onChange={handleCustomerChange}>
+                  {customers.map((customer) => (
+                    <Option key={customer.customerId} value={customer.customerId}>
+                      {customer.customerCompanyName}
                     </Option>
                   ))}
                 </Select>

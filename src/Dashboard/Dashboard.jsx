@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Card, Row, Col, Button, Flex, Drawer, Space, Tag, Tabs, Collapse } from "antd";
 import { RiseOutlined, PlusOutlined } from "@ant-design/icons";
 import Newemployee from "../Newemployee/Newemployee";
-import Newvendor from "../Vendor/NewVendor";
+import NewCustomer from "../Customer/NewCustomer";
 import PieCharts, { getPieColors } from "../PieCharts/PieCharts";
 import PieLegend from "../PieCharts/PieLegend";
 import RevenueCharts from "../RevenueCharts/RevenueCharts";
@@ -163,15 +163,15 @@ const Dashboard = () => {
   const { settingsContent, contentNode } = useChartOverview(dashboardOverviewCharts);
 
   const [employeeDrawerVisible, setEmployeeDrawerVisible] = useState(false);
-  const [vendorDrawerVisible, setVendorDrawerVisible] = useState(false);
+  const [customerDrawerVisible, setCustomerDrawerVisible] = useState(false);
   const [projectDrawerVisible, setProjectDrawerVisible] = useState(false);
 
   const showEmployeeDrawer = () => {
     setEmployeeDrawerVisible(true);
   };
 
-  const showVendorDrawer = () => {
-    setVendorDrawerVisible(true);
+  const showCustomerDrawer = () => {
+    setCustomerDrawerVisible(true);
   };
 
   const showProjectDrawer = () => {
@@ -180,7 +180,7 @@ const Dashboard = () => {
 
   const onClose = () => {
     setEmployeeDrawerVisible(false);
-    setVendorDrawerVisible(false);
+    setCustomerDrawerVisible(false);
     setProjectDrawerVisible(false);
   };
 
@@ -201,7 +201,7 @@ const Dashboard = () => {
   const onClose1 = () => {
     setOpen(false);
   };
-  const addNewVendor = () => {
+  const addNewCustomer = () => {
     setOpen(true);
   };
   const addNewProject = () => {
@@ -228,8 +228,8 @@ const Dashboard = () => {
           <Flex gap="small" wrap={false} justify="end" align="center">
             <Flex gap="small" wrap="wrap">
               <Button>Generate Invoice</Button>
-              <Button type="primary" onClick={showVendorDrawer}>
-                <PlusOutlined /> Add New Vendor
+              <Button type="primary" onClick={showCustomerDrawer}>
+                <PlusOutlined /> Add New Customer
               </Button>
               <Button type="primary" onClick={showEmployeeDrawer}>
                 <PlusOutlined /> Add New Employee
@@ -251,14 +251,14 @@ const Dashboard = () => {
         <Newemployee onClose={onClose} />
       </Drawer>
       <Drawer
-        title={`Vendor Onboarding`}
+        title={`Customer Onboarding`}
         placement="right"
         size="large"
         onClose={onClose}
-        open={vendorDrawerVisible}
+        open={customerDrawerVisible}
       >
-        {/* Use the NewVendor component */}
-        <Newvendor />
+        {/* Use the NewCustomer component */}
+        <NewCustomer />
       </Drawer>
       <Drawer
         title={`Project Onboarding`}
@@ -267,7 +267,7 @@ const Dashboard = () => {
         onClose={onClose}
         open={projectDrawerVisible}
       >
-        {/* Use the NewVendor component */}
+        {/* Use the NewCustomer component */}
         <ProjectOnBoardingForm />
       </Drawer>
       <Collapse style={{ marginBottom: 10 }}>

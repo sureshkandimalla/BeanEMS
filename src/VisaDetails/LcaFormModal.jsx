@@ -105,7 +105,7 @@ export default function LcaFormModal({
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="vendor" label={LCA_FIELD_LABELS.vendor}>
+            <Form.Item name="customer" label={LCA_FIELD_LABELS.customer}>
               <Input />
             </Form.Item>
           </Col>

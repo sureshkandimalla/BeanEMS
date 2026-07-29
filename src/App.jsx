@@ -12,7 +12,7 @@ import LeftTabs from "./LeftTabs/LeftTabs";
 import Dashboard from "./Dashboard/Dashboard";
 import WorkForce from "./WorkForce/WorkForce";
 import EmployeeOnboard from "./EmployeeOnboard/EmployeeOnboard";
-import VendorDetails from "./Vendor/VendorDetails";
+import CustomerDetails from "./Customer/CustomerDetails";
 import InvoiceDetails from "./Invoice/InvoiceDetails";
 import ExpenseDetails from "./Expense/ExpenseDetails";
 import CompanyFinalReportDetails from "./CompanyDashboard/CompanyFinalReportDetails";
@@ -37,6 +37,7 @@ import PayrollEligibility from "./Payroll/PayrollEligibility";
 import HealthInsuranceSummary from "./HealthInsurance/HealthInsuranceSummary";
 import TimesheetEntry from "./Timesheet/TimesheetEntry";
 import MonthlyTimesheets from "./Timesheet/MonthlyTimesheets";
+import MasterDataLoad from "./MasterDataLoad/MasterDataLoad";
 const clientId = '206630439236-q0q2np2g72vf5rgodjk4hhv814i3q7ai.apps.googleusercontent.com';
 const { Content } = Layout;
 
@@ -61,10 +62,11 @@ const App = () => {
               <Route path="/workforce" element={<WorkForce />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/employeeonboard" element={<EmployeeOnboard />} />
-              <Route path="/vendordetails" element={<VendorDetails />} />
+              <Route path="/customerdetails" element={<CustomerDetails />} />
               <Route path="/invoicedetails" element={<InvoiceDetails />} />
               <Route path="/expensedetails" element={<ExpenseDetails />} />
               <Route path="/companyreport" element={<CompanyFinalReportDetails />} />
+              <Route path="/masterdataload" element={<MasterDataLoad />} />
               <Route path="/payrollsummary" element={<PayrollSummary />} />
               <Route path="/payrolleligibility" element={<PayrollEligibility />} />
               <Route path="/healthinsurance" element={<HealthInsuranceSummary />} />

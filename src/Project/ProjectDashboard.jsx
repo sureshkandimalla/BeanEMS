@@ -422,7 +422,7 @@ const ProjectDashboard = () => {
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <Button
                     type="primary"
-                    className="button-vendor"
+                    className="button-customer"
                     onClick={addNewProject}
                   >
                     <PlusOutlined /> Add New Project

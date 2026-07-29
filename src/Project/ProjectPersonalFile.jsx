@@ -26,8 +26,8 @@ const ProjectPersonalFile = ({ rowData }) => {
               <span className="field-value">{rowData?.projectName}</span>
             </div>
             <div className="field">
-              <label htmlFor="middleName">Vendor Name</label>
-              <span className="field-value">{rowData?.vendorName}</span>
+              <label htmlFor="middleName">Customer Name</label>
+              <span className="field-value">{rowData?.customerName}</span>
             </div>
             <div className="field">
               <label htmlFor="lastName">Client Name</label>

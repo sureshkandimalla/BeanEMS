@@ -51,7 +51,7 @@ const Grid = () => {
   };
 
   const getColumnsDefList = (isSortable, isEditable, hasFilter) => {
-    /// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Vendor','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
+    /// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Customer','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
     var columns = [
       {
         headerName: "Project Name",
@@ -104,8 +104,8 @@ const Grid = () => {
         filter: "agSetColumnFilter",
       },
       {
-        headerName: "Vendor",
-        field: "vendorName",
+        headerName: "Customer",
+        field: "customerName",
         sortable: isSortable,
         editable: true,
         filter: "agSetColumnFilter",
@@ -183,7 +183,7 @@ const Grid = () => {
           <Link to={{ pathname: "/projectOnBoarding", state: { rowData } }}>
             <button
               type="primary"
-              className="button-vendor "
+              className="button-customer "
               onClick={addNewProject}
             >
               Add New Project

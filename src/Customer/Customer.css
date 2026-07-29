@@ -24,7 +24,7 @@ input {
   margin-bottom: 0px;
 }
 
-.button-vendor {
+.button-customer {
   cursor: pointer;
   margin-left: auto;
 }
@@ -38,13 +38,13 @@ input {
 }
 
 
-.vendor-List-grid .ant-card-bordered {
+.customer-List-grid .ant-card-bordered {
   height: 100%;
   display: flex;
   flex-direction: column; 
 }
 
-.vendor-grid-wrapper {
+.customer-grid-wrapper {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -54,7 +54,7 @@ input {
   overflow: hidden;
 }
 
-.vendor-List-grid {
+.customer-List-grid {
   display: flex;
   flex-direction: column;
   overflow: hidden;

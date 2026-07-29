@@ -105,7 +105,7 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
   };
 
   const getColumnsDefList = (isSortable, isEditable, hasFilter) => {
-    /// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Vendor','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
+    /// const columnsList = ['Project Name', 'Project Id ','Employee Id', 'Employee Name', 'Client', 'Customer','Bill Rate', 'Invoice Terms','startDate','endDate','Status','Employee Pay','Expenses','Bean Expenses','Bean Net','Total Hours';
     var columns = [
       { headerName: "Assignment Id", field: "assignmentId" },
       {
@@ -137,7 +137,7 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
         filter: "agSetColumnFilter",
       },
       //{ headerName: 'Client', field: 'clientName',sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
-      //{ headerName: 'Vendor', field: 'vendorName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+      //{ headerName: 'Customer', field: 'customerName', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
       //{ headerName: 'Bill Rate', field: 'billRate', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
       {
         headerName: "Project Start Date",
@@ -194,7 +194,7 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
           </Drawer>
           <Button
             type="primary"
-            className="button-vendor"
+            className="button-customer"
             onClick={addNewProject}
           >
             <PlusOutlined /> Add New Assignment

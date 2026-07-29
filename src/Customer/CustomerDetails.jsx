@@ -6,8 +6,8 @@ import axios from "axios";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import "./Vendor.css";
-import Newvendor from "./NewVendor";
+import "./Customer.css";
+import NewCustomer from "./NewCustomer";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
@@ -23,7 +23,7 @@ const columnsList = [
   { headerName: "End Date", field: "customerEndDate", type: "date" },
 ];
 
-const VendorDetails = () => {
+const CustomerDetails = () => {
   const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
@@ -45,7 +45,7 @@ const VendorDetails = () => {
         fetchData();
       })
       .catch((error) => {
-        console.error("Error saving vendor changes:", error);
+        console.error("Error saving customer changes:", error);
       });
   };
 
@@ -157,7 +157,7 @@ const VendorDetails = () => {
     );
   };
 
-  const addNewVendor = () => {
+  const addNewCustomer = () => {
     setOpen(true);
   };
   const onClose = () => {
@@ -165,7 +165,7 @@ const VendorDetails = () => {
   };
 
   // compute columnDefs once per rowData change
-  const vendorColumnDefs = useMemo(() => {
+  const customerColumnDefs = useMemo(() => {
     return [
       {
         headerName: "#",
@@ -194,7 +194,7 @@ const VendorDetails = () => {
   // Append any additional fields present in service response that are not in the default columns
   const combinedColumnDefs = useMemo(() => {
     try {
-      const base = Array.isArray(vendorColumnDefs) ? [...vendorColumnDefs] : [];
+      const base = Array.isArray(customerColumnDefs) ? [...customerColumnDefs] : [];
       if (!Array.isArray(rowData) || rowData.length === 0) return base;
       const sample = rowData[0] || {};
       const existingFields = new Set(base.map((c) => c.field).filter(Boolean));
@@ -217,9 +217,9 @@ const VendorDetails = () => {
       }));
       return [...base, ...extras];
     } catch (e) {
-      return vendorColumnDefs;
+      return customerColumnDefs;
     }
-  }, [vendorColumnDefs, rowData]);
+  }, [customerColumnDefs, rowData]);
 
   return (
     <div
@@ -230,16 +230,16 @@ const VendorDetails = () => {
         overflow: "hidden",
       }}
     >
-      <div className="ag-theme-alpine vendor-List-grid">
+      <div className="ag-theme-alpine customer-List-grid">
       <Card style={{ height: "100%", marginBottom: 0, display: "flex", flexDirection: "column" }} styles={{ body: { flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } }}>
         <Drawer
-          title={`Vendor Onboarding`}
+          title={`Customer Onboarding`}
           placement="right"
           size="large"
           onClose={onClose}
           open={open}
         >
-          <Newvendor />
+          <NewCustomer />
         </Drawer>
         <div className="workforce-search-container">
           <Button
@@ -266,11 +266,11 @@ const VendorDetails = () => {
           </Button>
           <Button
             type="primary"
-            className="button-vendor"
-            onClick={addNewVendor}
+            className="button-customer"
+            onClick={addNewCustomer}
             style={{ marginLeft: "10px" }}
           >
-            <PlusOutlined /> Add New Vendor
+            <PlusOutlined /> Add New Customer
           </Button>
           {Object.keys(modifiedRows).length > 0 && (
             <>
@@ -292,7 +292,7 @@ const VendorDetails = () => {
             </>
           )}
         </div>
-        <div className="vendor-grid-wrapper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+        <div className="customer-grid-wrapper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
           <AgGridReact
             ref={gridRef}
             onGridReady={(params) => {
@@ -348,4 +348,4 @@ const VendorDetails = () => {
   );
 };
 
-export default VendorDetails;
+export default CustomerDetails;

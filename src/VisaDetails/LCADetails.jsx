@@ -124,7 +124,7 @@ const LCADetails = () => {
   };
 
   // Inline cell editing — same modifiedRows/Save-Cancel pattern as
-  // ProjectsList.jsx/VendorDetails.jsx. rowData already carries the full
+  // ProjectsList.jsx/CustomerDetails.jsx. rowData already carries the full
   // LCA object per row (not a flattened/denormalized view), so posting
   // the edited row back as-is is safe.
   const onCellValueChanged = (params) => {
@@ -194,7 +194,7 @@ const LCADetails = () => {
       cellEditorParams: { values: LCA_STATUS_OPTIONS.map((o) => o.value) },
     },
     { colId: "client", field: "client", headerName: LCA_FIELD_LABELS.client, filter: "agSetColumnFilter", cellClassRules },
-    { colId: "vendor", field: "vendor", headerName: LCA_FIELD_LABELS.vendor, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "customer", field: "customer", headerName: LCA_FIELD_LABELS.customer, filter: "agSetColumnFilter", cellClassRules },
     { colId: "jobLocation", field: "jobLocation", headerName: LCA_FIELD_LABELS.jobLocation, filter: "agSetColumnFilter", cellClassRules },
     { colId: "jobLocation2", field: "jobLocation2", headerName: LCA_FIELD_LABELS.jobLocation2, filter: "agSetColumnFilter", cellClassRules, hide: true },
     { colId: "employmentStartDate", field: "employmentStartDate", headerName: LCA_FIELD_LABELS.employmentStartDate, filter: "agSetColumnFilter", cellClassRules },

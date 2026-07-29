@@ -9,13 +9,13 @@ import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
 import { invoiceTermLabel } from "../Utils/invoiceTerm";
 import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
-import Newvendor from "../Vendor/NewVendor";
+import NewCustomer from "../Customer/NewCustomer";
 
 const ProjectGrid = ({ employeeId, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
   const [projectDrawerOpen, setProjectDrawerOpen] = useState(false);
-  const [vendorDrawerOpen, setVendorDrawerOpen] = useState(false);
+  const [customerDrawerOpen, setCustomerDrawerOpen] = useState(false);
   const columnDefs = [
     {
       headerName: "Employee Name",
@@ -135,16 +135,16 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
         <ProjectOnBoardingForm />
       </Drawer>
       <Drawer
-        title="Vendor Onboarding"
+        title="Customer Onboarding"
         placement="right"
         size="large"
         onClose={() => {
-          setVendorDrawerOpen(false);
+          setCustomerDrawerOpen(false);
           fetchData();
         }}
-        open={vendorDrawerOpen}
+        open={customerDrawerOpen}
       >
-        <Newvendor />
+        <NewCustomer />
       </Drawer>
       <div className="workforce-search-container">
         <Button
@@ -163,7 +163,7 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
         />
         <Button
           type="primary"
-          className="button-vendor"
+          className="button-customer"
           onClick={() => setProjectDrawerOpen(true)}
           style={{ marginLeft: "10px" }}
         >
@@ -171,11 +171,11 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
         </Button>
         <Button
           type="primary"
-          className="button-vendor"
-          onClick={() => setVendorDrawerOpen(true)}
+          className="button-customer"
+          onClick={() => setCustomerDrawerOpen(true)}
           style={{ marginLeft: "10px" }}
         >
-          <PlusOutlined /> Add New Vendor
+          <PlusOutlined /> Add New Customer
         </Button>
       </div>
       <div  className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
