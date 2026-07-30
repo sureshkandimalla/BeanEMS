@@ -29,6 +29,17 @@ const PieCharts = React.forwardRef(
       dataLabels: {
         enabled: false,
       },
+      // A single-slice donut (e.g. every invoice being "Paid", nothing else)
+      // otherwise renders as only a half circle in ApexCharts — the arc math
+      // that normally sweeps 0-360deg across multiple slices degenerates
+      // with just one. Pinning the full sweep explicitly makes a one-slice
+      // donut a complete ring, same as every multi-slice one already is.
+      plotOptions: {
+        pie: {
+          startAngle: 0,
+          endAngle: 360,
+        },
+      },
       legend: {
         show: showLegend,
         position: legendPosition,

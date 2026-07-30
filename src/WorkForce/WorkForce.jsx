@@ -308,9 +308,10 @@ const WorkForceContent = () => {
 <Collapse
   onChange={handleCollapseChange}
   style={{
-    flex: isCollapsed ? "0 0 22%":"0 0 5%", /* Hide when collapsed */
+    flex: isCollapsed ? "0 0 45%":"0 0 5%", /* Hide when collapsed */
     marginBottom: "10px",
     transition: "flex 0.3s ease-in-out", /* Smooth transition */
+    minHeight: 0, /* let the panel body's own overflow:auto do the scrolling, not get clipped by this flex item's own box */
   }}
 >
   <Panel
@@ -322,7 +323,12 @@ const WorkForceContent = () => {
       </div>
     }
   >
-    {contentNode}
+    {/* Charts are individually resizable (see useChartOverview) and can grow
+        taller than whatever budget this panel has — scroll instead of
+        silently clipping them via the page's outer overflow:hidden. */}
+    <div style={{ maxHeight: "calc(100vh - 260px)", overflowY: "auto" }}>
+      {contentNode}
+    </div>
   </Panel>
 </Collapse>
 

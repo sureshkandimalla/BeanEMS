@@ -13,6 +13,7 @@ import Dashboard from "./Dashboard/Dashboard";
 import WorkForce from "./WorkForce/WorkForce";
 import EmployeeOnboard from "./EmployeeOnboard/EmployeeOnboard";
 import CustomerDetails from "./Customer/CustomerDetails";
+import VendorDetails from "./Vendor/VendorDetails";
 import InvoiceDetails from "./Invoice/InvoiceDetails";
 import ExpenseDetails from "./Expense/ExpenseDetails";
 import CompanyFinalReportDetails from "./CompanyDashboard/CompanyFinalReportDetails";
@@ -63,6 +64,7 @@ const App = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/employeeonboard" element={<EmployeeOnboard />} />
               <Route path="/customerdetails" element={<CustomerDetails />} />
+              <Route path="/vendordetails" element={<VendorDetails />} />
               <Route path="/invoicedetails" element={<InvoiceDetails />} />
               <Route path="/expensedetails" element={<ExpenseDetails />} />
               <Route path="/companyreport" element={<CompanyFinalReportDetails />} />

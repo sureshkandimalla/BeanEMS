@@ -29,7 +29,7 @@ const MainLayout = () => {
                   margin: 0,
                   height: "100%",
                   overflowY: "auto",
-                  overflowX: "hidden",
+                  overflowX: "auto",
                 }}
               >
                 <Outlet />
