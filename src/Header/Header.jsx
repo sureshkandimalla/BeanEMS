@@ -2,12 +2,13 @@ import React, { useContext } from "react";
 import { UserOutlined, SettingOutlined, BellOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { Button, Col, Row, Dropdown, Space, Flex } from "antd";
 import { useNavigate } from "react-router-dom";
-import logo from "../bean-logo.png";
 import AuthContext from "../Authentication/Context/AuthContext";
+import { getCurrentTenantBranding } from "../Utils/tenantBranding";
 
 const Header = () => {
   const { logout } = useContext(AuthContext); // Get logout function from context
   const navigate = useNavigate();
+  const branding = getCurrentTenantBranding();
 
   // Define logout handler
   const handleLogout = () => {
@@ -37,8 +38,8 @@ const Header = () => {
         <Row justify="end" align="middle">
           <Col flex="400px">
             <div className="headerLogo">
-              <img src={logo} alt="logo" />
-              <b>Bean Infosystems</b>
+              <img src={branding.logo} alt="logo" />
+              <b>{branding.name}</b>
             </div>
           </Col>
           <Col flex="auto">

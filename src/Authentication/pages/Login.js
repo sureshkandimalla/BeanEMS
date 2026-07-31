@@ -1,9 +1,8 @@
 import React, { useContext } from "react";
 import { GoogleLogin } from "@react-oauth/google";
+import { message } from "antd";
 import AuthContext from "../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import logo from "../pages/bean-logo.png";
-//import bglogo from "../pages/bg_image1.jpg";  // ✅ Import Background Image
 
 const Login = () => {
   const { user, login } = useContext(AuthContext);
@@ -21,17 +20,25 @@ const Login = () => {
     return null; // Already logged in, skip login UI
   }
 
-  // If you want to keep GoogleLogin for production, you can use an env check here
+  const handleSuccess = async (response) => {
+    try {
+      await login(response);
+      navigate("/dashboard");
+    } catch (error) {
+      const reason =
+        error.response?.data?.error ||
+        "Sign-in failed. Please try again.";
+      message.error(reason);
+    }
+  };
+
   return (
     <div>
       <div style={styles.loginBox}>
         <div style={styles.googleLogin}>
           <GoogleLogin
-            onSuccess={response => {
-              login(response);
-              navigate("/dashboard");
-            }}
-            onError={() => console.log("Login Failed")}
+            onSuccess={handleSuccess}
+            onError={() => message.error("Login Failed")}
             theme="outline"
             size="large"
           />

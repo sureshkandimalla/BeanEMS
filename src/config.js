@@ -131,6 +131,7 @@ export const API_ENDPOINTS = {
   reconcileRecords: `${API_BASE_URL}/reconcile/getReconcileRecords`,
   saveOnBoardDetails: `${API_BASE_URL}/employees/saveOnBoardDetails`,
   saveOnBoardDetailsCustomer: `${API_BASE_URL}/customers/saveOnBoardDetails`,
+  authLogin: `${API_BASE_URL}/auth/login`,
   getAllVendors: `${API_BASE_URL}/vendors/getAllVendors`,
   vendorsById: (vendorId) => `${API_BASE_URL}/vendors/vendors/${vendorId}`,
   saveOnBoardDetailsVendor: `${API_BASE_URL}/vendors/saveOnBoardDetails`,

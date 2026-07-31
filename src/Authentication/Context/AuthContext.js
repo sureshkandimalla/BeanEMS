@@ -1,22 +1,34 @@
-import React, { createContext, useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
+import React, { createContext, useState } from "react";
+import axios from "axios";
+import API_ENDPOINTS from "../../config";
 
 const AuthContext = createContext(); // Ensure this is properly exported
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    console.log(storedUser);
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+const readStoredUser = () => {
+  try {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
 
-  const login = (credentialResponse) => {
-    const decodedUser = jwtDecode(credentialResponse.credential);
-    setUser(decodedUser);
-    localStorage.setItem("user", JSON.stringify(decodedUser));
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(readStoredUser);
+
+  // The Google credential is verified server-side (see AuthController) —
+  // this is no longer a client-side decode. Rejects (domain not on the
+  // allowlist, etc.) throw so Login.js can show the actual reason instead
+  // of silently granting access, which is the whole point of moving
+  // verification server-side in the first place.
+  const login = async (credentialResponse) => {
+    const response = await axios.post(API_ENDPOINTS.authLogin, {
+      credential: credentialResponse.credential,
+    });
+    const loggedInUser = response.data;
+    setUser(loggedInUser);
+    localStorage.setItem("user", JSON.stringify(loggedInUser));
+    return loggedInUser;
   };
 
   const logout = () => {

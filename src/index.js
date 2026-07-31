@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import "./Utils/apiAuth";
 import { ModuleRegistry } from "@ag-grid-community/core";
 import { SideBarModule } from "@ag-grid-enterprise/side-bar";
 import { ColumnsToolPanelModule } from "@ag-grid-enterprise/column-tool-panel";
