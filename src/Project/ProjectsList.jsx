@@ -114,32 +114,6 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         },
       },
       {
-        headerName: "Project Id",
-        field: "projectId",
-        sortable: isSortable,
-        editable: false,
-        filter: "agSetColumnFilter",
-      },
-      {
-        headerName: "Project Name",
-        field: "projectName",
-        cellRenderer: (params) => {
-          // Group rows (e.g. when grouped by another column) have no
-          // params.data — just show nothing rather than crashing.
-          if (!params.data) return null;
-          const rowData = params.data;
-          return (
-            <Link to="/projectFullDetails" state={{ rowData }}>
-              {" "}
-              {rowData.projectName}
-            </Link>
-          );
-        },
-        sortable: isSortable,
-        editable: true,
-        filter: "agSetColumnFilter",
-      },
-      {
         headerName: "Employee Name",
         field: "employeeName",
         cellRenderer: (params) => {
@@ -156,13 +130,6 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
             </Link>
           );
         },
-        sortable: isSortable,
-        editable: false,
-        filter: "agSetColumnFilter",
-      },
-      {
-        headerName: "Company",
-        field: "companyName",
         sortable: isSortable,
         editable: false,
         filter: "agSetColumnFilter",
@@ -272,6 +239,39 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         cellEditorParams: {
           values: INVOICE_TERM_OPTIONS.map((option) => option.label),
         },
+      },
+      {
+        headerName: "Project Name",
+        field: "projectName",
+        cellRenderer: (params) => {
+          // Group rows (e.g. when grouped by another column) have no
+          // params.data — just show nothing rather than crashing.
+          if (!params.data) return null;
+          const rowData = params.data;
+          return (
+            <Link to="/projectFullDetails" state={{ rowData }}>
+              {" "}
+              {rowData.projectName}
+            </Link>
+          );
+        },
+        sortable: isSortable,
+        editable: true,
+        filter: "agSetColumnFilter",
+      },
+      {
+        headerName: "Company",
+        field: "companyName",
+        sortable: isSortable,
+        editable: false,
+        filter: "agSetColumnFilter",
+      },
+      {
+        headerName: "Project Id",
+        field: "projectId",
+        sortable: isSortable,
+        editable: false,
+        filter: "agSetColumnFilter",
       },
     ];
     return columns;
