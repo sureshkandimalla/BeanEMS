@@ -31,6 +31,6 @@ const styles = {
         position: "absolute",
         top: "20px",
         left: "20px",
-        height: "32px",
+        height: "56px",
       },
 }
