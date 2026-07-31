@@ -1,7 +1,7 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import bglogo from "./bg_image1.jpg";
-import logo from "../bean-logo.png";
+import logo from "../assets/intellan-logo.png";
 const AuthLayout = () => {
   return (
     <div style={styles.pageContainer}>
@@ -29,8 +29,8 @@ const styles = {
     },
     logo: {
         position: "absolute",
-        top: "20px",        
-        left: "20px",       
-        width: "120px",     
+        top: "20px",
+        left: "20px",
+        height: "32px",
       },
 }
