@@ -1,5 +1,6 @@
 import React, { createContext, useState } from "react";
 import axios from "axios";
+import { googleLogout } from "@react-oauth/google";
 import API_ENDPOINTS from "../../config";
 
 const AuthContext = createContext(); // Ensure this is properly exported
@@ -31,9 +32,22 @@ export const AuthProvider = ({ children }) => {
     return loggedInUser;
   };
 
+  // Clearing localStorage.user alone left two things behind: (1) Google's own
+  // GSI session, so the next "Sign in with Google" silently re-authenticated
+  // the same account without an account picker — real problem for a
+  // multi-tenant app where switching between a Bean and an Intellan account
+  // is expected; googleLogout() clears that cached credential state.
+  // (2) stray non-namespaced keys (projectId/projectName, set by
+  // ProjectFullDetails) that could leak a previous tenant's project id into
+  // the next login's session. A hard reload (not just React state reset)
+  // guarantees every in-memory closure/cache from the old session is gone.
   const logout = () => {
+    googleLogout();
     localStorage.removeItem("user");
+    localStorage.removeItem("projectId");
+    localStorage.removeItem("projectName");
     setUser(null);
+    window.location.href = "/";
   };
 
   return (

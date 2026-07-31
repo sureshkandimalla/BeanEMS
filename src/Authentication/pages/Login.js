@@ -8,15 +8,20 @@ const Login = () => {
   const { user, login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  // If user is present, redirect to dashboard automatically
+  // Must match ProtectedRoute's check exactly (presence of a token, not just
+  // a truthy user object) — otherwise a stale/malformed localStorage "user"
+  // entry with no token sends this into an infinite redirect loop with
+  // ProtectedRoute bouncing straight back to "/" ("Maximum update depth
+  // exceeded").
+  const isAuthenticated = Boolean(user?.token);
+
   React.useEffect(() => {
-    if (user) {
+    if (isAuthenticated) {
       navigate("/dashboard");
     }
-  }, [user, navigate]);
+  }, [isAuthenticated, navigate]);
 
-  // For local/dev, show a message or nothing
-  if (user) {
+  if (isAuthenticated) {
     return null; // Already logged in, skip login UI
   }
 

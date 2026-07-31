@@ -10,10 +10,10 @@ const Header = () => {
   const navigate = useNavigate();
   const branding = getCurrentTenantBranding();
 
-  // Define logout handler
+  // logout() itself clears the Google session, all app localStorage keys,
+  // and does a hard redirect to "/" — nothing left to do here.
   const handleLogout = () => {
-    logout(); // Call the logout function from AuthContext
-    localStorage.removeItem("user"); // Remove user data from localStorage (Optional)
+    logout();
   };
 
   // Define dropdown items
@@ -38,8 +38,7 @@ const Header = () => {
         <Row justify="end" align="middle">
           <Col flex="400px">
             <div className="headerLogo">
-              <img src={branding.logo} alt="logo" />
-              <b>{branding.name}</b>
+              <img src={branding.logo} alt={branding.name} />
             </div>
           </Col>
           <Col flex="auto">
