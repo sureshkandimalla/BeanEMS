@@ -17,7 +17,7 @@ const Login = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate("/dashboard");
+      navigate("/home");
     }
   }, [isAuthenticated, navigate]);
 
@@ -28,7 +28,7 @@ const Login = () => {
   const handleSuccess = async (response) => {
     try {
       await login(response);
-      navigate("/dashboard");
+      navigate("/home");
     } catch (error) {
       const reason =
         error.response?.data?.error ||

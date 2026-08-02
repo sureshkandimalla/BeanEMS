@@ -122,8 +122,8 @@ const App = () => {
                 element={<PayrollSummary />}
               />
 
-              {/* Redirect unknown routes to Dashboard */}
-              <Route path="*" element={<Navigate to="/dashboard" />} />
+              {/* Redirect unknown routes to Home */}
+              <Route path="*" element={<Navigate to="/home" />} />
             </Route>
           </Routes>
         </Router>
