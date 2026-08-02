@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Tabs, Card, Collapse, Row, Col, Button, Drawer, Spin, message, Checkbox } from "antd";
+import { Tabs, Card, Collapse, Button, Drawer, message, Checkbox } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { QueryClient, useQuery } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
@@ -7,28 +7,17 @@ import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persist
 import Newemployee from "../Newemployee/Newemployee";
 import WorkForceList from "./WorkForceList";
 import WorkForceReconcileList from "./WorkForceReconcileList"
-import PieCharts, { getPieColors } from "../PieCharts/PieCharts";
-import PieLegend from "../PieCharts/PieLegend";
 import { useChartOverview, ChartSettingsIcon } from "../Utils/ChartOverviewPanel";
+import { GLOBAL_CHARTS } from "../Charts/globalChartRegistry";
 import "../WorkForce/WorkForce.css"
 import API_ENDPOINTS from "../config";
 
-const fetchEmployees = async () => {  
+const fetchEmployees = async () => {
   const response = await fetch(API_ENDPOINTS.getAllEmployees);
   return response.json();
 };
 const fetchReconcileRecords = async () => {
   const response = await fetch(API_ENDPOINTS.reconcileRecords);
-  return response.json();
-};
-
-const fetchWorkforceChartData = async () => {
-  const response = await fetch(API_ENDPOINTS.employeesCountByStatus);
-  return response.json();
-};
-
-const fetchInvoicesChartData = async () => {
-  const response = await fetch(API_ENDPOINTS.invoicesCountByStatus);
   return response.json();
 };
 
@@ -59,30 +48,6 @@ const WorkForceContent = () => {
   } = useQuery({
     queryKey: ["employees"],
     queryFn: fetchEmployees,
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
-  });
-
-  const {
-    data: workforceChartData,
-    isLoading: isWorkforceLoading,
-    error: workforceError,
-  } = useQuery({
-    queryKey: ["workforceChartData"],
-    queryFn: fetchWorkforceChartData,
-    staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000,
-    refetchOnWindowFocus: false,
-  });
-
-  const {
-    data: invoicesChartData,
-    isLoading: isInvoicesLoading,
-    error: invoicesError,
-  } = useQuery({
-    queryKey: ["invoicesChartData"],
-    queryFn: fetchInvoicesChartData,
     staleTime: 5 * 60 * 1000,
     cacheTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -131,100 +96,12 @@ const WorkForceContent = () => {
     };
   }, [employeeData, showNewHires]);
 
-  const workforceChartLabels = Array.isArray(workforceChartData)
-    ? workforceChartData.map((item) => item.status)
-    : [];
-  const workforceChartValues = Array.isArray(workforceChartData)
-    ? workforceChartData.map((item) => item.count)
-    : [];
-  const invoicesChartLabels = Array.isArray(invoicesChartData)
-    ? invoicesChartData.map((item) => item.status)
-    : [];
-  const invoicesChartValues = Array.isArray(invoicesChartData)
-    ? invoicesChartData.map((item) => item.count)
-    : [];
-
-  // Same slice order/values feed both the donut (via PieCharts, legend
-  // hidden) and the custom legend beside it, so colors always match.
-  const workforceSlices = workforceChartLabels.map((label, i) => ({
-    label,
-    value: workforceChartValues[i] || 0,
-    color: getPieColors(workforceChartLabels.length)[i],
-  }));
-  const invoicesSlices = invoicesChartLabels.map((label, i) => ({
-    label,
-    value: invoicesChartValues[i] || 0,
-    color: getPieColors(invoicesChartLabels.length)[i],
-  }));
-
-  // Chart definitions for the Company Overview area — useChartOverview
-  // handles show/hide, drag-to-reorder, drag-to-resize, and PNG download
-  // generically from this list.
-  const companyOverviewCharts = [
-    {
-      key: "billing",
-      label: "Billing",
-      filename: "billing",
-      defaultSize: { width: 480, height: 370 },
-      render: (innerHeight, setChartRef) =>
-        isInvoicesLoading ? (
-          <Spin />
-        ) : (
-          <Row align="middle">
-            <Col span={14}>
-              <div style={{ width: "100%", height: innerHeight }}>
-                <PieCharts ref={setChartRef} chartData={invoicesChartValues} chartLabels={invoicesChartLabels} showLegend={false} />
-              </div>
-            </Col>
-            <Col span={10}>
-              <PieLegend slices={invoicesSlices} />
-            </Col>
-          </Row>
-        ),
-    },
-    {
-      key: "workforceStatus",
-      label: "Workforce Status",
-      filename: "workforce-status",
-      defaultSize: { width: 480, height: 370 },
-      render: (innerHeight, setChartRef) =>
-        isWorkforceLoading ? (
-          <Spin />
-        ) : (
-          <Row align="middle">
-            <Col span={14}>
-              <div style={{ width: "100%", height: innerHeight }}>
-                <PieCharts ref={setChartRef} chartData={workforceChartValues} chartLabels={workforceChartLabels} showLegend={false} />
-              </div>
-            </Col>
-            <Col span={10}>
-              <PieLegend slices={workforceSlices} fontSize={18} />
-            </Col>
-          </Row>
-        ),
-    },
-    {
-      key: "invoiceStatus",
-      label: "Invoice Status",
-      filename: "invoice-status",
-      defaultSize: { width: 480, height: 370 },
-      render: (innerHeight, setChartRef) =>
-        isInvoicesLoading ? (
-          <Spin />
-        ) : (
-          <Row align="middle">
-            <Col span={14}>
-              <div style={{ width: "100%", height: innerHeight }}>
-                <PieCharts ref={setChartRef} chartData={invoicesChartValues} chartLabels={invoicesChartLabels} showLegend={false} />
-              </div>
-            </Col>
-            <Col span={10}>
-              <PieLegend slices={invoicesSlices} fontSize={18} />
-            </Col>
-          </Row>
-        ),
-    },
-  ];
+  // Company Overview reuses the same standardized chart widgets as the Home
+  // page (colors, time-range dropdown, legend styling) instead of hand-rolled
+  // PieCharts/PieLegend pairs, so the two pages look consistent.
+  const companyOverviewCharts = GLOBAL_CHARTS.filter((c) =>
+    ["invoiceStatus", "workforceStatus", "activeProjectsByMonth", "activeEmployeesByMonth"].includes(c.key)
+  );
   const { settingsContent, contentNode } = useChartOverview(companyOverviewCharts);
 
   const items = [
@@ -287,7 +164,7 @@ const WorkForceContent = () => {
     if (action === "submit") refetchEmployees();
   };
 
-  if (employeesError || workforceError || invoicesError || reconcileDataError) {
+  if (employeesError || reconcileDataError) {
     message.error("Error fetching data. Please try again later.");
   }
 

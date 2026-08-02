@@ -10,6 +10,7 @@ import { Layout, Col, Row } from "antd";
 import Header from "./Header/Header";
 import LeftTabs from "./LeftTabs/LeftTabs";
 import Dashboard from "./Dashboard/Dashboard";
+import Home from "./Home/Home";
 import WorkForce from "./WorkForce/WorkForce";
 import EmployeeOnboard from "./EmployeeOnboard/EmployeeOnboard";
 import CustomerDetails from "./Customer/CustomerDetails";
@@ -61,6 +62,7 @@ const App = () => {
               }
             >
               <Route path="/workforce" element={<WorkForce />} />
+              <Route path="/home" element={<Home />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/employeeonboard" element={<EmployeeOnboard />} />
               <Route path="/customerdetails" element={<CustomerDetails />} />

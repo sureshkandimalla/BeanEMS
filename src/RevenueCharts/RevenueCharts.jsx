@@ -27,6 +27,7 @@ const RevenueCharts = React.forwardRef(({
   categories = ["Company 1", "Company 2", "Company 3", "Company 4", "Company 5"],
   series1Name = "This Month",
   series2Name = "Last Month",
+  colors = ["#63abfd", "#e697ff"],
   xaxisLabelRotate = -45,
   maxLabelLength,
   dataLabelFormatter = formatWholeCurrency,
@@ -45,13 +46,37 @@ const RevenueCharts = React.forwardRef(({
 }, chartRef) => {
   // Defaults the scroll position to the far right — the most recent
   // categories (e.g. latest months) — rather than the oldest, since that's
-  // what's most relevant on load. Re-runs whenever the category count
-  // changes (new data arriving after an async fetch).
+  // what's most relevant on load. This needs more than a plain post-mount
+  // scrollLeft assignment: react-apexcharts renders a plain wrapper <div>
+  // whose own box always stays 100% of this card (it never resizes), while
+  // the actual fixed-pixel-width chart — a nested ".apexcharts-canvas" div —
+  // is built a couple of levels deeper, asynchronously, by the ApexCharts
+  // library itself. A MutationObserver waits for that canvas to appear, then
+  // a ResizeObserver on it re-pins the scroll position to the right edge
+  // every time its rendered width actually changes (initial async draw,
+  // card resize, new data).
   const scrollRef = useRef(null);
   useEffect(() => {
-    if (scrollable && scrollRef.current) {
-      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
-    }
+    const el = scrollRef.current;
+    if (!scrollable || !el) return;
+    const scrollToEnd = () => { el.scrollLeft = el.scrollWidth; };
+    scrollToEnd();
+
+    let resizeObserver;
+    const mutationObserver = new MutationObserver(() => {
+      if (resizeObserver) return;
+      const canvas = el.querySelector(".apexcharts-canvas");
+      if (!canvas) return;
+      resizeObserver = new ResizeObserver(scrollToEnd);
+      resizeObserver.observe(canvas);
+      scrollToEnd();
+    });
+    mutationObserver.observe(el, { childList: true, subtree: true });
+
+    return () => {
+      mutationObserver.disconnect();
+      resizeObserver?.disconnect();
+    };
   }, [scrollable, categories.length]);
 
   // lastMonthData is optional — omitted entirely, a single-series bar chart
@@ -85,7 +110,7 @@ const RevenueCharts = React.forwardRef(({
           fontSize: "10px",
         },
       },
-      colors: ["#63abfd", "#e697ff"],
+      colors,
       chart: {
         type: "bar",
         height: chartHeight,

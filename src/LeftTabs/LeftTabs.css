@@ -11,6 +11,7 @@
   margin-right: 4px;
 }
 
+.left-tab-icon.icon-home         { color: #4338ca; background: #eef2ff; }
 .left-tab-icon.icon-dashboard    { color: #1677ff; background: #e6f4ff; }
 .left-tab-icon.icon-team         { color: #52c41a; background: #f6ffed; }
 .left-tab-icon.icon-onboarding   { color: #722ed1; background: #f9f0ff; }

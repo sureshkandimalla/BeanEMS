@@ -21,11 +21,33 @@ const TrendLineChart = React.forwardRef(({
   pxPerCategory = 70,
   height = 250,
 }, chartRef) => {
+  // See RevenueCharts for why this needs more than a plain post-mount
+  // scrollLeft assignment — a MutationObserver waits for ApexCharts' nested
+  // ".apexcharts-canvas" div to appear, then a ResizeObserver on it re-pins
+  // the scroll position to the right edge every time its rendered width
+  // actually changes.
   const scrollRef = useRef(null);
   useEffect(() => {
-    if (scrollable && scrollRef.current) {
-      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
-    }
+    const el = scrollRef.current;
+    if (!scrollable || !el) return;
+    const scrollToEnd = () => { el.scrollLeft = el.scrollWidth; };
+    scrollToEnd();
+
+    let resizeObserver;
+    const mutationObserver = new MutationObserver(() => {
+      if (resizeObserver) return;
+      const canvas = el.querySelector(".apexcharts-canvas");
+      if (!canvas) return;
+      resizeObserver = new ResizeObserver(scrollToEnd);
+      resizeObserver.observe(canvas);
+      scrollToEnd();
+    });
+    mutationObserver.observe(el, { childList: true, subtree: true });
+
+    return () => {
+      mutationObserver.disconnect();
+      resizeObserver?.disconnect();
+    };
   }, [scrollable, categories.length]);
 
   // See RevenueCharts for why the scrollbar needs its own reserved slice of

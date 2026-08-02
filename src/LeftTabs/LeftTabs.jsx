@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  HomeOutlined,
   ProfileOutlined,
   UserOutlined,
   UsergroupAddOutlined,
@@ -35,6 +36,7 @@ function getItem(tabName, key, icon, iconClass, children, type) {
 }
 //Left Tab names
 const leftTabNames = [
+  getItem("Home", "/home", <HomeOutlined />, "icon-home"),
   getItem("Dashboard", "/dashboard", <ProfileOutlined />, "icon-dashboard"),
   getItem("Team", "/workforce", <UserOutlined />, "icon-team"),
   getItem("Customer", "/customerdetails", <BlockOutlined />, "icon-customer"),

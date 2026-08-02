@@ -13,10 +13,10 @@ export const getPieColors = (count) =>
 // `chartRef`, when given, is attached straight to the underlying
 // ReactApexChart instance — see RevenueCharts for why (PNG export).
 const PieCharts = React.forwardRef(
-  ({ chartData, chartLabels, valueFormatter, legendPosition = "right", showLegend = true }, chartRef) => {
+  ({ chartData, chartLabels, valueFormatter, legendPosition = "right", showLegend = true, colors: colorsOverride }, chartRef) => {
     const labels = chartLabels;
     const series = chartData;
-    const colors = getPieColors(chartData?.length);
+    const colors = colorsOverride || getPieColors(chartData?.length);
 
     const chartOptions = {
       chart: {

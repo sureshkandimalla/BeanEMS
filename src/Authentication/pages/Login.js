@@ -67,7 +67,7 @@ const styles = {
   },
   googleLogin: {
     position: "absolute",
-    top: "20px",
+    top: "130px",
     right: "20px",
   },
 };

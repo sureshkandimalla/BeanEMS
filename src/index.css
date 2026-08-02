@@ -83,8 +83,23 @@ button.ant-btn.ant-btn-default,
 button.ant-btn.ant-btn-default:hover,
 button.ant-btn.ant-btn-default:active,
 button.ant-btn.ant-btn-default:focus {
-  color: #552612 !important;
-  border-color: #552612 !important;
+  position: relative;
+  background: #fff !important;
+  border: none !important;
+  color: rgba(0, 0, 0, 0.85) !important;
+}
+
+button.ant-btn.ant-btn-default::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  pointer-events: none;
+  background: linear-gradient(90deg, #3b64fc, #7026d9);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
 .ant-drawer-header-title {
   flex-direction: row-reverse;

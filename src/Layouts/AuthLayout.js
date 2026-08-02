@@ -1,11 +1,11 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import bglogo from "./bg_image1.jpg";
-import logo from "../assets/intellan-logo.png";
+import headerBar from "../assets/intellan-header-bar.png";
 const AuthLayout = () => {
   return (
     <div style={styles.pageContainer}>
-      <img src={logo} alt="Company Logo" style={styles.logo} />
+      <img src={headerBar} alt="Intellan" style={styles.headerBar} />
       <Outlet />
     </div>
   );
@@ -27,10 +27,13 @@ const styles = {
         backgroundPosition: "center",        
         position: "relative",
     },
-    logo: {
+    headerBar: {
         position: "absolute",
-        top: "20px",
-        left: "20px",
-        height: "56px",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100px",
+        objectFit: "cover",
+        objectPosition: "left center",
       },
 }

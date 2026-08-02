@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Collapse, Checkbox, Popover } from "antd";
 import { SettingOutlined } from "@ant-design/icons";
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
@@ -64,12 +64,41 @@ const SortableChartBox = ({ id, size, onResizeStop, children }) => {
 // - render: build the chart JSX; call setChartRef(el) on the actual
 //   ApexCharts-wrapping component (RevenueCharts/TrendLineChart/PieCharts
 //   all forward refs) if this chart should be downloadable
-export const useChartOverview = (charts) => {
-  const [visibleCharts, setVisibleCharts] = useState(() => Object.fromEntries(charts.map((c) => [c.key, true])));
-  const [chartOrder, setChartOrder] = useState(() => charts.map((c) => c.key));
-  const [chartSizes, setChartSizes] = useState(() =>
-    Object.fromEntries(charts.map((c) => [c.key, c.defaultSize || { width: 600, height: 340 }])),
+// storageKey (optional): when passed, visibility/order/size choices are persisted to
+// localStorage under this key and restored on mount, so a page's picks survive reloads.
+// Stored state is merged with the current `charts` prop rather than trusted outright, so
+// a chart added/removed from the registry later doesn't leave stale/missing keys.
+export const useChartOverview = (charts, { storageKey } = {}) => {
+  const readStored = () => {
+    if (!storageKey) return null;
+    try {
+      return JSON.parse(localStorage.getItem(storageKey));
+    } catch {
+      return null;
+    }
+  };
+  const stored = readStored();
+
+  const [visibleCharts, setVisibleCharts] = useState(() =>
+    Object.fromEntries(charts.map((c) => [c.key, stored?.visibleCharts?.[c.key] ?? true])),
   );
+  const [chartOrder, setChartOrder] = useState(() => {
+    const keys = charts.map((c) => c.key);
+    if (!stored?.chartOrder) return keys;
+    const known = stored.chartOrder.filter((k) => keys.includes(k));
+    const missing = keys.filter((k) => !known.includes(k));
+    return [...known, ...missing];
+  });
+  const [chartSizes, setChartSizes] = useState(() =>
+    Object.fromEntries(
+      charts.map((c) => [c.key, stored?.chartSizes?.[c.key] || c.defaultSize || { width: 600, height: 340 }]),
+    ),
+  );
+
+  useEffect(() => {
+    if (!storageKey) return;
+    localStorage.setItem(storageKey, JSON.stringify({ visibleCharts, chartOrder, chartSizes }));
+  }, [storageKey, visibleCharts, chartOrder, chartSizes]);
   const dndSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const chartRefs = useRef({});
 
@@ -121,7 +150,7 @@ export const useChartOverview = (charts) => {
   const contentNode = (
     <DndContext sensors={dndSensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={chartOrder.filter((k) => visibleCharts[k])} strategy={rectSortingStrategy}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "flex-start" }}>
           {chartOrder
             .filter((key) => visibleCharts[key])
             .map((key) => {
