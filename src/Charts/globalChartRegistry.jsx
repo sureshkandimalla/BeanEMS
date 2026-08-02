@@ -32,25 +32,13 @@ const CenteredSpin = () => (
 // error overlay instead of just this one widget failing gracefully.
 const ErrorState = () => <Empty description="Couldn't load this chart" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
 
-// Every widget used to share one hard-coded ["#63abfd", "#e697ff", ...]
-// array, so the whole dashboard read as a single indistinguishable
-// blue/pink pair (and that pair itself fails CVD-safety: protanopia ΔE 0.2
-// — effectively invisible to red-green colorblind readers). Each widget
-// below instead gets its own small hue set from the same blue→teal→
-// violet→magenta family, run through the dataviz skill's validator
-// (adjacent-pair CVD ΔE ≥ 8, normal-vision floor ≥ 15) so charts stay
-// visually related but each is independently distinguishable, and slices
-// within any one chart are colorblind-safe too, not just cosmetically
-// different.
-const INVOICE_STATUS_COLORS = ["#2a78d6", "#d6336c"]; // blue, magenta
-const WORKFORCE_STATUS_COLORS = ["#2a78d6", "#0f9b8e", "#7c3aed", "#d6336c"]; // blue, teal, violet, magenta
-const REVENUE_TREND_COLORS = ["#4f46e5", "#d6336c"]; // indigo, magenta
-const EXPENSES_BY_TYPE_COLORS = ["#2a78d6", "#0f9b8e", "#7c3aed", "#d6336c", "#4f46e5", "#0ea5e9"];
-const ACTIVE_PROJECTS_COLOR = "#2a78d6"; // blue
-const ACTIVE_EMPLOYEES_COLOR = "#0f9b8e"; // teal
-
-const cyclePalette = (palette) => (count) =>
-  Array.from({ length: count || 0 }, (_, i) => palette[i % palette.length]);
+// Same light blue/pink-violet family RevenueCharts uses by default
+// (["#63abfd", "#e697ff"]) — extended so the donuts (which can have more
+// than 2 slices) stay in that same family instead of the default rainbow
+// PIE_PALETTE, cycling for anything beyond 6 slices.
+const PIE_COLORS_LIKE_REVENUE_TREND = ["#63abfd", "#e697ff", "#3d8bfd", "#f2b8ff", "#8ec5fd", "#d17aff"];
+const revenueTrendPieColors = (count) =>
+  Array.from({ length: count || 0 }, (_, i) => PIE_COLORS_LIKE_REVENUE_TREND[i % PIE_COLORS_LIKE_REVENUE_TREND.length]);
 
 const RangeHeader = ({ range, onChange }) => (
   <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
@@ -90,7 +78,7 @@ const InvoiceStatusWidget = React.forwardRef((props, ref) => {
         byStatus[status] = (byStatus[status] || 0) + (inv.total || 0);
       });
     const labels = Object.keys(byStatus);
-    const colors = cyclePalette(INVOICE_STATUS_COLORS)(labels.length);
+    const colors = revenueTrendPieColors(labels.length);
     return labels.map((label, i) => ({ label, value: byStatus[label], color: colors[i] }));
   }, [invoices, range]);
 
@@ -152,7 +140,7 @@ const WorkforceStatusWidget = React.forwardRef((props, ref) => {
       byStatus[e.status] = (byStatus[e.status] || 0) + 1;
     });
     const labels = Object.keys(byStatus);
-    const colors = cyclePalette(WORKFORCE_STATUS_COLORS)(labels.length);
+    const colors = revenueTrendPieColors(labels.length);
     return labels.map((label, i) => ({ label, value: byStatus[label], color: colors[i] }));
   }, [employees, range]);
 
@@ -241,7 +229,6 @@ const RevenueTrendWidget = React.forwardRef((props, ref) => {
           categories={chartData.categories}
           series1Name="Invoiced"
           series2Name="Billed"
-          colors={REVENUE_TREND_COLORS}
           height={props.height - 40}
         />
       )}
@@ -278,7 +265,7 @@ const ExpensesByTypeWidget = React.forwardRef((props, ref) => {
         byType[type] = (byType[type] || 0) + (exp.amount || 0);
       });
     const labels = Object.keys(byType);
-    const colors = cyclePalette(EXPENSES_BY_TYPE_COLORS)(labels.length);
+    const colors = revenueTrendPieColors(labels.length);
     return labels.map((label, i) => ({ label, value: byType[label], color: colors[i] }));
   }, [expenses, range]);
 
@@ -384,7 +371,7 @@ const ActiveProjectsByMonthWidget = React.forwardRef((props, ref) => {
       {chartData.categories.length === 0 ? (
         <Empty description="No project data in this range" image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
-        <TrendLineChart ref={ref} data={chartData.counts} categories={chartData.categories} seriesName="Active Projects" color={ACTIVE_PROJECTS_COLOR} height={props.height - 40} />
+        <TrendLineChart ref={ref} data={chartData.counts} categories={chartData.categories} seriesName="Active Projects" height={props.height - 40} />
       )}
     </div>
   );
@@ -463,7 +450,7 @@ const ActiveEmployeesByMonthWidget = React.forwardRef((props, ref) => {
       {chartData.categories.length === 0 ? (
         <Empty description="No employee data in this range" image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
-        <TrendLineChart ref={ref} data={chartData.counts} categories={chartData.categories} seriesName="Active Employees" color={ACTIVE_EMPLOYEES_COLOR} height={props.height - 40} />
+        <TrendLineChart ref={ref} data={chartData.counts} categories={chartData.categories} seriesName="Active Employees" height={props.height - 40} />
       )}
     </div>
   );
