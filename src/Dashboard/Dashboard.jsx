@@ -1,5 +1,5 @@
 // src/Dashboard/Dashboard.js
-import React, { useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Card, Row, Col, Button, Flex, Drawer, Space, Tag, Tabs, Collapse } from "antd";
 import { RiseOutlined, PlusOutlined } from "@ant-design/icons";
 import Newemployee from "../Newemployee/Newemployee";
@@ -12,11 +12,23 @@ import CurrentEmployeeCard from "../CurrentEmployeeCard/CurrentEmployeeCard";
 import { useChartOverview, ChartSettingsIcon } from "../Utils/ChartOverviewPanel";
 import "./Dashboard.css";
 import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
+import AuthContext from "../Authentication/Context/AuthContext";
+import { canAccessEntity } from "../Utils/roleAccess";
 import API_ENDPOINTS from "../config";
 
 const { Panel } = Collapse;
 
+// key -> entity it depends on, so chart visibility derives from the same
+// role permissions used everywhere else instead of a hand-maintained copy.
+const CHART_ENTITY = {
+  totalProjects: "project",
+  revenue: "invoice",
+  invoiceStatus: "invoice",
+  workforceStatus: "team",
+};
+
 const Dashboard = () => {
+  const { user } = useContext(AuthContext);
   //addedchangesstart
   const [rowData, setRowData] = useState([]);
   const [workForceChartData, setWorkForceChartData] = useState([]);
@@ -160,7 +172,10 @@ const Dashboard = () => {
       ),
     },
   ];
-  const { settingsContent, contentNode } = useChartOverview(dashboardOverviewCharts);
+  const visibleOverviewCharts = dashboardOverviewCharts.filter((c) =>
+    canAccessEntity(user?.role, CHART_ENTITY[c.key]),
+  );
+  const { settingsContent, contentNode } = useChartOverview(visibleOverviewCharts);
 
   const [employeeDrawerVisible, setEmployeeDrawerVisible] = useState(false);
   const [customerDrawerVisible, setCustomerDrawerVisible] = useState(false);
@@ -227,16 +242,22 @@ const Dashboard = () => {
         <Col span={16} className="buttonsBar">
           <Flex gap="small" wrap={false} justify="end" align="center">
             <Flex gap="small" wrap="wrap">
-              <Button>Generate Invoice</Button>
-              <Button type="primary" onClick={showCustomerDrawer}>
-                <PlusOutlined /> Add New Customer
-              </Button>
-              <Button type="primary" onClick={showEmployeeDrawer}>
-                <PlusOutlined /> Add New Employee
-              </Button>
-              <Button type="primary" onClick={showProjectDrawer}>
-                <PlusOutlined /> Add New Project
-              </Button>
+              {canAccessEntity(user?.role, "invoice") && <Button>Generate Invoice</Button>}
+              {canAccessEntity(user?.role, "customer") && (
+                <Button type="primary" onClick={showCustomerDrawer}>
+                  <PlusOutlined /> Add New Customer
+                </Button>
+              )}
+              {canAccessEntity(user?.role, "team") && (
+                <Button type="primary" onClick={showEmployeeDrawer}>
+                  <PlusOutlined /> Add New Employee
+                </Button>
+              )}
+              {canAccessEntity(user?.role, "project") && (
+                <Button type="primary" onClick={showProjectDrawer}>
+                  <PlusOutlined /> Add New Project
+                </Button>
+              )}
             </Flex>
           </Flex>
         </Col>
@@ -285,24 +306,26 @@ const Dashboard = () => {
       </Collapse>
       <>
         <Row gutter={16}>
-          <Col span={17}>
-            <Card title="Invoice Status" className="invoiceCard">
-              <Tabs
-                defaultActiveKey="all"
-                items={invoiceStatusTabs.map((tab) => ({
-                  key: tab.key,
-                  label: tab.label,
-                  children: (
-                    <div style={{ height: 650 }}>
-                      <InvoiceDetails statusFilter={tab.statusFilter} />
-                    </div>
-                  ),
-                }))}
-              />
-            </Card>
-          </Col>
+          {canAccessEntity(user?.role, "invoice") && (
+            <Col span={17}>
+              <Card title="Invoice Status" className="invoiceCard">
+                <Tabs
+                  defaultActiveKey="all"
+                  items={invoiceStatusTabs.map((tab) => ({
+                    key: tab.key,
+                    label: tab.label,
+                    children: (
+                      <div style={{ height: 650 }}>
+                        <InvoiceDetails statusFilter={tab.statusFilter} />
+                      </div>
+                    ),
+                  }))}
+                />
+              </Card>
+            </Col>
+          )}
 
-          <Col span={7}>
+          <Col span={canAccessEntity(user?.role, "invoice") ? 7 : 24}>
             <Card
               title="Current Employees"
               className="currentEmployeesCard"

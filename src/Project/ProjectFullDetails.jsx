@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -16,12 +16,34 @@ import axios from "axios";
 import API_ENDPOINTS from "../config";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatMonthYear } from "../Utils/dateFormat";
+import AuthContext from "../Authentication/Context/AuthContext";
+import { ROLES } from "../Utils/roleAccess";
+
+// All 5 tabs are Accounting-owned today — this page itself is already
+// Accounting-only at the route level (see roleAccess.js ROUTE_ROLES), so
+// this is mostly a no-op in practice, but keeps tab-gating consistent with
+// Employee Full Details in case that page-level scoping ever loosens.
+const TAB_ROLES = {
+  "PROJECT SUMMARY": [ROLES.ACCOUNTING],
+  Assignments: [ROLES.ACCOUNTING],
+  WorkOrders: [ROLES.ACCOUNTING],
+  Invoices: [ROLES.ACCOUNTING],
+  Bills: [ROLES.ACCOUNTING],
+};
+
+const tabAllowed = (role, label) => {
+  if (!role) return false;
+  if (role === ROLES.ADMIN) return true;
+  const allowed = TAB_ROLES[label];
+  return !allowed || allowed.includes(role);
+};
 //const style: React.CSSProperties = { background: '#A9A9A9', padding: '8px 0' ,paddingLeft: '8px 0'};
 
 const { Panel } = Collapse;
 
 
 const ProjectFullDetails = () => {
+  const { user } = useContext(AuthContext);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
 
@@ -173,7 +195,8 @@ const ProjectFullDetails = () => {
       ),
     },
   ];
-  
+  const visibleItems = items.filter((item) => tabAllowed(user?.role, item.label));
+
   const handleCollapseChange = () => {
     setIsCollapsed(!isCollapsed);
   };
@@ -304,7 +327,7 @@ const ProjectFullDetails = () => {
         {/* Right Section (Tabs) */}
         <div style={{ flex: "1", overflow: "hidden" }}>
           <Card className="employeeTableCard" style={{ height: "100%" }}>
-            <Tabs className="bean-home-tabs" defaultActiveKey="2" items={items} />
+            <Tabs className="bean-home-tabs" defaultActiveKey="2" items={visibleItems} />
           </Card>
         </div>
       </div>

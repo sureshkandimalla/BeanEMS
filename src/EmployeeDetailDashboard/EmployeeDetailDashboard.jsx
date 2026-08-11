@@ -1,5 +1,5 @@
 // src/Dashboard/Dashboard.js
-import React, { useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Tabs, Card, Row, Col, Button, Flex, Drawer, Space, Tag, Collapse } from "antd";
 import { RiseOutlined, PlusOutlined } from "@ant-design/icons";
 import Newemployee from "../Newemployee/Newemployee";
@@ -12,11 +12,23 @@ import CurrentEmployeeCard from "../CurrentEmployeeCard/CurrentEmployeeCard";
 import { useChartOverview, ChartSettingsIcon } from "../Utils/ChartOverviewPanel";
 import "./EmployeeDetailDashboard.css";
 import WorkForceList from "../WorkForce/WorkForceList";
+import AuthContext from "../Authentication/Context/AuthContext";
+import { canAccessEntity } from "../Utils/roleAccess";
 import API_ENDPOINTS from "../config";
 
 const { Panel } = Collapse;
 
+// key -> entity it depends on, so chart visibility derives from the same
+// role permissions used everywhere else instead of a hand-maintained copy.
+const CHART_ENTITY = {
+  totalProjects: "project",
+  revenue: "invoice",
+  invoiceStatus: "invoice",
+  workforceStatus: "team",
+};
+
 const Dashboard = () => {
+  const { user } = useContext(AuthContext);
   //addedchangesstart
   const [rowData, setRowData] = useState([]);
   const [workForceChartData, setWorkForceChartData] = useState([]);
@@ -159,7 +171,10 @@ const Dashboard = () => {
       ),
     },
   ];
-  const { settingsContent, contentNode } = useChartOverview(dashboardOverviewCharts);
+  const visibleOverviewCharts = dashboardOverviewCharts.filter((c) =>
+    canAccessEntity(user?.role, CHART_ENTITY[c.key]),
+  );
+  const { settingsContent, contentNode } = useChartOverview(visibleOverviewCharts);
 
   const [employeeDrawerVisible, setEmployeeDrawerVisible] = useState(false);
   const [customerDrawerVisible, setCustomerDrawerVisible] = useState(false);
@@ -233,7 +248,7 @@ const Dashboard = () => {
       label: "Employee List",
       children: <WorkForceList />,
     },
-  ];
+  ].filter((item) => item.label !== "Invoices" || canAccessEntity(user?.role, "invoice"));
   const toggleTabs = (e) => {};
 
   return (
@@ -248,13 +263,17 @@ const Dashboard = () => {
         <Col span={12} className="buttonsBar">
           <Flex gap="small" vertical align="end">
             <Flex gap="small" wrap="wrap">
-              <Button>Generate Invoice</Button>
-              <Button type="primary" onClick={showCustomerDrawer}>
-                <PlusOutlined /> Add New Customer
-              </Button>
-              <Button type="primary" onClick={showEmployeeDrawer}>
-                <PlusOutlined /> Add New Employee
-              </Button>
+              {canAccessEntity(user?.role, "invoice") && <Button>Generate Invoice</Button>}
+              {canAccessEntity(user?.role, "customer") && (
+                <Button type="primary" onClick={showCustomerDrawer}>
+                  <PlusOutlined /> Add New Customer
+                </Button>
+              )}
+              {canAccessEntity(user?.role, "team") && (
+                <Button type="primary" onClick={showEmployeeDrawer}>
+                  <PlusOutlined /> Add New Employee
+                </Button>
+              )}
             </Flex>
           </Flex>
         </Col>
@@ -299,15 +318,17 @@ const Dashboard = () => {
             onChange={toggleTabs}
             items={items}
             tabBarExtraContent={
-              <Flex gap="small" wrap="wrap">
-                <Button> Add Invoice </Button>
-                <Button type="primary" onClick={showCustomerDrawer}>
-                  <PlusOutlined /> Add Expense
-                </Button>
-                <Button type="primary" onClick={showEmployeeDrawer}>
-                  <PlusOutlined /> Add Payment
-                </Button>
-              </Flex>
+              canAccessEntity(user?.role, "invoice") && (
+                <Flex gap="small" wrap="wrap">
+                  <Button> Add Invoice </Button>
+                  <Button type="primary" onClick={showCustomerDrawer}>
+                    <PlusOutlined /> Add Expense
+                  </Button>
+                  <Button type="primary" onClick={showEmployeeDrawer}>
+                    <PlusOutlined /> Add Payment
+                  </Button>
+                </Flex>
+              )
             }
           ></Tabs>
         </Card>

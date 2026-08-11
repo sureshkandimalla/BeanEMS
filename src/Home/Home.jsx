@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Row, Col, Card, Button, Drawer, Flex, Collapse } from "antd";
 import { PlusOutlined, UserOutlined, BlockOutlined, ShopOutlined, FileTextOutlined, DollarOutlined, ProjectOutlined, BoxPlotOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,6 +8,8 @@ import NewCustomer from "../Customer/NewCustomer";
 import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
 import { useChartOverview, ChartSettingsIcon } from "../Utils/ChartOverviewPanel";
 import { GLOBAL_CHARTS } from "../Charts/globalChartRegistry";
+import AuthContext from "../Authentication/Context/AuthContext";
+import { canAccess, canAccessEntity } from "../Utils/roleAccess";
 import API_ENDPOINTS from "../config";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import "./Home.css";
@@ -50,8 +52,21 @@ const getUserFirstName = () => {
 // UTC-parse off-by-one pitfall — string-slice only, no Date object involved.
 const monthKey = (isoDateString) => (isoDateString || "").slice(0, 7);
 
+// GLOBAL_CHARTS key -> the entity it depends on, so visibility derives from
+// the same role permissions as everywhere else rather than being maintained
+// by hand a second time.
+const CHART_ENTITY = {
+  invoiceStatus: "invoice",
+  workforceStatus: "team",
+  revenueTrend: "invoice",
+  expensesByType: "expense",
+  activeProjectsByMonth: "project",
+  activeEmployeesByMonth: "team",
+};
+
 const Home = () => {
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [invoices, setInvoices] = useState([]);
   const [bills, setBills] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -88,7 +103,15 @@ const Home = () => {
     };
   }, [invoices, bills]);
 
-  const { settingsContent, contentNode } = useChartOverview(GLOBAL_CHARTS, { storageKey: "home-charts" });
+  const visibleCharts = useMemo(
+    () => GLOBAL_CHARTS.filter((c) => canAccessEntity(user?.role, CHART_ENTITY[c.key])),
+    [user?.role],
+  );
+  const { settingsContent, contentNode } = useChartOverview(visibleCharts, { storageKey: "home-charts" });
+  const visibleChips = useMemo(
+    () => CATEGORY_CHIPS.filter((chip) => canAccess(user?.role, chip.to)),
+    [user?.role],
+  );
 
   const [employeeDrawerVisible, setEmployeeDrawerVisible] = useState(false);
   const [customerDrawerVisible, setCustomerDrawerVisible] = useState(false);
@@ -106,7 +129,7 @@ const Home = () => {
       </h1>
 
       <div className="home-chip-row">
-        {CATEGORY_CHIPS.map((chip) => (
+        {visibleChips.map((chip) => (
           <Link to={chip.to} key={chip.to} className="home-chip">
             <span className={`left-tab-icon ${chip.iconClass}`}>{chip.icon}</span>
             {chip.label}
@@ -164,18 +187,26 @@ const Home = () => {
 
       <h3 className="home-section-title">Create actions</h3>
       <Flex gap="small" wrap="wrap" className="home-actions-row">
-        <Button onClick={() => navigate("/generateInvoice")}>
-          Generate Invoice
-        </Button>
-        <Button onClick={() => setCustomerDrawerVisible(true)}>
-          <PlusOutlined /> Add New Customer
-        </Button>
-        <Button onClick={() => setEmployeeDrawerVisible(true)}>
-          <PlusOutlined /> Add New Employee
-        </Button>
-        <Button onClick={() => setProjectDrawerVisible(true)}>
-          <PlusOutlined /> Add New Project
-        </Button>
+        {canAccessEntity(user?.role, "invoice") && (
+          <Button onClick={() => navigate("/generateInvoice")}>
+            Generate Invoice
+          </Button>
+        )}
+        {canAccessEntity(user?.role, "customer") && (
+          <Button onClick={() => setCustomerDrawerVisible(true)}>
+            <PlusOutlined /> Add New Customer
+          </Button>
+        )}
+        {canAccessEntity(user?.role, "team") && (
+          <Button onClick={() => setEmployeeDrawerVisible(true)}>
+            <PlusOutlined /> Add New Employee
+          </Button>
+        )}
+        {canAccessEntity(user?.role, "project") && (
+          <Button onClick={() => setProjectDrawerVisible(true)}>
+            <PlusOutlined /> Add New Project
+          </Button>
+        )}
       </Flex>
 
       <Drawer title="Employee Onboarding" placement="right" size="large" onClose={closeDrawers} open={employeeDrawerVisible}>

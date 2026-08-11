@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useContext, useState, useEffect, useRef, useMemo } from "react";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
@@ -24,6 +24,8 @@ import TrendLineChart from "../RevenueCharts/TrendLineChart";
 import PieCharts, { getPieColors } from "../PieCharts/PieCharts";
 import PieLegend from "../PieCharts/PieLegend";
 import ChartOverviewPanel from "../Utils/ChartOverviewPanel";
+import AuthContext from "../Authentication/Context/AuthContext";
+import { canAccessEntity } from "../Utils/roleAccess";
 
 // employeeId/projectId are optional — when provided (e.g. embedded in the
 // Employee Full Details "INVOICES" tab, or the Project Full Details
@@ -33,6 +35,7 @@ import ChartOverviewPanel from "../Utils/ChartOverviewPanel";
 // is likewise optional — when provided (e.g. embedded in a status tab on
 // the Dashboard), only invoices with that exact status are shown.
 const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, gridHeight, onRefresh } = {}) => {
+  const { user } = useContext(AuthContext);
   const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
@@ -413,6 +416,9 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       ),
     },
   ];
+  const visibleInvoiceOverviewCharts = invoiceOverviewCharts.filter(() =>
+    canAccessEntity(user?.role, "invoice"),
+  );
 
   const fetchData = () => {
     //default status =viewAll
@@ -732,7 +738,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
     {!employeeId && !projectId && (
       <ChartOverviewPanel
         panelTitle="Invoice Overview"
-        charts={invoiceOverviewCharts}
+        charts={visibleInvoiceOverviewCharts}
         alerts={
           <>
             <Popover content={invoiceAlertContent} title="Invoice Alerts" trigger="click" placement="bottomRight">

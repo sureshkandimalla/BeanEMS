@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
@@ -22,11 +22,36 @@ import PassportController from "../Passport/PassportController";
 import EmployeeTimesheetSummary from "../Timesheet/EmployeeTimesheetSummary";
 import { UpOutlined, DownOutlined,CalendarOutlined, DollarOutlined,MailOutlined,PhoneOutlined, UserOutlined } from "@ant-design/icons";
 import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message } from "antd";
+import AuthContext from "../Authentication/Context/AuthContext";
+import { ROLES, canAccessEntity } from "../Utils/roleAccess";
+
+// Which role(s) can see each tab, besides ADMIN (always full access). Tabs
+// not listed here (WA, FORMS, TASKS, EVALUATION, LEAVE REPORT) have no
+// content built yet, so they're left ungated.
+const TAB_ROLES = {
+  "PERSONNEL FILE": [ROLES.HR],
+  PROJECTS: [ROLES.HR],
+  INVOICES: [ROLES.ACCOUNTING],
+  PAYROLLS: [ROLES.ACCOUNTING],
+  TIMESHEETS: [ROLES.ACCOUNTING],
+  ADJUSTMENTS: [ROLES.ACCOUNTING],
+  RECONCILIATION: [ROLES.ACCOUNTING],
+  Bills: [ROLES.ACCOUNTING],
+  "FINAL REPORT": [ROLES.ACCOUNTING],
+};
+
+const tabAllowed = (role, label) => {
+  if (!role) return false;
+  if (role === ROLES.ADMIN) return true;
+  const allowed = TAB_ROLES[label];
+  return !allowed || allowed.includes(role);
+};
 
 const { Panel } = Collapse;
 
 const EmployeeFullDetails = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);  
+  const { user } = useContext(AuthContext);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const divStyle = {
     border: "1px solid #ccc",
     padding: "20px",
@@ -96,8 +121,11 @@ const EmployeeFullDetails = () => {
       ),
     },
   ];
+  const visibleEmployeeOverviewCharts = employeeOverviewCharts.filter(() =>
+    canAccessEntity(user?.role, "invoice"),
+  );
   const { settingsContent: revenueSettingsContent, contentNode: revenueContentNode } =
-    useChartOverview(employeeOverviewCharts);
+    useChartOverview(visibleEmployeeOverviewCharts);
 
   useEffect(() => {
     console.log("rowData:", rowData);
@@ -228,6 +256,7 @@ const EmployeeFullDetails = () => {
       ),
     },
   ];
+  const visibleItems = items.filter((item) => tabAllowed(user?.role, item.label));
 
   const toggleTabs = (e) => {
     //TODO
@@ -342,7 +371,7 @@ const EmployeeFullDetails = () => {
       {/* Right Section (Tabs) */}
       <div style={{ flex: "1", overflow: "hidden" }}>
         <Card className="employeeTableCard" style={{ height: "100%" }}>
-          <Tabs className="bean-home-tabs" defaultActiveKey={activeTab || "2"} items={items} />
+          <Tabs className="bean-home-tabs" defaultActiveKey={activeTab || "2"} items={visibleItems} />
         </Card>
       </div>
     </div>

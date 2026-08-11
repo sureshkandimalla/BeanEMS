@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useContext, useState, useMemo } from "react";
 import { Tabs, Card, Collapse, Button, Drawer, message, Checkbox } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { QueryClient, useQuery } from "@tanstack/react-query";
@@ -10,6 +10,8 @@ import WorkForceReconcileList from "./WorkForceReconcileList"
 import { useChartOverview, ChartSettingsIcon } from "../Utils/ChartOverviewPanel";
 import { GLOBAL_CHARTS } from "../Charts/globalChartRegistry";
 import "../WorkForce/WorkForce.css"
+import AuthContext from "../Authentication/Context/AuthContext";
+import { canAccessEntity } from "../Utils/roleAccess";
 import API_ENDPOINTS from "../config";
 
 const fetchEmployees = async () => {
@@ -24,6 +26,7 @@ const fetchReconcileRecords = async () => {
 const { Panel } = Collapse;
 
 const WorkForceContent = () => {
+  const { user } = useContext(AuthContext);
   const [open, setOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showNewHires, setShowNewHires] = useState(false);
@@ -99,8 +102,16 @@ const WorkForceContent = () => {
   // Company Overview reuses the same standardized chart widgets as the Home
   // page (colors, time-range dropdown, legend styling) instead of hand-rolled
   // PieCharts/PieLegend pairs, so the two pages look consistent.
-  const companyOverviewCharts = GLOBAL_CHARTS.filter((c) =>
-    ["invoiceStatus", "workforceStatus", "activeProjectsByMonth", "activeEmployeesByMonth"].includes(c.key)
+  const CHART_ENTITY = {
+    invoiceStatus: "invoice",
+    workforceStatus: "team",
+    activeProjectsByMonth: "project",
+    activeEmployeesByMonth: "team",
+  };
+  const companyOverviewCharts = GLOBAL_CHARTS.filter(
+    (c) =>
+      ["invoiceStatus", "workforceStatus", "activeProjectsByMonth", "activeEmployeesByMonth"].includes(c.key) &&
+      canAccessEntity(user?.role, CHART_ENTITY[c.key]),
   );
   const { settingsContent, contentNode } = useChartOverview(companyOverviewCharts);
 

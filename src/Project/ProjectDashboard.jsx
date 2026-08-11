@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useContext, useMemo, useState, useEffect } from "react";
 import "@ag-grid-community/styles/ag-grid.css";
 import { PlusOutlined, BellOutlined } from "@ant-design/icons";
 import RevenueCharts from "../RevenueCharts/RevenueCharts";
@@ -14,6 +14,8 @@ import ProjectList from "./ProjectsList";
 import API_ENDPOINTS from "../config";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatMonthYear } from "../Utils/dateFormat";
+import AuthContext from "../Authentication/Context/AuthContext";
+import { canAccessEntity } from "../Utils/roleAccess";
 
 // Same UTC-parse pitfall noted throughout this codebase: never
 // `new Date(isoString)` (parses as UTC midnight, off-by-one in timezones
@@ -28,6 +30,7 @@ const parseLocalDate = (isoDateString) => {
 const { Panel } = Collapse;
 
 const ProjectDashboard = () => {
+  const { user } = useContext(AuthContext);
   const [rowData, setRowData] = useState();
   const [activeKey, setActiveKey] = useState("0"); // State for active tab
   const [invoices, setInvoices] = useState([]);
@@ -249,7 +252,10 @@ const ProjectDashboard = () => {
       ),
     },
   ];
-  const { settingsContent, contentNode } = useChartOverview(projectOverviewCharts);
+  const visibleProjectOverviewCharts = projectOverviewCharts.filter(() =>
+    canAccessEntity(user?.role, "project"),
+  );
+  const { settingsContent, contentNode } = useChartOverview(visibleProjectOverviewCharts);
 
   const getFlattenedData = (data) => {
     let updatedData = data.map((dataObj) => {
