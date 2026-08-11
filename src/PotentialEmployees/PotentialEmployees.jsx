@@ -300,6 +300,8 @@ const PotentialEmployees = () => {
       </div>
       <div className= "pemployee-grid-wrapper">
       <AgGridReact
+        enableCellTextSelection={true}
+        ensureDomOrder={true}
         ref={gridRef}
         onGridReady={(params) => {
           gridRef.current = params.api;

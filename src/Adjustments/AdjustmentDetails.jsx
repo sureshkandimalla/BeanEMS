@@ -194,6 +194,8 @@ const AdjustementDetails = ({ employeeId, isCollapsed }) => {
       </div>
       <div  className={`assignment-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
+        enableCellTextSelection={true}
+        ensureDomOrder={true}
         ref={gridRef}
         onGridReady={(params) => {
           gridRef.current = params.api;

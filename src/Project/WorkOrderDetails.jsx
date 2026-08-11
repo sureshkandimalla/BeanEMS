@@ -192,6 +192,8 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
         </div>
         <div  className={`workOrder-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
+          enableCellTextSelection={true}
+          ensureDomOrder={true}
           onCellValueChanged={onCellValueChanged}
           onFirstDataRendered={(params) => {
             try { params.api.autoSizeAllColumns(); } catch (e) {}

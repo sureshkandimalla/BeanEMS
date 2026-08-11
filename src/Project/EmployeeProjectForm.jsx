@@ -191,6 +191,8 @@ const Grid = () => {
           </Link>
         </div>
         <AgGridReact
+          enableCellTextSelection={true}
+          ensureDomOrder={true}
           rowData={filterData()}
           columnDefs={getColumnsDefList(true, false)}
           domLayout="autoHeight"

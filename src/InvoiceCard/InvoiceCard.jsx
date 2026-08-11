@@ -165,6 +165,8 @@ const InvoiceCard = () => {
       </div>
       <div className="ag-theme-alpine employee-List-grid">
         <AgGridReact
+          enableCellTextSelection={true}
+          ensureDomOrder={true}
           ref={gridApi}
           onGridReady={(params) => {
             gridApi.current = params.api;

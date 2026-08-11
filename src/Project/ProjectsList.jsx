@@ -333,6 +333,8 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
       <div className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           ref={gridRef}
+          enableCellTextSelection={true}
+          ensureDomOrder={true}
           onGridReady={(params) => {
             gridRef.current = params.api;
           }}

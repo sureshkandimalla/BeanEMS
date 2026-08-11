@@ -213,6 +213,8 @@ const BillingDetails = ({ url, isCollapsed, onRefresh }) => {
       }`}
     >
       <AgGridReact
+        enableCellTextSelection={true}
+        ensureDomOrder={true}
         ref={gridRef}
         onGridReady={(params) => {
           gridRef.current = params.api;

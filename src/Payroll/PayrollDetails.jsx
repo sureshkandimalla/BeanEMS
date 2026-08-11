@@ -215,6 +215,8 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
           }}
         >
           <AgGridReact
+            enableCellTextSelection={true}
+            ensureDomOrder={true}
             ref={gridRef}
             onFirstDataRendered={(params) => {
               try { params.api.autoSizeAllColumns(); } catch (e) {}

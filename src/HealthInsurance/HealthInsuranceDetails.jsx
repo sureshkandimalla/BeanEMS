@@ -223,6 +223,8 @@ const HealthInsuranceDetails = ({ rowData: externalRowData, onRefresh, employeeI
           }}
         >
           <AgGridReact
+            enableCellTextSelection={true}
+            ensureDomOrder={true}
             ref={gridRef}
             onFirstDataRendered={(params) => {
               try { params.api.autoSizeAllColumns(); } catch (e) {}

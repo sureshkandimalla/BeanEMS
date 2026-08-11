@@ -91,6 +91,8 @@ const Active = () => {
         style={{ height: "500px", width: "100%" }}
       >
         <AgGridReact
+          enableCellTextSelection={true}
+          ensureDomOrder={true}
           rowData={employeeData}
           columnDefs={columnDefs}
           pagination={true}

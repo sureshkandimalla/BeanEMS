@@ -1187,6 +1187,8 @@ const MonthlyTimesheets = () => {
       {selectedMonth ? (
         <div className="ag-theme-alpine" style={{ flex: 1, minHeight: 0 }}>
           <AgGridReact
+            enableCellTextSelection={true}
+            ensureDomOrder={true}
             ref={gridRef}
             rowData={rowData}
             columnDefs={columnDefs}
@@ -1203,6 +1205,8 @@ const MonthlyTimesheets = () => {
       ) : selectedEmployeeId ? (
         <div className="ag-theme-alpine" style={{ flex: 1, minHeight: 0 }}>
           <AgGridReact
+            enableCellTextSelection={true}
+            ensureDomOrder={true}
             rowData={summaryRows}
             columnDefs={summaryColumnDefs}
             onCellValueChanged={onSummaryCellValueChanged}

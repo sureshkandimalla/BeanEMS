@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Card, Select, DatePicker, InputNumber, Button, Table, Tag, message, Row, Col } from "antd";
-import { SaveOutlined, SendOutlined, CheckCircleOutlined, UnlockOutlined } from "@ant-design/icons";
+import { SaveOutlined, SendOutlined, CheckCircleOutlined, UnlockOutlined, PlusOutlined } from "@ant-design/icons";
 import axios from "axios";
 import dayjs from "dayjs";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import API_ENDPOINTS from "../config";
 
 const { Option } = Select;
@@ -99,6 +99,7 @@ const TimesheetEntry = () => {
   // land directly on that employee/project/month instead of the blank
   // picker state.
   const location = useLocation();
+  const navigate = useNavigate();
   const preselectionApplied = useRef(false);
 
   const [employees, setEmployees] = useState([]);
@@ -338,6 +339,34 @@ const TimesheetEntry = () => {
       .catch((error) => message.error("Reopen failed: " + (error.response?.data?.message || error.message)));
   };
 
+  // Mirrors InvoiceDetails.jsx's employeeId-scoped generateInvoice(): same
+  // "anything left to generate" pre-check, same endpoint, same destination
+  // (GenerateInvoiceDetails via /generateInvoice), so hours auto-populate
+  // from timesheets exactly as they do from the Employee Full Details
+  // Invoices tab.
+  const handleGenerateInvoice = () => {
+    if (!selectedEmployeeId) return;
+    axios
+      .get(API_ENDPOINTS.activeProjectsForInvoiceByEmployee(selectedEmployeeId))
+      .then((response) => {
+        const rows = response.data || [];
+        const remaining = rows.filter((row) => !row.invoiceId);
+        if (rows.length > 0 && remaining.length === 0) {
+          message.success(`Invoices for ${rows[0].employeeName || "this employee"} is up to date`);
+          return;
+        }
+        navigate("/generateInvoice", {
+          state: { url: API_ENDPOINTS.activeProjectsForInvoiceByEmployee(selectedEmployeeId) },
+        });
+      })
+      .catch((error) => {
+        console.error("Error checking invoice status:", error);
+        navigate("/generateInvoice", {
+          state: { url: API_ENDPOINTS.activeProjectsForInvoiceByEmployee(selectedEmployeeId) },
+        });
+      });
+  };
+
   const diff = totalHoursInput != null ? Number(totalHoursInput) - standardHours : null;
 
   const dayMap = useMemo(() => {
@@ -396,7 +425,14 @@ const TimesheetEntry = () => {
 
   return (
     <div style={{ padding: 16 }}>
-      <Card style={{ marginBottom: 16 }}>
+      <Card
+        style={{ marginBottom: 16 }}
+        extra={
+          <Button type="primary" disabled={!selectedEmployeeId} onClick={handleGenerateInvoice}>
+            <PlusOutlined /> Generate Invoice
+          </Button>
+        }
+      >
         <Row gutter={16} align="middle">
           <Col span={6}>
             <div style={{ marginBottom: 4 }}>Employee</div>

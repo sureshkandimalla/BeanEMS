@@ -213,6 +213,8 @@ const EmployeeTimesheetSummary = ({ employeeId, isCollapsed, gridHeight = "calc(
     >
       <div style={{ height: gridHeight, minHeight: 300, width: "100%" }}>
         <AgGridReact
+          enableCellTextSelection={true}
+          ensureDomOrder={true}
           rowData={rowData}
           columnDefs={columnDefs}
           loading={loading}

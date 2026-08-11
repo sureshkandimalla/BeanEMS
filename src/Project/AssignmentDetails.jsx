@@ -223,6 +223,8 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
         </div>
         <div  className={`assignment-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
+          enableCellTextSelection={true}
+          ensureDomOrder={true}
           onCellValueChanged={onCellValueChanged}
           onFirstDataRendered={(params) => {
             try { params.api.autoSizeAllColumns(); } catch (e) {}

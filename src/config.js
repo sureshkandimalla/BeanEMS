@@ -118,6 +118,8 @@ export const API_ENDPOINTS = {
   getPayPeriods: `${API_BASE_URL}/payrollsummary/getPayPeriods`,
   getAssignmentsEligibleForPeriod: (startDate, endDate) => `${API_BASE_URL}/assignmentsEligibleForPeriod?startDate=${startDate}&endDate=${endDate}`,
   getPayrollSummaryByPayPeriod: (payPeriodId) => `${API_BASE_URL}/payrollsummary/getByPayPeriod?payPeriodId=${payPeriodId}`,
+  getHoursReport: (payPeriodId, employeeId) =>
+    `${API_BASE_URL}/hours-report/getReport?payPeriodId=${payPeriodId}${employeeId ? `&employeeId=${employeeId}` : ""}`,
   projectsById: (projectId) => `${API_BASE_URL}/projects/${projectId}`,
   employeeById: (employeeId) => `${API_BASE_URL}/employees/employee/${employeeId}`,
   updateEmployee: (employeeId) => `${API_BASE_URL}/employees/${employeeId}`,

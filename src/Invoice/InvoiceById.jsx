@@ -206,6 +206,8 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
       </div>
       <div  className={`invoice-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
+        enableCellTextSelection={true}
+        ensureDomOrder={true}
         onFirstDataRendered={(params) => {
           try { params.api.autoSizeAllColumns(); } catch (e) {}
         }}

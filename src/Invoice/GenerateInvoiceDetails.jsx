@@ -557,6 +557,8 @@ const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {})
               />
             ) : (
               <AgGridReact
+                enableCellTextSelection={true}
+                ensureDomOrder={true}
                 ref={gridRef}
                 onGridReady={(params) => {
                   gridRef.current = params.api;

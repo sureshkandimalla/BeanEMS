@@ -19,6 +19,7 @@ import {
   BankOutlined,
   AuditOutlined,
   CloudUploadOutlined,
+  FileSearchOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -53,6 +54,7 @@ const leftTabNames = [
   getItem("Health Insurance", "/healthinsurance", <MedicineBoxOutlined />, "icon-insurance"),
   getItem("Time", "/timesheets", <ClockCircleOutlined />, "icon-time"),
   getItem("Monthly Timesheets", "/monthlytimesheets", <ClockCircleOutlined />, "icon-monthlytime"),
+  getItem("Hours Report", "/hoursreport", <FileSearchOutlined />, "icon-hoursreport"),
   getItem("Company Report", "/companyreport", <BankOutlined />, "icon-report"),
   getItem("Master Data Load", "/masterdataload", <CloudUploadOutlined />, "icon-masterdata"),
 ];

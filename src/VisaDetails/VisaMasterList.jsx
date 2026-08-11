@@ -317,6 +317,8 @@ const VisaMasterList = () => {
           </div>
           <div className="workforce-grid-wrapper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
             <AgGridReact
+              enableCellTextSelection={true}
+              ensureDomOrder={true}
               ref={gridRef}
               onGridReady={(params) => {
                 gridRef.current = params.api;

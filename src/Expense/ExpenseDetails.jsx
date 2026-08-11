@@ -263,6 +263,8 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
             style={gridHeight ? { height: gridHeight, maxHeight: gridHeight } : undefined}
           >
             <AgGridReact
+              enableCellTextSelection={true}
+              ensureDomOrder={true}
               ref={gridRef}
               onGridReady={(params) => {
                 gridRef.current = params.api;

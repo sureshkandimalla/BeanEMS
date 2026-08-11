@@ -314,6 +314,8 @@ const PayrollEligibility = () => {
 
       <div className="ag-theme-alpine" style={{ flex: 1, minHeight: 0 }}>
         <AgGridReact
+          enableCellTextSelection={true}
+          ensureDomOrder={true}
           ref={gridRef}
           rowData={filteredRowData}
           columnDefs={sizeColumnsForHeader(columnDefs)}

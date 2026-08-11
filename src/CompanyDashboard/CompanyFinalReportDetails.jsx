@@ -346,6 +346,8 @@ export default function CompanyFinalReportDetails() {
         </div>
         <div className="project-grid-wrapper">
           <AgGridReact
+            enableCellTextSelection={true}
+            ensureDomOrder={true}
             ref={gridRef}
             onGridReady={(params) => {
               gridRef.current = params.api;

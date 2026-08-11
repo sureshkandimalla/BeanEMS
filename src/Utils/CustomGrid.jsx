@@ -328,6 +328,8 @@ const CustomGrid = ({
         >
           <GridErrorBoundary>
             <AgGridReact
+              enableCellTextSelection={true}
+              ensureDomOrder={true}
               ref={gridRef}
               style={{ height: "100%", width: "100%" }}
               className="ag-grid-full-height"

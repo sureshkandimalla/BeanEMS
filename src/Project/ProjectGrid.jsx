@@ -180,6 +180,8 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
       </div>
       <div  className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
+        enableCellTextSelection={true}
+        ensureDomOrder={true}
         onFirstDataRendered={(params) => {
           try { params.api.autoSizeAllColumns(); } catch (e) {}
         }}

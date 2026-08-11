@@ -754,6 +754,8 @@ export default function VisaDetailsList({ preloadedData }) {
           </div>
           <div className="ag-grid-wrapper">
             <AgGridReact
+              enableCellTextSelection={true}
+              ensureDomOrder={true}
               ref={gridRef}
               onGridReady={(params) => {
                 gridRef.current = params.api;

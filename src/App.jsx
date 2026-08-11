@@ -40,6 +40,7 @@ import HealthInsuranceSummary from "./HealthInsurance/HealthInsuranceSummary";
 import TimesheetEntry from "./Timesheet/TimesheetEntry";
 import MonthlyTimesheets from "./Timesheet/MonthlyTimesheets";
 import MasterDataLoad from "./MasterDataLoad/MasterDataLoad";
+import HoursReport from "./HoursReport/HoursReport";
 const clientId = '206630439236-q0q2np2g72vf5rgodjk4hhv814i3q7ai.apps.googleusercontent.com';
 const { Content } = Layout;
 
@@ -76,6 +77,7 @@ const App = () => {
               <Route path="/healthinsurance" element={<HealthInsuranceSummary />} />
               <Route path="/timesheets" element={<TimesheetEntry />} />
               <Route path="/monthlytimesheets" element={<MonthlyTimesheets />} />
+              <Route path="/hoursreport" element={<HoursReport />} />
               <Route
                 path="/employeeFullDetails"
                 element={<EmployeeFullDetailsComponent />}
