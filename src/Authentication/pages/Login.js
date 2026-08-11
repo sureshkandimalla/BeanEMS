@@ -3,6 +3,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { message } from "antd";
 import AuthContext from "../Context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { getLandingPage } from "../../Utils/roleAccess";
 
 const Login = () => {
   const { user, login } = useContext(AuthContext);
@@ -17,9 +18,9 @@ const Login = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate("/home");
+      navigate(getLandingPage(user?.role));
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, user?.role]);
 
   if (isAuthenticated) {
     return null; // Already logged in, skip login UI
@@ -27,8 +28,8 @@ const Login = () => {
 
   const handleSuccess = async (response) => {
     try {
-      await login(response);
-      navigate("/home");
+      const loggedInUser = await login(response);
+      navigate(getLandingPage(loggedInUser?.role));
     } catch (error) {
       const reason =
         error.response?.data?.error ||

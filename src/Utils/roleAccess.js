@@ -11,6 +11,12 @@ export const ROLES = {
 // /generateInvoice, reached from multiple entry points, from being
 // accidentally locked out by an omission.
 export const ROUTE_ROLES = {
+  // Immigration's landing page is /visaEmployees (see getLandingPage), not
+  // the shared Home/Dashboard overview pages built around HR/Accounting
+  // data — so they're excluded here rather than left open to "any role".
+  "/home": [ROLES.HR, ROLES.ACCOUNTING],
+  "/dashboard": [ROLES.HR, ROLES.ACCOUNTING],
+
   // Team/Employees is visible to all three non-Admin roles (Accounting bills
   // them, HR manages them, Immigration handles their visas) — only the
   // Add/Edit actions inside entity pages like this one are naturally scoped
@@ -58,7 +64,8 @@ export function canAccess(userRole, path) {
 // separate permission for those). Used for cross-cutting UI — quick-action
 // buttons, tabs, and chart widgets — that live on pages reachable by more
 // roles than the entity itself belongs to (e.g. Home/Dashboard are open to
-// everyone, but their "Add New Customer" shortcut is still Accounting-only).
+// HR and Accounting, but their "Add New Customer" shortcut is still
+// Accounting-only).
 export const ENTITY_ROLES = {
   team: [ROLES.HR, ROLES.ACCOUNTING, ROLES.IMMIGRATION],
   vendor: [ROLES.ACCOUNTING],
@@ -80,4 +87,12 @@ export function canAccessEntity(userRole, entityKey) {
   if (userRole === ROLES.ADMIN) return true;
   const allowed = ENTITY_ROLES[entityKey];
   return !allowed || allowed.includes(userRole);
+}
+
+// Where a role lands after login (and falls back to on an unknown URL /
+// "back to home" from Access Denied) — everyone else still gets the shared
+// /home dashboard.
+export function getLandingPage(userRole) {
+  if (userRole === ROLES.IMMIGRATION) return "/visaEmployees";
+  return "/home";
 }

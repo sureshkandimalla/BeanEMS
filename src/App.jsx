@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import {
   BrowserRouter as Router,
@@ -6,6 +6,8 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
+import AuthContext from "./Authentication/Context/AuthContext";
+import { getLandingPage } from "./Utils/roleAccess";
 import { Layout, Col, Row } from "antd";
 import Header from "./Header/Header";
 import LeftTabs from "./LeftTabs/LeftTabs";
@@ -44,6 +46,13 @@ import HoursReport from "./HoursReport/HoursReport";
 import UserRoles from "./Admin/UserRoles";
 const clientId = '206630439236-q0q2np2g72vf5rgodjk4hhv814i3q7ai.apps.googleusercontent.com';
 const { Content } = Layout;
+
+// Unknown URLs bounce to the current user's landing page (role-aware —
+// see roleAccess.js getLandingPage) rather than a hardcoded /home.
+const DefaultRedirect = () => {
+  const { user } = useContext(AuthContext);
+  return <Navigate to={getLandingPage(user?.role)} />;
+};
 
 const App = () => {
   return (
@@ -127,7 +136,7 @@ const App = () => {
               />
 
               {/* Redirect unknown routes to Home */}
-              <Route path="*" element={<Navigate to="/home" />} />
+              <Route path="*" element={<DefaultRedirect />} />
             </Route>
           </Routes>
         </Router>

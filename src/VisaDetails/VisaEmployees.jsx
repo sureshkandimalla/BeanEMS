@@ -160,7 +160,7 @@ const VisaEmployees = () => {
   ];
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "auto" }}>
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
       {/* KPI Cards */}
       <Row gutter={16} style={{ margin: "12px 12px 0" }}>

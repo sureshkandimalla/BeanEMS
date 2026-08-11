@@ -65,7 +65,5 @@
     flex-direction: column;
     height: 100%;
     width: 100% !important;
-    min-height: 500px;
-    max-height: calc(100vh - 250px);
-    transition: max-height 0.3s ease-in-out;
+    min-height: 0;
   }

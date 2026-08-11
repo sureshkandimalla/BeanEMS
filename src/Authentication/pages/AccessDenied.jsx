@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { Result, Button } from "antd";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../Context/AuthContext";
+import { getLandingPage } from "../../Utils/roleAccess";
 
 // Shown by MainLayout's role gate (see roleAccess.js) both when a logged-in
 // user's role doesn't cover the current page, and when they have no role
@@ -22,7 +23,7 @@ const AccessDenied = () => {
       title="Access Denied"
       subTitle={subTitle}
       extra={
-        <Button type="primary" onClick={() => navigate("/home")}>
+        <Button type="primary" onClick={() => navigate(getLandingPage(user?.role))}>
           Back to Home
         </Button>
       }
