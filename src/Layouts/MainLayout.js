@@ -1,12 +1,19 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Layout, Row, Col } from "antd";
 import Header from "../Header/Header";
 import LeftTabs from "../LeftTabs/LeftTabs";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
+import AuthContext from "../Authentication/Context/AuthContext";
+import AccessDenied from "../Authentication/pages/AccessDenied";
+import { canAccess } from "../Utils/roleAccess";
 
 const { Content } = Layout;
 
 const MainLayout = () => {
+  const { user } = useContext(AuthContext);
+  const location = useLocation();
+  const allowed = canAccess(user?.role, location.pathname);
+
   return (
     <Layout style={{ height: "100vh", overflow: "hidden" }}>
       <Header />
@@ -32,7 +39,7 @@ const MainLayout = () => {
                   overflowX: "auto",
                 }}
               >
-                <Outlet />
+                {allowed ? <Outlet /> : <AccessDenied />}
               </Content>
             </Layout>
           </Col>

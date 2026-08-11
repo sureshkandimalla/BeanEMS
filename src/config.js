@@ -183,6 +183,9 @@ export const API_ENDPOINTS = {
   masterDataTemplate: (entityType) => `${API_BASE_URL}/masterdata/template/${entityType}`,
   masterDataImport: (entityType) => `${API_BASE_URL}/masterdata/import/${entityType}`,
   importPayrollSummaryCsv: `${API_BASE_URL}/payrollsummary/import`,
+  getAllUserRoles: `${API_BASE_URL}/userRoles`,
+  upsertUserRole: `${API_BASE_URL}/userRoles`,
+  deleteUserRole: (email) => `${API_BASE_URL}/userRoles/${encodeURIComponent(email)}`,
 };
 
 export const employeeTypeOptions = [

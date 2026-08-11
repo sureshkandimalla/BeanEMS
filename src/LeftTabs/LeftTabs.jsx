@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   HomeOutlined,
   ProfileOutlined,
@@ -20,10 +20,13 @@ import {
   AuditOutlined,
   CloudUploadOutlined,
   FileSearchOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
 import ProjectDashboard from "../Project/ProjectDashboard";
+import AuthContext from "../Authentication/Context/AuthContext";
+import { canAccess } from "../Utils/roleAccess";
 import "./LeftTabs.css";
 
 function getItem(tabName, key, icon, iconClass, children, type) {
@@ -57,10 +60,13 @@ const leftTabNames = [
   getItem("Hours Report", "/hoursreport", <FileSearchOutlined />, "icon-hoursreport"),
   getItem("Company Report", "/companyreport", <BankOutlined />, "icon-report"),
   getItem("Master Data Load", "/masterdataload", <CloudUploadOutlined />, "icon-masterdata"),
+  getItem("User Access", "/userAccess", <SafetyCertificateOutlined />, "icon-useraccess"),
 ];
 const LeftTabs = () => {
   const [collapsed, setCollapsed] = useState(true);
   const location = useLocation();
+  const { user } = useContext(AuthContext);
+  const visibleTabs = leftTabNames.filter((item) => canAccess(user?.role, item.key));
   const toggleCollapsed = () => {
     setCollapsed(!collapsed);
   };
@@ -87,7 +93,7 @@ const LeftTabs = () => {
           overflowX: "hidden",
         }}
         inlineCollapsed={collapsed}
-        items={leftTabNames}
+        items={visibleTabs}
       />
     </>
   );
