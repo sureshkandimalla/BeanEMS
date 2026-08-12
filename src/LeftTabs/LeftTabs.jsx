@@ -1,101 +1,409 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
+  PlusOutlined,
+  BookOutlined,
   HomeOutlined,
-  ProfileOutlined,
-  UserOutlined,
-  UsergroupAddOutlined,
-  BlockOutlined,
-  ShopOutlined,
-  BoxPlotOutlined,
-  HistoryOutlined,
-  FileTextOutlined,
-  MedicineBoxOutlined,
-  ClockCircleOutlined,
-  SettingOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  ProjectOutlined,
+  TeamOutlined,
+  GlobalOutlined,
+  LineChartOutlined,
+  AppstoreOutlined,
+  PieChartOutlined,
   DollarOutlined,
-  BankOutlined,
-  AuditOutlined,
-  CloudUploadOutlined,
-  FileSearchOutlined,
-  SafetyCertificateOutlined,
+  TagsOutlined,
+  SlidersOutlined,
 } from "@ant-design/icons";
-import { Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
-import ProjectDashboard from "../Project/ProjectDashboard";
 import AuthContext from "../Authentication/Context/AuthContext";
 import { canAccess } from "../Utils/roleAccess";
 import "./LeftTabs.css";
 
-function getItem(tabName, key, icon, iconClass, children, type) {
-  return {
-    key,
-    icon: <span className={`left-tab-icon ${iconClass}`}>{icon}</span>,
-    children,
-    label: <Link to={key}>{tabName}</Link>,
-    type,
-  };
-}
-//Left Tab names
-const leftTabNames = [
-  getItem("Home", "/home", <HomeOutlined />, "icon-home"),
-  getItem("Dashboard", "/dashboard", <ProfileOutlined />, "icon-dashboard"),
-  getItem("Team", "/workforce", <UserOutlined />, "icon-team"),
-  getItem("Customer", "/customerdetails", <BlockOutlined />, "icon-customer"),
-  getItem("Vendor", "/vendordetails", <ShopOutlined />, "icon-vendor"),
-  getItem("Invoice", "/invoicedetails", <FileTextOutlined />, "icon-invoice"),
-  getItem("Expenses", "/expensedetails", <DollarOutlined />, "icon-expenses"),
-  getItem("Projects", "/projects", <ProjectOutlined />, "icon-projects"),
-  getItem("Potential Employees", "/potentialEmployees", <UserOutlined />, "icon-potential"),
-  getItem("Visa Employees", "/visaEmployees", <UsergroupAddOutlined />, "icon-visa"),
-  getItem("LCA Details", "/lcaDetails", <FileTextOutlined />, "icon-lca"),
-  getItem("Visa Details", "/visaDetails", <FileTextOutlined />, "icon-visadetails"),
-  getItem("Payroll Summary", "/payrollsummary", <BoxPlotOutlined />, "icon-payroll"),
-  getItem("Payroll Eligibility", "/payrolleligibility", <AuditOutlined />, "icon-eligibility"),
-  getItem("Health Insurance", "/healthinsurance", <MedicineBoxOutlined />, "icon-insurance"),
-  getItem("Time", "/timesheets", <ClockCircleOutlined />, "icon-time"),
-  getItem("Monthly Timesheets", "/monthlytimesheets", <ClockCircleOutlined />, "icon-monthlytime"),
-  getItem("Hours Report", "/hoursreport", <FileSearchOutlined />, "icon-hoursreport"),
-  getItem("Company Report", "/companyreport", <BankOutlined />, "icon-report"),
-  getItem("Master Data Load", "/masterdataload", <CloudUploadOutlined />, "icon-masterdata"),
-  getItem("User Access", "/userAccess", <SafetyCertificateOutlined />, "icon-useraccess"),
+// The rail icons themselves are still PLACEHOLDER labels/icons, kept
+// identical to the QuickBooks reference design on purpose — only "Home" is
+// wired to a real route so far. The Create flyout below, though, is wired
+// to real BeanEMS pages (see CREATE_MENU).
+const RAIL_ITEMS_TOP = [
+  { key: "create", label: "Create", icon: <PlusOutlined />, hasFlyout: true },
+  { key: "bookmarks", label: "Bookmarks", icon: <BookOutlined /> },
+  { key: "home", label: "Home", icon: <HomeOutlined />, to: "/home" },
+  { key: "team", label: "Team", icon: <TeamOutlined />, hasFlyout: true },
+  { key: "immigration", label: "Immigration", icon: <GlobalOutlined />, hasFlyout: true },
+  { key: "reports", label: "Reports", icon: <LineChartOutlined />, hasFlyout: true },
+  { key: "allapps", label: "All apps", icon: <AppstoreOutlined /> },
 ];
+
+const RAIL_ITEMS_PINNED = [
+  { key: "accounting", label: "Accounting", icon: <PieChartOutlined />, hasFlyout: true },
+  { key: "expenses", label: "Expenses", icon: <DollarOutlined /> },
+  { key: "sales", label: "Sales", icon: <TagsOutlined /> },
+];
+
+// Same 4-column layout as the QuickBooks reference, but each column now
+// links to the BeanEMS page it actually maps to instead of QB's own demo
+// items. Gated by the same ROUTE_ROLES canAccess() every other route uses,
+// so a role only ever sees links it could already reach.
+const CREATE_MENU = [
+  {
+    title: "Customers",
+    items: [
+      // Quick-add shortcuts — land straight on each page's add-new drawer
+      // (via ?new=1) instead of just the grid.
+      { label: "Customer", to: "/customerdetails?new=1" },
+      { label: "Project", to: "/projects?new=1" },
+      { label: "Invoice", to: "/invoicedetails?new=1" },
+    ],
+  },
+  {
+    title: "Vendors",
+    items: [
+      { label: "Vendor", to: "/vendordetails?new=1" },
+      { label: "Expenses", to: "/expensedetails?new=1" },
+    ],
+  },
+  {
+    title: "Team",
+    items: [
+      { label: "Employee", to: "/workforce?new=1" },
+      { label: "Timesheets", to: "/timesheets" },
+    ],
+  },
+  {
+    title: "Immigration",
+    items: [
+      { label: "LCA", to: "/lcaDetails?new=1" },
+      { label: "Visa", to: "/visaDetails?new=1" },
+    ],
+  },
+  {
+    title: "Other",
+    items: [
+      { label: "Dashboard", to: "/dashboard" },
+      { label: "Master Data Load", to: "/masterdataload" },
+      { label: "User Access", to: "/userAccess" },
+    ],
+  },
+];
+
+// How the sections above stack into the flyout's actual columns —
+// Customers+Vendors share one column, Team+Immigration share another,
+// Other gets its own. Sections keep their own sub-heading within the
+// shared column instead of merging into one list.
+const CREATE_MENU_COLUMNS = [
+  ["Customers", "Vendors"],
+  ["Team", "Immigration"],
+  ["Other"],
+];
+
+// "Accounting" rail icon's flyout — the same Customers/Vendors sections
+// as the Create mega-menu, but stripped of "?new=1" (plain navigation to
+// the list page, not a quick-add shortcut) — derived from CREATE_MENU
+// rather than re-listed so the two stay in sync — plus an Adjustments
+// section that has no Create-menu counterpart.
+const ACCOUNTING_MENU = [
+  ...CREATE_MENU
+    .filter((section) => section.title === "Customers" || section.title === "Vendors")
+    .map((section) => ({
+      ...section,
+      items: section.items.map((it) => ({ ...it, to: it.to.split("?")[0] })),
+    })),
+  {
+    title: "Adjustments",
+    items: [{ label: "Adjustments", to: "/adjustmentDetails" }],
+  },
+];
+
+// Two columns — Customers alone in column 1, Vendors+Adjustments stacked
+// in column 2 — same column-grouping pattern as CREATE_MENU_COLUMNS.
+const ACCOUNTING_MENU_COLUMNS = [
+  ["Customers"],
+  ["Vendors", "Adjustments"],
+];
+
+// "Immigration" rail icon's flyout — same Immigration section as the
+// Create mega-menu (and same card look — white rounded panel with a
+// titled section, per CREATE_MENU_COLUMNS), stripped of "?new=1" since
+// this is plain navigation like the Team/Accounting icons — plus Visa
+// Employees, which has no Create-menu counterpart (it's a roster view,
+// not an add-new shortcut).
+const IMMIGRATION_MENU = CREATE_MENU
+  .filter((section) => section.title === "Immigration")
+  .map((section) => ({
+    ...section,
+    items: [
+      ...section.items.map((it) => ({ ...it, to: it.to.split("?")[0] })),
+      { label: "Visa Employees", to: "/visaEmployees" },
+    ],
+  }));
+
+// Simple flat submenu for the rail's "Team" icon — the three
+// employee-roster views, gated the same way every other route is.
+const TEAM_MENU = [
+  { label: "Employees", to: "/workforce" },
+  { label: "Visa Employees", to: "/visaEmployees" },
+  { label: "Potential Employees", to: "/potentialEmployees" },
+];
+
+// Single-column "Reports" flyout — mirrors one column of the Create
+// mega-menu (a sub-heading plus its items), just narrower since there's
+// only one section so far. Add more sections here if Reports grows.
+const REPORTS_MENU = [
+  {
+    title: "Payroll",
+    items: [
+      { label: "Payroll Summary", to: "/payrollsummary" },
+      { label: "Payroll Eligibility", to: "/payrolleligibility" },
+      { label: "Health Insurance", to: "/healthinsurance" },
+      { label: "Monthly Timesheets", to: "/monthlytimesheets" },
+      { label: "Hours Report", to: "/hoursreport" },
+    ],
+  },
+];
+
 const LeftTabs = () => {
-  const [collapsed, setCollapsed] = useState(true);
   const location = useLocation();
   const { user } = useContext(AuthContext);
-  const visibleTabs = leftTabNames.filter((item) => canAccess(user?.role, item.key));
-  const toggleCollapsed = () => {
-    setCollapsed(!collapsed);
+  // Which rail item's flyout is open ("create" | "reports" | null) —
+  // generalized so any rail item with hasFlyout:true can own a
+  // portal-rendered panel, not just Create.
+  const [activeFlyout, setActiveFlyout] = useState(null);
+  const [flyoutPos, setFlyoutPos] = useState({ top: 0, left: 0 });
+  const closeTimer = useRef(null);
+  const itemRefs = useRef({});
+
+  const visibleSections = CREATE_MENU.map((section) => ({
+    ...section,
+    // canAccess/ROUTE_ROLES is keyed by plain paths — strip any "?new=1"
+    // quick-add query string first so those shortcuts inherit the same
+    // gating as the page they point at, instead of bypassing it.
+    items: section.items.filter((it) => canAccess(user?.role, it.to.split("?")[0])),
+  })).filter((section) => section.items.length > 0);
+
+  const visibleCreateColumns = CREATE_MENU_COLUMNS.map((titles) =>
+    titles.map((title) => visibleSections.find((s) => s.title === title)).filter(Boolean),
+  ).filter((sections) => sections.length > 0);
+
+  const visibleAccountingSections = ACCOUNTING_MENU.map((section) => ({
+    ...section,
+    items: section.items.filter((it) => canAccess(user?.role, it.to)),
+  })).filter((section) => section.items.length > 0);
+
+  const visibleAccountingColumns = ACCOUNTING_MENU_COLUMNS.map((titles) =>
+    titles.map((title) => visibleAccountingSections.find((s) => s.title === title)).filter(Boolean),
+  ).filter((sections) => sections.length > 0);
+
+  const visibleImmigrationSections = IMMIGRATION_MENU.map((section) => ({
+    ...section,
+    items: section.items.filter((it) => canAccess(user?.role, it.to)),
+  })).filter((section) => section.items.length > 0);
+
+  const visibleTeamItems = TEAM_MENU.filter((it) => canAccess(user?.role, it.to));
+
+  const visibleReportsSections = REPORTS_MENU.map((section) => ({
+    ...section,
+    items: section.items.filter((it) => canAccess(user?.role, it.to)),
+  })).filter((section) => section.items.length > 0);
+
+  // Anchored via the rail icon's actual screen position (not CSS
+  // relative-to-rail) so the flyout can be portaled straight to <body> and
+  // escape any ancestor overflow:hidden — done this way specifically so
+  // MainLayout.js never needs to change (its overflow:hidden is what keeps
+  // AG Grid's bounded-height containers sized correctly).
+  const openFlyout = (key) => {
+    clearTimeout(closeTimer.current);
+    const el = itemRefs.current[key];
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      setFlyoutPos({ top: rect.top, left: rect.right + 4 });
+    }
+    setActiveFlyout(key);
   };
-  return (
-    <>
-      {/*un comment this for toggle menu  */}
-      {/* <Button
-        type="primary"
-        onClick={toggleCollapsed}
-        style={{
-          marginBottom: 16,
-        }}
+  // A short delay before closing lets the cursor travel from the rail icon
+  // to the flyout panel without the menu disappearing mid-move.
+  const closeFlyout = () => {
+    closeTimer.current = setTimeout(() => setActiveFlyout(null), 150);
+  };
+
+  const renderItem = (item) => {
+    const isActive = item.to && location.pathname === item.to;
+    const body = (
+      <div
+        ref={item.hasFlyout ? (el) => { itemRefs.current[item.key] = el; } : undefined}
+        className={`rail-item ${isActive ? "rail-item-active" : ""}`}
+        onMouseEnter={item.hasFlyout ? () => openFlyout(item.key) : undefined}
+        onMouseLeave={item.hasFlyout ? closeFlyout : undefined}
       >
-        {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-      </Button> */}
-      <Menu
-        className="bean-left-nav"
-        mode="inline"
-        selectedKeys={[location.pathname]}
-        style={{
-          height: "100%",
-          borderRight: 0,
-          overflowY: "auto",
-          overflowX: "hidden",
-        }}
-        inlineCollapsed={collapsed}
-        items={visibleTabs}
-      />
-    </>
+        <span className="rail-item-icon">{item.icon}</span>
+        <span className="rail-item-label">{item.label}</span>
+      </div>
+    );
+    return item.to ? (
+      <Link to={item.to} className="rail-item-link" key={item.key}>
+        {body}
+      </Link>
+    ) : (
+      <div key={item.key}>{body}</div>
+    );
+  };
+
+  return (
+    <div className="bean-left-rail">
+      <div className="rail-section">{RAIL_ITEMS_TOP.map(renderItem)}</div>
+
+      <div className="rail-pinned-label">PINNED</div>
+      <div className="rail-section">{RAIL_ITEMS_PINNED.map(renderItem)}</div>
+
+      <div className="rail-spacer" />
+
+      <div className="rail-section rail-bottom">
+        {renderItem({ key: "customize", label: "Customize", icon: <SlidersOutlined /> })}
+      </div>
+
+      {activeFlyout === "create" &&
+        createPortal(
+          <div
+            className="create-flyout"
+            style={{ top: flyoutPos.top, left: flyoutPos.left }}
+            onMouseEnter={() => openFlyout("create")}
+            onMouseLeave={closeFlyout}
+          >
+            <div className="create-flyout-columns">
+              {visibleCreateColumns.map((sections, colIndex) => (
+                <div className="create-flyout-column" key={colIndex}>
+                  {sections.map((section) => (
+                    <div className="create-flyout-section" key={section.title}>
+                      <div className="create-flyout-column-title">{section.title}</div>
+                      {section.items.map((it) => (
+                        <Link
+                          to={it.to}
+                          className="create-flyout-item"
+                          key={it.label}
+                          onClick={() => setActiveFlyout(null)}
+                        >
+                          <span>{it.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {activeFlyout === "accounting" &&
+        visibleAccountingColumns.length > 0 &&
+        createPortal(
+          <div
+            className="accounting-flyout"
+            style={{ top: flyoutPos.top, left: flyoutPos.left }}
+            onMouseEnter={() => openFlyout("accounting")}
+            onMouseLeave={closeFlyout}
+          >
+            <div className="accounting-flyout-columns">
+              {visibleAccountingColumns.map((sections, colIndex) => (
+                <div className="create-flyout-column" key={colIndex}>
+                  {sections.map((section) => (
+                    <div className="create-flyout-section" key={section.title}>
+                      <div className="create-flyout-column-title">{section.title}</div>
+                      {section.items.map((it) => (
+                        <Link
+                          to={it.to}
+                          className="create-flyout-item"
+                          key={it.label}
+                          onClick={() => setActiveFlyout(null)}
+                        >
+                          <span>{it.label}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {activeFlyout === "immigration" &&
+        visibleImmigrationSections.length > 0 &&
+        createPortal(
+          <div
+            className="create-flyout immigration-flyout"
+            style={{ top: flyoutPos.top, left: flyoutPos.left }}
+            onMouseEnter={() => openFlyout("immigration")}
+            onMouseLeave={closeFlyout}
+          >
+            {visibleImmigrationSections.map((section) => (
+              <div className="create-flyout-section" key={section.title}>
+                <div className="create-flyout-column-title">{section.title}</div>
+                {section.items.map((it) => (
+                  <Link
+                    to={it.to}
+                    className="create-flyout-item"
+                    key={it.label}
+                    onClick={() => setActiveFlyout(null)}
+                  >
+                    <span>{it.label}</span>
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </div>,
+          document.body,
+        )}
+
+      {activeFlyout === "team" &&
+        visibleTeamItems.length > 0 &&
+        createPortal(
+          <div
+            className="team-flyout"
+            style={{ top: flyoutPos.top, left: flyoutPos.left }}
+            onMouseEnter={() => openFlyout("team")}
+            onMouseLeave={closeFlyout}
+          >
+            {visibleTeamItems.map((it) => (
+              <Link
+                to={it.to}
+                className="team-flyout-item"
+                key={it.label}
+                onClick={() => setActiveFlyout(null)}
+              >
+                {it.label}
+              </Link>
+            ))}
+          </div>,
+          document.body,
+        )}
+
+      {activeFlyout === "reports" &&
+        visibleReportsSections.length > 0 &&
+        createPortal(
+          <div
+            className="reports-flyout"
+            style={{ top: flyoutPos.top, left: flyoutPos.left }}
+            onMouseEnter={() => openFlyout("reports")}
+            onMouseLeave={closeFlyout}
+          >
+            {visibleReportsSections.map((section) => (
+              <div className="create-flyout-section" key={section.title}>
+                <div className="create-flyout-column-title">{section.title}</div>
+                {section.items.map((it) => (
+                  <Link
+                    to={it.to}
+                    className="create-flyout-item"
+                    key={it.label}
+                    onClick={() => setActiveFlyout(null)}
+                  >
+                    <span>{it.label}</span>
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </div>,
+          document.body,
+        )}
+    </div>
   );
 };
 export default LeftTabs;

@@ -111,6 +111,15 @@ const VisaMasterList = () => {
     setVisaModalData({});
   };
 
+  // Left-nav "Create > Immigration > Visa" links here with ?new=1 to land
+  // straight on the add-visa modal instead of just the grid.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("new") === "1") {
+      openNewVisaModal();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const openEditVisaModal = (visa) => {
     fetchLcaOptions();
     setIsNewVisa(false);
@@ -323,6 +332,8 @@ const VisaMasterList = () => {
               onGridReady={(params) => {
                 gridRef.current = params.api;
               }}
+              onSortChanged={(params) => params.api.refreshCells({ force: true })}
+              onFilterChanged={(params) => params.api.refreshCells({ force: true })}
               onFirstDataRendered={(params) => {
                 try { params.api.autoSizeAllColumns(); } catch (e) {}
               }}

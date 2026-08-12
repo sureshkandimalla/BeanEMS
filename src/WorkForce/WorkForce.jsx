@@ -1,4 +1,4 @@
-import React, { useContext, useState, useMemo } from "react";
+import React, { useContext, useState, useMemo, useEffect } from "react";
 import { Tabs, Card, Collapse, Button, Drawer, message, Checkbox } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { QueryClient, useQuery } from "@tanstack/react-query";
@@ -170,6 +170,15 @@ const WorkForceContent = () => {
   ];
 
   const handleAddNewEmployee = () => setOpen(true);
+
+  // Left-nav "Create > Team > Employee" links here with ?new=1 to land
+  // straight on the add-employee drawer instead of just the grid.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("new") === "1") {
+      setOpen(true);
+    }
+  }, []);
+
   const handleDrawerClose = (action) => {
     setOpen(false);
     if (action === "submit") refetchEmployees();

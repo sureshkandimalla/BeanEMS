@@ -6,7 +6,7 @@ import { GLOBAL_CHARTS } from "../Charts/globalChartRegistry";
 import { Col, Row, Card, Button, Tabs, Collapse, Drawer, Spin, Popover, Badge, List, Empty } from "antd";
 import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
 import "./ProjectDashboard.css";
-import "@ag-grid-community/styles/ag-theme-quartz.css";
+import "@ag-grid-community/styles/ag-theme-alpine.css";
 import ProjectList from "./ProjectsList";
 import API_ENDPOINTS from "../config";
 import AuthContext from "../Authentication/Context/AuthContext";
@@ -33,6 +33,14 @@ const ProjectDashboard = () => {
     setIsCollapsed((prev) => !prev);
   };
   const [open, setOpen] = useState(false);
+
+  // Left-nav "Create > Customers > Project" links here with ?new=1 to land
+  // straight on the add-project drawer instead of just the grid.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("new") === "1") {
+      setOpen(true);
+    }
+  }, []);
 
   const processedData = useMemo(() => {
     if (!rowData) return {};

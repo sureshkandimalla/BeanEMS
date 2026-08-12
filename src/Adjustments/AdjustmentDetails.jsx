@@ -33,15 +33,14 @@ const AdjustementDetails = ({ employeeId, isCollapsed }) => {
   }, []);
 
   const fetchData = () => {
-    //default status =viewAll
     setRowData([])
-    const today = new Date();   
-    axios.get(`${API_ENDPOINTS.findAdjustmentsByEmployeeId}?id=${employeeId}`, {
-      params: {
-       // selectedDate: '2023-11-01',//formattedDate,
-        //status: 'viewAll'
-      }
-    })
+    // Used two ways: with an employeeId (embedded in EmployeeFullDetailsComponent,
+    // scoped to that one employee) or standalone from the left-nav "Adjustments"
+    // page, which has no employeeId and shows every adjustment instead.
+    const url = employeeId
+      ? `${API_ENDPOINTS.findAdjustmentsByEmployeeId}?id=${employeeId}`
+      : API_ENDPOINTS.getAllAdjustments;
+    axios.get(url)
       .then(response => {
         console.log(response.data);
         setRowData(getFlattenedData(response.data));
@@ -200,6 +199,8 @@ const AdjustementDetails = ({ employeeId, isCollapsed }) => {
         onGridReady={(params) => {
           gridRef.current = params.api;
         }}
+        onSortChanged={(params) => params.api.refreshCells({ force: true })}
+        onFilterChanged={(params) => params.api.refreshCells({ force: true })}
         onFirstDataRendered={(params) => {
           try { params.api.autoSizeAllColumns(); } catch (e) {}
         }}

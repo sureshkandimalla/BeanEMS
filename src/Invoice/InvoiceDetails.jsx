@@ -479,6 +479,14 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
     setOpen(false);
   };
 
+  // Left-nav "Create > Customers > Invoice" links here with ?new=1 to land
+  // straight on the add-invoice drawer instead of just the grid.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("new") === "1") {
+      setOpen(true);
+    }
+  }, []);
+
   useEffect(() => {
     const visibleRows = filterData();
     if (visibleRows && visibleRows.length > 0) {
@@ -701,6 +709,8 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
         onGridReady={(params) => {
           gridRef.current = params.api;
         }}
+        onSortChanged={(params) => params.api.refreshCells({ force: true })}
+        onFilterChanged={(params) => params.api.refreshCells({ force: true })}
         onFirstDataRendered={(params) => {
           try { params.api.autoSizeAllColumns(); } catch (e) {}
         }}

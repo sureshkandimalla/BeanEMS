@@ -176,6 +176,7 @@ export const API_ENDPOINTS = {
   employeesListByStatus: `${API_BASE_URL}/employees/employeesListByStatus`,
   addAdjustment: `${API_BASE_URL}/adjustment/addAdjustment`,
   findAdjustmentsByEmployeeId: `${API_BASE_URL}/adjustment/findAdjustmentsByEmployeeId`,
+  getAllAdjustments: `${API_BASE_URL}/adjustment/getAdjustments`,
   saveWage: `${API_BASE_URL}/wages/wage`,
   createPotentialEmployee: `${API_BASE_URL}/visa/potentialEmployees`,
   activeProjects: (endDate, selectedDate) => `${API_BASE_URL}/activeProjects?endDate=${endDate}&selectedDate=${selectedDate}`,

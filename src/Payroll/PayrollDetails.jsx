@@ -218,6 +218,8 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
             enableCellTextSelection={true}
             ensureDomOrder={true}
             ref={gridRef}
+            onSortChanged={(params) => params.api.refreshCells({ force: true })}
+            onFilterChanged={(params) => params.api.refreshCells({ force: true })}
             onFirstDataRendered={(params) => {
               try { params.api.autoSizeAllColumns(); } catch (e) {}
             }}

@@ -9,7 +9,7 @@ import { SideBarModule } from "@ag-grid-enterprise/side-bar";
 import { ColumnsToolPanelModule } from "@ag-grid-enterprise/column-tool-panel";
 import { MenuModule } from "@ag-grid-enterprise/menu";
 import { ClientSideRowModelModule  } from "@ag-grid-community/client-side-row-model";
-import "@ag-grid-community/styles/ag-theme-quartz.css";
+import "@ag-grid-community/styles/ag-theme-alpine.css";
 import "./styles/ag-grid-common.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { SetFilterModule } from "@ag-grid-enterprise/set-filter";

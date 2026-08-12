@@ -1,66 +1,218 @@
-/* LeftTabs icon colors — scoped strictly to .left-tab-icon, no global overrides */
+/* QuickBooks-style icon rail. Colors/spacing approximate the reference
+   design; the "Create" flyout is portaled to <body> (see LeftTabs.jsx) so
+   it positions with `position: fixed` here instead of being anchored
+   relative to .bean-left-rail. */
 
-.left-tab-icon {
-  display: inline-flex;
+.bean-left-rail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  font-size: 14px;
-  margin-right: 4px;
+  width: 76px;
+  height: 100%;
+  background: #f4f5f7;
+  border-right: 1px solid #e5e7eb;
+  padding: 12px 0;
+  box-sizing: border-box;
 }
 
-.left-tab-icon.icon-home         { color: #4338ca; background: #eef2ff; }
-.left-tab-icon.icon-dashboard    { color: #1677ff; background: #e6f4ff; }
-.left-tab-icon.icon-team         { color: #52c41a; background: #f6ffed; }
-.left-tab-icon.icon-onboarding   { color: #722ed1; background: #f9f0ff; }
-.left-tab-icon.icon-customer     { color: #fa8c16; background: #fff7e6; }
-.left-tab-icon.icon-vendor       { color: #faad14; background: #fffbe6; }
-.left-tab-icon.icon-invoice      { color: #13c2c2; background: #e6fffb; }
-.left-tab-icon.icon-expenses     { color: #f5222d; background: #fff1f0; }
-.left-tab-icon.icon-projects     { color: #2f54eb; background: #f0f5ff; }
-.left-tab-icon.icon-potential    { color: #fa541c; background: #fff2e8; }
-.left-tab-icon.icon-visa         { color: #08979c; background: #e6fffb; }
-.left-tab-icon.icon-lca          { color: #7cb305; background: #fcffe6; }
-.left-tab-icon.icon-visadetails  { color: #597ef7; background: #f0f5ff; }
-.left-tab-icon.icon-payroll      { color: #eb2f96; background: #fff0f6; }
-.left-tab-icon.icon-eligibility  { color: #f759ab; background: #fff0f6; }
-.left-tab-icon.icon-insurance    { color: #d4380d; background: #fff2e8; }
-.left-tab-icon.icon-time         { color: #1677ff; background: #e6f4ff; }
-.left-tab-icon.icon-monthlytime  { color: #13c2c2; background: #e6fffb; }
-.left-tab-icon.icon-report       { color: #faad14; background: #fffbe6; }
-.left-tab-icon.icon-masterdata   { color: #722ed1; background: #f9f0ff; }
-.left-tab-icon.icon-adjustments  { color: #d4b106; background: #feffe6; }
-.left-tab-icon.icon-hoursreport  { color: #9254de; background: #f9f0ff; }
+.rail-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
 
-/* QuickBooks-style spacing/hover polish for the nav list itself. Scoped
-   under .bean-left-nav so it never leaks into other antd Menus in the app. */
+.rail-spacer {
+  flex: 1 1 auto;
+}
 
-.bean-left-nav .ant-menu-item {
-  height: 44px;
-  line-height: 44px;
-  margin: 3px 8px !important;
-  width: calc(100% - 16px) !important;
+.rail-item-link {
+  width: 100%;
+  color: inherit;
+}
+.rail-item-link:hover {
+  color: inherit;
+}
+
+.rail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 4px;
+  margin: 2px 10px;
   border-radius: 8px;
+  cursor: pointer;
+  color: #4b5563;
+}
+
+.rail-item:hover {
+  background: #e5e7eb;
+}
+
+.rail-item-icon {
+  font-size: 18px;
+  line-height: 1;
+  display: flex;
+}
+
+.rail-item-label {
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.rail-item-active {
+  background: #eef2ff;
+  color: #4338ca;
+}
+.rail-item-active:hover {
+  background: #eef2ff;
+}
+
+.rail-pinned-label {
+  width: 100%;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #9ca3af;
+  margin: 14px 0 6px;
+}
+
+.rail-bottom {
+  margin-bottom: 4px;
+}
+
+/* Portaled to <body> and positioned via inline top/left (computed from the
+   "Create" icon's getBoundingClientRect() in LeftTabs.jsx) — fixed, not
+   absolute, since it no longer lives inside .bean-left-rail's DOM subtree. */
+.create-flyout {
+  position: fixed;
+  z-index: 2000;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  padding: 20px 24px 12px;
+  width: 600px;
+}
+
+/* "Immigration" reuses .create-flyout's card look (same white rounded
+   panel + section-title styling as the "+" mega-menu) but only needs one
+   narrow section, not the full 600px 3-column width. */
+.create-flyout.immigration-flyout {
+  width: auto;
+  min-width: 200px;
+}
+
+/* Three columns side by side — Customers+Vendors stacked in column 1,
+   Team+Immigration stacked in column 2, Other alone in column 3 (see
+   CREATE_MENU_COLUMNS in LeftTabs.jsx). */
+.create-flyout-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.create-flyout-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.create-flyout-section + .create-flyout-section {
+  margin-top: 18px;
+}
+
+.create-flyout-column-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+.create-flyout-item {
   display: flex;
   align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  color: #374151;
+  padding: 5px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
 }
 
-.bean-left-nav .ant-menu-title-content {
-  font-size: 14px;
-  font-weight: 500;
-  margin-left: 4px;
+.create-flyout-item:hover {
+  background: #f3f4f6;
+  color: #374151;
 }
 
-.bean-left-nav .ant-menu-item-selected {
-  background-color: #f0f5ff !important;
+/* Two-column "Accounting" flyout — Customers alone in column 1,
+   Vendors+Adjustments stacked in column 2 (see ACCOUNTING_MENU_COLUMNS in
+   LeftTabs.jsx). Same portal/positioning approach as .create-flyout, just
+   two columns instead of three and narrower to match. */
+.accounting-flyout {
+  position: fixed;
+  z-index: 2000;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  padding: 20px 24px 12px;
+  width: 400px;
 }
 
-.bean-left-nav .ant-menu-item-selected .ant-menu-title-content {
-  font-weight: 600;
+.accounting-flyout-columns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
 }
 
-.bean-left-nav .ant-menu-item:not(.ant-menu-item-selected):hover {
-  background-color: #fafafa !important;
+/* Single-column "Reports" flyout — same portal/positioning approach as
+   .create-flyout, just one section wide instead of a 3-column mega-menu.
+   Reuses .create-flyout-section/-column-title/-item for the section
+   heading + link styling. */
+.reports-flyout {
+  position: fixed;
+  z-index: 2000;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  padding: 16px 18px;
+  min-width: 220px;
+}
+
+/* Narrow flat submenu for the rail's "Team" icon — no sub-heading, just a
+   plain item list, unlike .reports-flyout's titled section. */
+.team-flyout {
+  position: fixed;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  padding: 8px;
+  min-width: 190px;
+}
+
+.team-flyout-item {
+  font-size: 13.5px;
+  color: #374151;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.team-flyout-item:hover {
+  background: #f3f4f6;
+  color: #374151;
 }

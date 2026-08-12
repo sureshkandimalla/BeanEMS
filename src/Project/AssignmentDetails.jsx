@@ -8,7 +8,7 @@ import { PlusOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-
 import { Button, Drawer, message } from "antd";
 import axios from "axios";
 import "./ProjectGrid.css";
-import "@ag-grid-community/styles/ag-theme-quartz.css";
+import "@ag-grid-community/styles/ag-theme-alpine.css";
 import AssignmentForm from "./AssignmentForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import "./AssignmentDetails.css"
@@ -226,6 +226,8 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
           enableCellTextSelection={true}
           ensureDomOrder={true}
           onCellValueChanged={onCellValueChanged}
+          onSortChanged={(params) => params.api.refreshCells({ force: true })}
+          onFilterChanged={(params) => params.api.refreshCells({ force: true })}
           onFirstDataRendered={(params) => {
             try { params.api.autoSizeAllColumns(); } catch (e) {}
           }}

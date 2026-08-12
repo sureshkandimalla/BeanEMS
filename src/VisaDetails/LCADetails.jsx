@@ -88,6 +88,15 @@ const LCADetails = () => {
     setLcaModalData({});
   };
 
+  // Left-nav "Create > Immigration > LCA" links here with ?new=1 to land
+  // straight on the add-LCA modal instead of just the grid.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("new") === "1") {
+      openNewLcaModal();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const openEditLcaModal = (lca) => {
     setIsNewLca(false);
     setLcaModalData(lca);
@@ -269,6 +278,8 @@ const LCADetails = () => {
               onGridReady={(params) => {
                 gridRef.current = params.api;
               }}
+              onSortChanged={(params) => params.api.refreshCells({ force: true })}
+              onFilterChanged={(params) => params.api.refreshCells({ force: true })}
               onFirstDataRendered={(params) => {
                 try { params.api.autoSizeAllColumns(); } catch (e) {}
               }}

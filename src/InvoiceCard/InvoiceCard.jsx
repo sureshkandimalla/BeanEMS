@@ -171,6 +171,8 @@ const InvoiceCard = () => {
           onGridReady={(params) => {
             gridApi.current = params.api;
           }}
+          onSortChanged={(params) => params.api.refreshCells({ force: true })}
+          onFilterChanged={(params) => params.api.refreshCells({ force: true })}
           onFirstDataRendered={(params) => {
             try { params.api.autoSizeAllColumns(); } catch (e) {}
           }}

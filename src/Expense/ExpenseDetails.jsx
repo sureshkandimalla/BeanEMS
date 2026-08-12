@@ -131,6 +131,14 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
   const addNewExpense = () => setOpen(true);
   const onClose = () => setOpen(false);
 
+  // Left-nav "Create > Vendors > Expenses" links here with ?new=1 to land
+  // straight on the add-expense drawer instead of just the grid.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("new") === "1") {
+      setOpen(true);
+    }
+  }, []);
+
   const getColumnsDefList = (isSortable) => [
     {
       headerName: "Expense Id",
@@ -269,6 +277,8 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
               onGridReady={(params) => {
                 gridRef.current = params.api;
               }}
+              onSortChanged={(params) => params.api.refreshCells({ force: true })}
+              onFilterChanged={(params) => params.api.refreshCells({ force: true })}
               onFirstDataRendered={(params) => {
                 try {
                   params.api.autoSizeAllColumns();

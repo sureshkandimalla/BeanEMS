@@ -7,7 +7,7 @@ import { PlusOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-
 import { Button, Drawer } from "antd";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
-import "@ag-grid-community/styles/ag-theme-quartz.css";
+import "@ag-grid-community/styles/ag-theme-alpine.css";
 import WorkOrderForm from "./WorkOrderForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import "./WorkOrderDetails.css";
@@ -195,6 +195,8 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
           enableCellTextSelection={true}
           ensureDomOrder={true}
           onCellValueChanged={onCellValueChanged}
+          onSortChanged={(params) => params.api.refreshCells({ force: true })}
+          onFilterChanged={(params) => params.api.refreshCells({ force: true })}
           onFirstDataRendered={(params) => {
             try { params.api.autoSizeAllColumns(); } catch (e) {}
           }}
