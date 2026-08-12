@@ -163,12 +163,15 @@ const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {})
   }, [hasUnsavedChanges]);
 
   const getFlattenedData = (data) => {
+    const today = new Date().toISOString().split("T")[0];
     let updatedData = data
       // Generate Invoice is for creating new invoices — a row that already
       // matched an existing invoice (invoiceId > 0) has nothing left to
       // generate, so it's dropped rather than shown alongside the rows that
       // still need one.
       .filter((dataObj) => !dataObj.invoiceId)
+      // Don't offer to invoice a period that hasn't ended yet.
+      .filter((dataObj) => !dataObj.endDate || dataObj.endDate <= today)
       .map((dataObj) => {
         //return { ...dataObj, ...dataObj.employeeAddress[0], ...dataObj.employeeAssignments[0] }
         // Snapshot the project's own start/end date before startDate/endDate

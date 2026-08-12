@@ -49,6 +49,14 @@ const PieCharts = React.forwardRef(
           return `${seriesName}: ${valueFormatter ? valueFormatter(value) : value}`;
         },
       },
+      // showLegend is often false here (a separate PieLegend component is
+      // rendered alongside instead), so the hover tooltip is the only place
+      // callers with a valueFormatter (e.g. currency) actually see it.
+      tooltip: {
+        y: {
+          formatter: (value) => (valueFormatter ? valueFormatter(value) : value),
+        },
+      },
       responsive: [
         {
           breakpoint: 1024,

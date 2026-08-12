@@ -6,8 +6,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
-    height: 100%;    
+    /* Was overflow:hidden, which also clipped ApexCharts' hover tooltip
+       (an absolutely-positioned sibling inside this same container) before
+       its formatted value became visible — the svg rule below already
+       constrains the donut itself to 100%, so nothing actually depends on
+       clipping here. */
+    overflow: visible;
+    height: 100%;
   }
   
   /* 📌 Ensuring Pie Chart SVG Adjusts Correctly */

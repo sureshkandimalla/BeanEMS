@@ -130,6 +130,13 @@ const RevenueCharts = React.forwardRef(({
       legend: {
         position: "top",
       },
+      // Same formatter as the on-bar data labels, so a value reads
+      // identically whether it's glanced at on the bar or hovered.
+      tooltip: {
+        y: {
+          formatter: (value) => dataLabelFormatter(value),
+        },
+      },
     },
     series,
   };

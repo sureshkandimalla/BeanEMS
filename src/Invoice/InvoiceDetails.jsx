@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect, useRef, useMemo } from "react";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Card, Drawer, message, Popover, Badge, List, Empty, Row, Col } from "antd";
+import { Button, Card, Drawer, message, Popover, Badge, List, Empty } from "antd";
 
 import { PlusOutlined, ReloadOutlined, FileExcelOutlined, SaveOutlined, CloseOutlined, BellOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -19,11 +19,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatMonthYear, formatDate } from "../Utils/dateFormat";
-import RevenueCharts from "../RevenueCharts/RevenueCharts";
-import TrendLineChart from "../RevenueCharts/TrendLineChart";
-import PieCharts, { getPieColors } from "../PieCharts/PieCharts";
-import PieLegend from "../PieCharts/PieLegend";
 import ChartOverviewPanel from "../Utils/ChartOverviewPanel";
+import { GLOBAL_CHARTS } from "../Charts/globalChartRegistry";
 import AuthContext from "../Authentication/Context/AuthContext";
 import { canAccessEntity } from "../Utils/roleAccess";
 
@@ -214,28 +211,6 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
     return scoped;
   }, [rowData, projectsById, employeeId, projectId, statusFilter]);
 
-  // Page-level "Invoice Overview" (only rendered when not scoped to a
-  // single employee/project): a monthly Invoiced-vs-Paid bar chart, plus a
-  // pie chart of total invoiced amount by customer — same pattern as the
-  // Projects Overview panel on /projects.
-  const monthlyInvoiceChart = useMemo(() => {
-    if (!enrichedRowData || enrichedRowData.length === 0) return { categories: [], invoiced: [], paid: [] };
-    const byMonth = {};
-    enrichedRowData.forEach((inv) => {
-      if (!inv.invoiceMonth) return;
-      const key = inv.invoiceMonth.substring(0, 7);
-      if (!byMonth[key]) byMonth[key] = { invoiced: 0, paid: 0 };
-      byMonth[key].invoiced += inv.total || 0;
-      byMonth[key].paid += inv.invoicePaidAmount || 0;
-    });
-    const sortedKeys = Object.keys(byMonth).sort().slice(-12);
-    return {
-      categories: sortedKeys.map((k) => formatMonthYear(k)),
-      invoiced: sortedKeys.map((k) => Math.round(byMonth[k].invoiced)),
-      paid: sortedKeys.map((k) => Math.round(byMonth[k].paid)),
-    };
-  }, [enrichedRowData]);
-
   // Flags any month (across the full history, not just the chart's last-12
   // window) where the invoiced total and paid total don't match — i.e.
   // that month still has outstanding/partially-paid invoices.
@@ -281,143 +256,9 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
     </div>
   );
 
-  const monthlyInvoiceCountChart = useMemo(() => {
-    if (!enrichedRowData || enrichedRowData.length === 0) return { categories: [], counts: [] };
-    const byMonth = {};
-    enrichedRowData.forEach((inv) => {
-      if (!inv.invoiceMonth) return;
-      const key = inv.invoiceMonth.substring(0, 7);
-      byMonth[key] = (byMonth[key] || 0) + 1;
-    });
-    const sortedKeys = Object.keys(byMonth).sort();
-    return {
-      categories: sortedKeys.map((k) => formatMonthYear(k)),
-      counts: sortedKeys.map((k) => byMonth[k]),
-    };
-  }, [enrichedRowData]);
-
-  const byCustomerTotals = useMemo(() => {
-    const byCustomer = {};
-    (enrichedRowData || []).forEach((inv) => {
-      const customer = inv.customerName || "Unknown";
-      if (!byCustomer[customer]) byCustomer[customer] = { invoiced: 0, paid: 0 };
-      byCustomer[customer].invoiced += inv.total || 0;
-      byCustomer[customer].paid += inv.invoicePaidAmount || 0;
-    });
-    return byCustomer;
-  }, [enrichedRowData]);
-
-  const customerInvoiceSlices = useMemo(() => {
-    const customers = Object.keys(byCustomerTotals);
-    const colors = getPieColors(customers.length);
-    return customers.map((customer, i) => ({ label: customer, value: byCustomerTotals[customer].invoiced, color: colors[i] }));
-  }, [byCustomerTotals]);
-
-  // Same customer totals, reshaped for a grouped Invoiced-vs-Paid bar chart —
-  // sorted by amount still due (invoiced minus paid) so customers owing the
-  // most show up first.
-  const customerBarChart = useMemo(() => {
-    // Ascending, not descending — the chart auto-scrolls to the right edge
-    // on load, so the customer owing the most should be last (rightmost),
-    // not first (off-screen to the left).
-    const due = (v) => byCustomerTotals[v].invoiced - byCustomerTotals[v].paid;
-    const customers = Object.keys(byCustomerTotals).sort((a, b) => due(a) - due(b));
-    return {
-      categories: customers,
-      invoiced: customers.map((v) => Math.round(byCustomerTotals[v].invoiced)),
-      paid: customers.map((v) => Math.round(byCustomerTotals[v].paid)),
-    };
-  }, [byCustomerTotals]);
-
-  const totalInvoicedAllCustomers = customerInvoiceSlices.reduce((sum, s) => sum + s.value, 0);
-
-  // Chart definitions for the Invoice Overview panel — ChartOverviewPanel
-  // handles show/hide, drag-to-reorder, drag-to-resize, and PNG download
-  // generically from this list.
-  const invoiceOverviewCharts = [
-    {
-      key: "monthly",
-      label: "Invoices by Month",
-      filename: "invoices-by-month",
-      defaultSize: { width: 700, height: 340 },
-      render: (innerHeight, setChartRef) => (
-        <RevenueCharts
-          ref={setChartRef}
-          thisMonthData={monthlyInvoiceChart.invoiced}
-          lastMonthData={monthlyInvoiceChart.paid}
-          categories={monthlyInvoiceChart.categories}
-          series1Name="Invoiced"
-          series2Name="Paid"
-          visibleCategories={8}
-          pxPerCategory={110}
-          height={innerHeight}
-        />
-      ),
-    },
-    {
-      key: "customerPie",
-      label: "Total Invoiced (by Customer)",
-      title: `Total Invoiced: ${formatCurrency(totalInvoicedAllCustomers)}`,
-      filename: "total-invoiced-by-customer",
-      defaultSize: { width: 500, height: 340 },
-      render: (innerHeight, setChartRef) =>
-        customerInvoiceSlices.length > 0 ? (
-          <Row align="middle">
-            <Col span={14}>
-              <div style={{ width: "100%", height: innerHeight }}>
-                <PieCharts
-                  ref={setChartRef}
-                  chartData={customerInvoiceSlices.map((s) => Math.round(s.value))}
-                  chartLabels={customerInvoiceSlices.map((s) => s.label)}
-                  showLegend={false}
-                />
-              </div>
-            </Col>
-            <Col span={10} style={{ maxHeight: innerHeight, overflowY: "auto" }}>
-              <PieLegend slices={customerInvoiceSlices} valueFormatter={formatCurrency} />
-            </Col>
-          </Row>
-        ) : (
-          <Empty description="No invoice data" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-        ),
-    },
-    {
-      key: "invoiceCount",
-      label: "Invoice Count by Month",
-      filename: "invoice-count-by-month",
-      defaultSize: { width: 420, height: 340 },
-      render: (innerHeight, setChartRef) => (
-        <TrendLineChart
-          ref={setChartRef}
-          data={monthlyInvoiceCountChart.counts}
-          categories={monthlyInvoiceCountChart.categories}
-          seriesName="Invoices"
-          height={innerHeight}
-        />
-      ),
-    },
-    {
-      key: "customerBar",
-      label: "Invoices by Customer",
-      filename: "invoices-by-customer",
-      defaultSize: { width: 800, height: 340 },
-      render: (innerHeight, setChartRef) => (
-        <RevenueCharts
-          ref={setChartRef}
-          thisMonthData={customerBarChart.invoiced}
-          lastMonthData={customerBarChart.paid}
-          categories={customerBarChart.categories}
-          series1Name="Invoiced"
-          series2Name="Paid"
-          xaxisLabelRotate={0}
-          maxLabelLength={12}
-          height={innerHeight}
-        />
-      ),
-    },
-  ];
-  const visibleInvoiceOverviewCharts = invoiceOverviewCharts.filter(() =>
-    canAccessEntity(user?.role, "invoice"),
+  const INVOICE_CHART_KEYS = ["invoicesByMonth", "totalInvoicedByCustomer", "invoiceCountByMonth", "invoicesByCustomer"];
+  const visibleInvoiceOverviewCharts = GLOBAL_CHARTS.filter(
+    (c) => INVOICE_CHART_KEYS.includes(c.key) && canAccessEntity(user?.role, "invoice"),
   );
 
   const fetchData = () => {

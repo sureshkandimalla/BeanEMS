@@ -1,8 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
-import { formatCurrency } from "../Utils/CurrencyFormatter";
-import { formatMonthYear } from "../Utils/dateFormat";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -10,8 +8,8 @@ import "./EmployeeFullDetailsComponent.css";
 import ProjectGrid from "../Project/ProjectGrid";
 import { useLocation } from "react-router-dom";
 import EmployeePersonnelFilePage from "../EmployeeDetailsComponent/EmployeePersonnelFilePage";
-import RevenueCharts from "../RevenueCharts/RevenueCharts";
 import { useChartOverview, ChartSettingsIcon } from "../Utils/ChartOverviewPanel";
+import { employeeRevenueByMonth } from "../Charts/globalChartRegistry";
 import InvoiceDetails from "../Invoice/InvoiceDetails";
 import PayrollDetails from "../Payroll/PayrollDetails";
 import AdjustementDetails from "../Adjustments/AdjustmentDetails";
@@ -67,60 +65,10 @@ const EmployeeFullDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState();
 
-  // Monthly Invoiced vs Paid amounts for this employee, across all their
-  // projects — replaces the old hardcoded "Total Revenue" bar chart.
-  const [monthlyInvoiceChart, setMonthlyInvoiceChart] = useState({ categories: [], invoiced: [], paid: [] });
-  useEffect(() => {
-    if (!rowData?.employeeId) return;
-    axios
-      .get(API_ENDPOINTS.getInvoicesForEmployee, { params: { employeeId: rowData.employeeId } })
-      .then((response) => {
-        const invoices = response.data || [];
-        const byMonth = {};
-        invoices.forEach((inv) => {
-          if (!inv.invoiceMonth) return;
-          const key = inv.invoiceMonth.substring(0, 7);
-          if (!byMonth[key]) byMonth[key] = { invoiced: 0, paid: 0 };
-          byMonth[key].invoiced += inv.total || 0;
-          byMonth[key].paid += inv.invoicePaidAmount || 0;
-        });
-        const sortedKeys = Object.keys(byMonth).sort();
-        setMonthlyInvoiceChart({
-          categories: sortedKeys.map((k) => formatMonthYear(k)),
-          invoiced: sortedKeys.map((k) => Math.round(byMonth[k].invoiced)),
-          paid: sortedKeys.map((k) => Math.round(byMonth[k].paid)),
-        });
-      })
-      .catch((error) => console.error("Error fetching invoices for employee:", error));
-  }, [rowData?.employeeId]);
-
-  const totalInvoiced = monthlyInvoiceChart.invoiced.reduce((sum, v) => sum + v, 0);
-
   // Just the one chart, but still wrapped in useChartOverview so it gets
   // the same resize/download controls as every other Overview panel's
   // charts.
-  const employeeOverviewCharts = [
-    {
-      key: "revenue",
-      label: "Revenue",
-      title: `Revenue: ${formatCurrency(totalInvoiced)}`,
-      filename: "revenue-by-month",
-      defaultSize: { width: 700, height: 340 },
-      render: (innerHeight, setChartRef) => (
-        <RevenueCharts
-          ref={setChartRef}
-          thisMonthData={monthlyInvoiceChart.invoiced}
-          lastMonthData={monthlyInvoiceChart.paid}
-          categories={monthlyInvoiceChart.categories}
-          series1Name="Invoiced"
-          series2Name="Paid"
-          visibleCategories={8}
-          pxPerCategory={110}
-          height={innerHeight}
-        />
-      ),
-    },
-  ];
+  const employeeOverviewCharts = rowData?.employeeId ? [employeeRevenueByMonth(rowData.employeeId)] : [];
   const visibleEmployeeOverviewCharts = employeeOverviewCharts.filter(() =>
     canAccessEntity(user?.role, "invoice"),
   );

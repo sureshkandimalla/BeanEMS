@@ -1,179 +1,35 @@
 // src/Dashboard/Dashboard.js
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState } from "react";
 import { Card, Row, Col, Button, Flex, Drawer, Space, Tag, Tabs, Collapse } from "antd";
-import { RiseOutlined, PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import Newemployee from "../Newemployee/Newemployee";
 import NewCustomer from "../Customer/NewCustomer";
-import PieCharts, { getPieColors } from "../PieCharts/PieCharts";
-import PieLegend from "../PieCharts/PieLegend";
-import RevenueCharts from "../RevenueCharts/RevenueCharts";
 import InvoiceDetails from "../Invoice/InvoiceDetails";
 import CurrentEmployeeCard from "../CurrentEmployeeCard/CurrentEmployeeCard";
 import { useChartOverview, ChartSettingsIcon } from "../Utils/ChartOverviewPanel";
+import { GLOBAL_CHARTS } from "../Charts/globalChartRegistry";
 import "./Dashboard.css";
 import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
 import AuthContext from "../Authentication/Context/AuthContext";
 import { canAccessEntity } from "../Utils/roleAccess";
-import API_ENDPOINTS from "../config";
 
 const { Panel } = Collapse;
 
 // key -> entity it depends on, so chart visibility derives from the same
 // role permissions used everywhere else instead of a hand-maintained copy.
 const CHART_ENTITY = {
-  totalProjects: "project",
-  revenue: "invoice",
+  totalActiveProjects: "project",
+  revenueTrend: "invoice",
   invoiceStatus: "invoice",
   workforceStatus: "team",
 };
+const DASHBOARD_CHART_KEYS = ["totalActiveProjects", "revenueTrend", "invoiceStatus", "workforceStatus"];
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
   //addedchangesstart
-  const [rowData, setRowData] = useState([]);
-  const [workForceChartData, setWorkForceChartData] = useState([]);
-  const [workForceChartLabels, setWorkForceChartLabels] = useState([]);
-  const [invoicesChartData, setInvoicesChartData] = useState([]);
-  const [invoicesChartLabels, setInvoicesChartLabels] = useState([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response1 = await fetch(API_ENDPOINTS.employeesCountByStatus);
-        const data1 = await response1.json();
-
-        // Assuming the response from your API is an array of objects with 'label' and 'value' properties
-        const labels = data1
-          .filter((item) => item.status !== null)
-          .map((item) => item.status);
-        const chartData = data1
-          .filter((item) => item.status !== null)
-          .map((item) => item.count);
-        setWorkForceChartLabels(labels);
-        setWorkForceChartData(chartData);
-
-        const response2 = await fetch(API_ENDPOINTS.invoicesCountByStatus);
-        const data2 = await response2.json();
-        const labels2 = data2.map((item) => item.status);
-        const chartData2 = data2.map((item) => item.count);
-        setInvoicesChartLabels(labels2);
-        setInvoicesChartData(chartData2);
-
-        const response3 = await fetch(API_ENDPOINTS.getProjects);
-        const data3 = await response3.json();
-        setRowData(data3);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  const totalParamCount =
-    (workForceChartData[0] || 0) +
-    (workForceChartData[1] || 0) +
-    (workForceChartData[2] || 0) +
-    (workForceChartData[3] || 0);
-  const projectsSize = rowData ? rowData.length : 0;
-
-  // Same slice order/values feed both the donut (via PieCharts, legend
-  // hidden) and the custom legend beside it, so colors always match.
-  const invoicesSlices = invoicesChartLabels.map((label, i) => ({
-    label,
-    value: invoicesChartData[i] || 0,
-    color: getPieColors(invoicesChartLabels.length)[i],
-  }));
-  const workForceSlices = workForceChartLabels.map((label, i) => ({
-    label,
-    value: workForceChartData[i] || 0,
-    color: getPieColors(workForceChartLabels.length)[i],
-  }));
-
-  // Sample revenue data for this month and last month (you can replace it with your actual data)
-  const thisMonthData = [50000, 43000, 60000, 70000, 55000];
-  const lastMonthData = [25000, 28000, 20000, 15000, 50000];
-
-  // Chart definitions for the Dashboard Overview area — useChartOverview
-  // handles show/hide, drag-to-reorder, drag-to-resize, and PNG download
-  // generically from this list. The "Total Active Projects" stat card is
-  // included too (just without a `filename`, so it gets no download
-  // button) so it can be moved/resized right alongside the real charts —
-  // leaving it fixed outside the flex-wrap area caused layout gaps once
-  // the charts beside it got reordered or resized.
-  const dashboardOverviewCharts = [
-    {
-      key: "totalProjects",
-      label: "Total Active Projects",
-      title: "Total Active Projects",
-      defaultSize: { width: 320, height: 220 },
-      render: () => (
-        <Row justify="space-between" className="mrgtop145">
-          <Col>
-            <span className="totalProjectsCount">{projectsSize}</span>
-          </Col>
-        </Row>
-      ),
-    },
-    {
-      key: "revenue",
-      label: "Total Revenue",
-      title: "Total Revenue: $66,143.00",
-      filename: "total-revenue",
-      defaultSize: { width: 700, height: 340 },
-      render: (innerHeight, setChartRef) => (
-        <RevenueCharts ref={setChartRef} thisMonthData={thisMonthData} lastMonthData={lastMonthData} height={innerHeight} />
-      ),
-    },
-    {
-      key: "invoiceStatus",
-      label: "Invoice Status",
-      filename: "invoice-status",
-      defaultSize: { width: 480, height: 300 },
-      render: (innerHeight, setChartRef) => (
-        <Row align="middle">
-          <Col span={14}>
-            <div style={{ width: "100%", height: innerHeight }}>
-              <PieCharts ref={setChartRef} chartData={invoicesChartData} chartLabels={invoicesChartLabels} showLegend={false} />
-            </div>
-          </Col>
-          <Col span={10}>
-            <PieLegend slices={invoicesSlices} fontSize={13} rowGap={6} />
-          </Col>
-        </Row>
-      ),
-    },
-    {
-      key: "workforceStatus",
-      label: "Workforce Status",
-      filename: "workforce-status",
-      defaultSize: { width: 560, height: 300 },
-      render: (innerHeight, setChartRef) => (
-        <Row align="middle">
-          <Col span={10}>
-            <div style={{ width: "100%", height: innerHeight }}>
-              <PieCharts ref={setChartRef} chartData={workForceChartData} chartLabels={workForceChartLabels} showLegend={false} />
-            </div>
-          </Col>
-          <Col span={8}>
-            <PieLegend slices={workForceSlices} fontSize={13} rowGap={6} />
-          </Col>
-          <Col span={6}>
-            <div className="totalWorkFrcDiv">
-              <Row justify="space-between">
-                <span className="totalWorkForceCount">{totalParamCount}</span>
-                <span className="mrgTop15">
-                  <RiseOutlined className="riseIcon" /> <span> 3.5%</span>
-                </span>
-              </Row>
-            </div>
-          </Col>
-        </Row>
-      ),
-    },
-  ];
-  const visibleOverviewCharts = dashboardOverviewCharts.filter((c) =>
-    canAccessEntity(user?.role, CHART_ENTITY[c.key]),
+  const visibleOverviewCharts = GLOBAL_CHARTS.filter(
+    (c) => DASHBOARD_CHART_KEYS.includes(c.key) && canAccessEntity(user?.role, CHART_ENTITY[c.key]),
   );
   const { settingsContent, contentNode } = useChartOverview(visibleOverviewCharts);
 
