@@ -45,7 +45,7 @@ import MonthlyTimesheets from "./Timesheet/MonthlyTimesheets";
 import MasterDataLoad from "./MasterDataLoad/MasterDataLoad";
 import HoursReport from "./HoursReport/HoursReport";
 import UserRoles from "./Admin/UserRoles";
-const clientId = '206630439236-q0q2np2g72vf5rgodjk4hhv814i3q7ai.apps.googleusercontent.com';
+const clientId = '34277343649-4552ljfqc3ccsipco8jbf7jr3mu279j0.apps.googleusercontent.com';
 const { Content } = Layout;
 
 // Unknown URLs bounce to the current user's landing page (role-aware —

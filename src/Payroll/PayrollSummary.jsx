@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import API_ENDPOINTS from "../config";
-import { Button, Card, Row, Col, Collapse, Radio } from "antd";
+import { Button, Card, Row, Col, Collapse, Radio, Select } from "antd";
 import axios from "axios";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
-import { formatMonthYear } from "../Utils/dateFormat";
+import { formatMonthYear, formatDate } from "../Utils/dateFormat";
 import ReactApexChart from "react-apexcharts";
 import PayrollDetails from "./PayrollDetails";
 
@@ -14,17 +14,20 @@ const PayrollSummary = ({ employeeId }) => {
   const [chartData, setChartData] = useState({
     departments: [],
     netPayByDept: [],
-    statusLabels: [],
-    statusCounts: [],
     totalNetPay: 0,
     totalHours: 0,
     checkDateTotals: { checkDates: [], totalExpenses: [], netPay: [], taxWithheld: [], employerLiability: [] },
+    checkDateBreakdown: {},
     yearTotals: { years: [], totalExpenses: [], netPay: [], taxWithheld: [], employerLiability: [] },
     employeeCountByMonth: { months: [], counts: [] },
   });
   const [checkDateOffset, setCheckDateOffset] = useState(0);
   const [chartsOpen, setChartsOpen] = useState(true);
   const [checkDateGroupBy, setCheckDateGroupBy] = useState("date"); // "date" | "year"
+  // Which check date the "Amounts by Check Date" donut breaks down —
+  // defaults to (and re-snaps to) the most recent check date whenever the
+  // available dates change, but keeps the user's pick otherwise.
+  const [selectedCheckDate, setSelectedCheckDate] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -73,17 +76,20 @@ const PayrollSummary = ({ employeeId }) => {
       counts: months.map((m) => monthEmployeeMap[m].size),
     };
 
-    // Totals by checkDate
+    // Totals by checkDate — also keeps deductions (not needed by the bar
+    // chart above, but is one of the 4 slices in the per-check-date
+    // amount-breakdown donut below).
     const checkDateMap = {};
     data.forEach((row) => {
       const cd = row.checkDate ? row.checkDate.substring(0, 10) : "Unknown"; // group by full date YYYY-MM-DD
-      if (!checkDateMap[cd]) checkDateMap[cd] = { totalExpenses: 0, netPay: 0, taxWithheld: 0, employerLiability: 0 };
+      if (!checkDateMap[cd]) checkDateMap[cd] = { totalExpenses: 0, netPay: 0, taxWithheld: 0, employerLiability: 0, deductions: 0 };
       checkDateMap[cd].totalExpenses += row.totalExpenses || 0;
       checkDateMap[cd].netPay += row.netPay || 0;
       checkDateMap[cd].taxWithheld += row.taxWithheld || 0;
       checkDateMap[cd].employerLiability += row.employerLiability || 0;
+      checkDateMap[cd].deductions += row.deductions || 0;
     });
-    const checkDates = Object.keys(checkDateMap).sort();
+    const checkDates = Object.keys(checkDateMap).filter((d) => d !== "Unknown").sort();
     const checkDateTotals = {
       checkDates,
       totalExpenses: checkDates.map((d) => Math.round(checkDateMap[d].totalExpenses)),
@@ -91,6 +97,7 @@ const PayrollSummary = ({ employeeId }) => {
       taxWithheld: checkDates.map((d) => Math.round(checkDateMap[d].taxWithheld)),
       employerLiability: checkDates.map((d) => Math.round(checkDateMap[d].employerLiability)),
     };
+    const checkDateBreakdown = checkDateMap;
 
     // Totals by year (same shape as checkDateTotals, grouped coarser)
     const yearMap = {};
@@ -111,19 +118,17 @@ const PayrollSummary = ({ employeeId }) => {
       employerLiability: years.map((y) => Math.round(yearMap[y].employerLiability)),
     };
 
-    // Status distribution
-    const statusMap = {};
-    data.forEach((row) => {
-      const s = row.status || "Unknown";
-      statusMap[s] = (statusMap[s] || 0) + 1;
-    });
-    const statusLabels = Object.keys(statusMap);
-    const statusCounts = statusLabels.map((s) => statusMap[s]);
-
     const totalNetPay = data.reduce((sum, r) => sum + (r.netPay || 0), 0);
     const totalHours = data.reduce((sum, r) => sum + (r.hours || 0), 0);
 
-    setChartData({ departments, netPayByDept, statusLabels, statusCounts, totalNetPay, totalHours, checkDateTotals, yearTotals, employeeCountByMonth });
+    setChartData({ departments, netPayByDept, totalNetPay, totalHours, checkDateTotals, checkDateBreakdown, yearTotals, employeeCountByMonth });
+
+    // Default the amount-breakdown donut to the most recent check date, and
+    // re-snap to it if the current selection no longer exists (e.g. after a
+    // refetch) — otherwise leave whatever the user picked alone.
+    setSelectedCheckDate((current) =>
+      current && checkDates.includes(current) ? current : checkDates[checkDates.length - 1] || null,
+    );
   };
 
   // Chart configs — grouped by either exact check date or by year, per the toggle.
@@ -175,13 +180,43 @@ const PayrollSummary = ({ employeeId }) => {
     title: { text: "Employee Count by Month", align: "center", style: { fontSize: "13px" } },
   };
 
-  const statusPieOptions = {
+  // Amounts by Check Date — Net Pay / Tax Withheld / Deductions / Employer
+  // Liability breakdown for whichever check date is selected above,
+  // replacing the old "Payroll Status" donut (payroll rows don't carry a
+  // meaningful status, so that chart was always just one "Unknown" slice).
+  const selectedBreakdown = chartData.checkDateBreakdown[selectedCheckDate] || {
+    netPay: 0,
+    taxWithheld: 0,
+    deductions: 0,
+    employerLiability: 0,
+  };
+  const breakdownLabels = ["Net Pay", "Tax Withheld", "Deductions", "Employer Liability"];
+  const breakdownSeries = [
+    selectedBreakdown.netPay,
+    selectedBreakdown.taxWithheld,
+    selectedBreakdown.deductions,
+    selectedBreakdown.employerLiability,
+  ].map((v) => Math.round(v));
+  const breakdownTotal = breakdownSeries.reduce((sum, v) => sum + v, 0);
+
+  const checkDateBreakdownOptions = {
     chart: { type: "donut" },
-    labels: chartData.statusLabels,
-    colors: ["#6bcbe2", "#f8aa4e", "#78a0ed", "#596b4e", "#f45b5b"],
+    labels: breakdownLabels,
+    colors: ["#63abfd", "#f8aa4e", "#e697ff", "#6bcbe2"],
+    // No static amount/% on the slices or in the legend — numbers only
+    // surface on hover, via the tooltip below, so the donut itself stays
+    // uncluttered.
     dataLabels: { enabled: false },
     legend: { position: "bottom", fontSize: "12px" },
-    title: { text: "Payroll Status", align: "center", style: { fontSize: "13px" } },
+    tooltip: {
+      y: {
+        formatter: (val) => {
+          const pct = breakdownTotal > 0 ? ((val / breakdownTotal) * 100).toFixed(1) : "0.0";
+          return `${formatCurrency(val)} (${pct}%)`;
+        },
+      },
+    },
+    title: { text: "Payroll Summary", align: "center", style: { fontSize: "13px" } },
   };
 
   if (employeeId) {
@@ -269,13 +304,23 @@ const PayrollSummary = ({ employeeId }) => {
             </Col>
             <Col span={6}>
               <Card bodyStyle={{ padding: "12px", height: "100%" }}>
-                {chartData.statusCounts.length > 0 && (
+                <Select
+                  size="small"
+                  style={{ width: "100%", marginBottom: 4 }}
+                  value={selectedCheckDate}
+                  onChange={setSelectedCheckDate}
+                  options={chartData.checkDateTotals.checkDates.map((d) => ({ value: d, label: formatDate(d) }))}
+                  placeholder="Select check date"
+                />
+                {breakdownTotal > 0 ? (
                   <ReactApexChart
-                    options={statusPieOptions}
-                    series={chartData.statusCounts}
+                    options={checkDateBreakdownOptions}
+                    series={breakdownSeries}
                     type="donut"
-                    height={300}
+                    height={280}
                   />
+                ) : (
+                  <div style={{ textAlign: "center", color: "#888", marginTop: 40 }}>No amounts for this check date</div>
                 )}
               </Card>
             </Col>
