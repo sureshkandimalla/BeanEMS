@@ -128,8 +128,9 @@ const VisaMasterList = () => {
       ...visa,
       employeeId: visa?.employee?.employeeId ?? null,
       filingYear: visa.filingYear != null ? String(visa.filingYear) : null,
-      startDate: visa?.startDate ? dayjs(visa.startDate) : null,
-      endDate:   visa?.endDate   ? dayjs(visa.endDate)   : null,
+      startDate:    visa?.startDate    ? dayjs(visa.startDate)    : null,
+      endDate:      visa?.endDate      ? dayjs(visa.endDate)      : null,
+      approvedDate: visa?.approvedDate ? dayjs(visa.approvedDate) : null,
       lcaId:     visa?.lca?.lcaId ?? null,
     });
   };
@@ -146,6 +147,7 @@ const VisaMasterList = () => {
       receiptNumber:   values.receiptNumber   ?? visaModalData?.receiptNumber ?? null,
       startDate:       values.startDate?.format("YYYY-MM-DD") || null,
       endDate:         values.endDate?.format("YYYY-MM-DD")   || null,
+      approvedDate:    values.approvedDate?.format("YYYY-MM-DD") || null,
       jobTitle:        values.jobTitle      ?? null,
       lcaNumber:       values.lcaNumber     ?? null,
       socCode:         values.socCode       ?? null,
@@ -265,6 +267,7 @@ const VisaMasterList = () => {
     { colId: "jobLocation2", field: "jobLocation2", headerName: DETAIL_FIELD_LABELS.jobLocation2, filter: "agSetColumnFilter", cellClassRules, hide: true },
     { colId: "startDate", field: "startDate", headerName: DETAIL_FIELD_LABELS.startDate, filter: "agSetColumnFilter", cellClassRules },
     { colId: "endDate", field: "endDate", headerName: DETAIL_FIELD_LABELS.endDate, filter: "agSetColumnFilter", cellClassRules },
+    { colId: "approvedDate", field: "approvedDate", headerName: DETAIL_FIELD_LABELS.approvedDate, filter: "agSetColumnFilter", cellClassRules },
     { colId: "lastUpdated", field: "lastUpdated", headerName: DETAIL_FIELD_LABELS.lastUpdated, filter: "agSetColumnFilter", cellClassRules, editable: false },
   ];
 

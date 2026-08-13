@@ -144,8 +144,8 @@ const TEAM_MENU = [
 ];
 
 // Single-column "Reports" flyout — mirrors one column of the Create
-// mega-menu (a sub-heading plus its items), just narrower since there's
-// only one section so far. Add more sections here if Reports grows.
+// mega-menu (a sub-heading plus its items). Stacks multiple titled
+// sections in the one column now that there's more than Payroll.
 const REPORTS_MENU = [
   {
     title: "Payroll",
@@ -155,6 +155,12 @@ const REPORTS_MENU = [
       { label: "Health Insurance", to: "/healthinsurance" },
       { label: "Monthly Timesheets", to: "/monthlytimesheets" },
       { label: "Hours Report", to: "/hoursreport" },
+    ],
+  },
+  {
+    title: "Immigration",
+    items: [
+      { label: "Immigration Dashboard", to: "/immigrationDashboard" },
     ],
   },
 ];

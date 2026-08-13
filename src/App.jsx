@@ -13,6 +13,7 @@ import Header from "./Header/Header";
 import LeftTabs from "./LeftTabs/LeftTabs";
 import Dashboard from "./Dashboard/Dashboard";
 import Home from "./Home/Home";
+import ImmigrationDashboard from "./ImmigrationDashboard/ImmigrationDashboard";
 import WorkForce from "./WorkForce/WorkForce";
 import EmployeeOnboard from "./EmployeeOnboard/EmployeeOnboard";
 import CustomerDetails from "./Customer/CustomerDetails";
@@ -74,6 +75,7 @@ const App = () => {
             >
               <Route path="/workforce" element={<WorkForce />} />
               <Route path="/home" element={<Home />} />
+              <Route path="/immigrationDashboard" element={<ImmigrationDashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/employeeonboard" element={<EmployeeOnboard />} />
               <Route path="/customerdetails" element={<CustomerDetails />} />

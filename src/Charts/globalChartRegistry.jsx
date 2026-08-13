@@ -175,6 +175,68 @@ const WorkforceStatusWidget = React.forwardRef((props, ref) => {
   );
 });
 
+// ── Employees by Visa (work authorization) ─────────────────────────────────
+// The Employee table's own `visa` field (H1B/OPT/GC/Citizen/etc., work
+// authorization type) — distinct from the Visa entity's visaCategory used
+// by the "Visa Type" widget above, which tracks filed visa petitions
+// rather than an employee's current work-authorization status.
+const EmployeeVisaTypeWidget = React.forwardRef((props, ref) => {
+  const [employees, setEmployees] = useState(null);
+  const [failed, setFailed] = useState(false);
+  const [range, setRange] = useState("allTime");
+
+  useEffect(() => {
+    axios
+      .get(API_ENDPOINTS.getAllEmployees)
+      .then(({ data }) => setEmployees(data || []))
+      .catch(() => setFailed(true));
+  }, []);
+
+  const slices = useMemo(() => {
+    if (!employees) return null;
+    const bounds = getRangeBounds(range);
+    const filtered =
+      range === "allTime" ? employees : employees.filter((e) => isDateInRange(e.startDate, bounds));
+    const byVisa = {};
+    filtered.forEach((e) => {
+      const visa = e.visa || "Unknown";
+      byVisa[visa] = (byVisa[visa] || 0) + 1;
+    });
+    const labels = Object.keys(byVisa);
+    const colors = revenueTrendPieColors(labels.length);
+    return labels.map((label, i) => ({ label, value: byVisa[label], color: colors[i] }));
+  }, [employees, range]);
+
+  if (failed) return <ErrorState />;
+  if (!slices) return <CenteredSpin />;
+
+  const total = slices.reduce((sum, s) => sum + (s.value || 0), 0);
+
+  return (
+    <div style={{ height: "100%" }}>
+      <RangeHeader range={range} onChange={setRange} />
+      {slices.length === 0 ? (
+        <Empty description="No employees in this range" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <Row align="middle">
+          <Col span={10}>
+            <div style={{ width: "100%", height: props.height }}>
+              <PieCharts ref={ref} chartData={slices.map((s) => s.value)} chartLabels={slices.map((s) => s.label)} colors={slices.map((s) => s.color)} showLegend={false} />
+            </div>
+          </Col>
+          <Col span={8}>
+            <PieLegend slices={slices} fontSize={13} rowGap={6} />
+          </Col>
+          <Col span={6} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 28, fontWeight: 600 }}>{total}</div>
+            <div style={{ color: "#888" }}>Total</div>
+          </Col>
+        </Row>
+      )}
+    </div>
+  );
+});
+
 // ── Revenue Trend (invoiced vs billed by month) ────────────────────────────
 const RevenueTrendWidget = React.forwardRef((props, ref) => {
   const [raw, setRaw] = useState(null);
@@ -834,6 +896,181 @@ const EmployeeRevenueByMonthWidget = React.forwardRef(({ employeeId, height }, r
   );
 });
 
+// ── Visa Type ────────────────────────────────────────────────────────────
+// Time-filtered by visa startDate, same "allTime" default as Workforce
+// Status — visa counts are small enough that the full snapshot is more
+// useful by default than a rolling window.
+const VisaTypeWidget = React.forwardRef((props, ref) => {
+  const [visas, setVisas] = useState(null);
+  const [failed, setFailed] = useState(false);
+  const [range, setRange] = useState("allTime");
+
+  useEffect(() => {
+    axios
+      .get(API_ENDPOINTS.getAllVisas)
+      .then(({ data }) => setVisas(data || []))
+      .catch(() => setFailed(true));
+  }, []);
+
+  const slices = useMemo(() => {
+    if (!visas) return null;
+    const bounds = getRangeBounds(range);
+    const filtered = range === "allTime" ? visas : visas.filter((v) => isDateInRange(v.startDate, bounds));
+    const byType = {};
+    filtered.forEach((v) => {
+      const type = v.visaCategory || "Unknown";
+      byType[type] = (byType[type] || 0) + 1;
+    });
+    const labels = Object.keys(byType);
+    const colors = revenueTrendPieColors(labels.length);
+    return labels.map((label, i) => ({ label, value: byType[label], color: colors[i] }));
+  }, [visas, range]);
+
+  if (failed) return <ErrorState />;
+  if (!slices) return <CenteredSpin />;
+
+  const total = slices.reduce((sum, s) => sum + (s.value || 0), 0);
+
+  return (
+    <div style={{ height: "100%" }}>
+      <RangeHeader range={range} onChange={setRange} />
+      {slices.length === 0 ? (
+        <Empty description="No visas in this range" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <Row align="middle">
+          <Col span={10}>
+            <div style={{ width: "100%", height: props.height }}>
+              <PieCharts ref={ref} chartData={slices.map((s) => s.value)} chartLabels={slices.map((s) => s.label)} colors={slices.map((s) => s.color)} showLegend={false} />
+            </div>
+          </Col>
+          <Col span={8}>
+            <PieLegend slices={slices} fontSize={13} rowGap={6} />
+          </Col>
+          <Col span={6} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 28, fontWeight: 600 }}>{total}</div>
+            <div style={{ color: "#888" }}>Total</div>
+          </Col>
+        </Row>
+      )}
+    </div>
+  );
+});
+
+// ── Visa Status ──────────────────────────────────────────────────────────
+const VisaStatusWidget = React.forwardRef((props, ref) => {
+  const [visas, setVisas] = useState(null);
+  const [failed, setFailed] = useState(false);
+  const [range, setRange] = useState("allTime");
+
+  useEffect(() => {
+    axios
+      .get(API_ENDPOINTS.getAllVisas)
+      .then(({ data }) => setVisas(data || []))
+      .catch(() => setFailed(true));
+  }, []);
+
+  const slices = useMemo(() => {
+    if (!visas) return null;
+    const bounds = getRangeBounds(range);
+    const filtered = range === "allTime" ? visas : visas.filter((v) => isDateInRange(v.startDate, bounds));
+    const byStatus = {};
+    filtered.forEach((v) => {
+      const status = v.status || "Unknown";
+      byStatus[status] = (byStatus[status] || 0) + 1;
+    });
+    const labels = Object.keys(byStatus);
+    const colors = revenueTrendPieColors(labels.length);
+    return labels.map((label, i) => ({ label, value: byStatus[label], color: colors[i] }));
+  }, [visas, range]);
+
+  if (failed) return <ErrorState />;
+  if (!slices) return <CenteredSpin />;
+
+  const total = slices.reduce((sum, s) => sum + (s.value || 0), 0);
+
+  return (
+    <div style={{ height: "100%" }}>
+      <RangeHeader range={range} onChange={setRange} />
+      {slices.length === 0 ? (
+        <Empty description="No visas in this range" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <Row align="middle">
+          <Col span={10}>
+            <div style={{ width: "100%", height: props.height }}>
+              <PieCharts ref={ref} chartData={slices.map((s) => s.value)} chartLabels={slices.map((s) => s.label)} colors={slices.map((s) => s.color)} showLegend={false} />
+            </div>
+          </Col>
+          <Col span={8}>
+            <PieLegend slices={slices} fontSize={13} rowGap={6} />
+          </Col>
+          <Col span={6} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 28, fontWeight: 600 }}>{total}</div>
+            <div style={{ color: "#888" }}>Total</div>
+          </Col>
+        </Row>
+      )}
+    </div>
+  );
+});
+
+// ── Visa Expiry Timeline ────────────────────────────────────────────────
+// Every visa bucketed by its endDate's month, sorted chronologically — the
+// full distribution (already-expired cohorts and upcoming ones together),
+// so Immigration can see both what's already lapsed and what's coming.
+const VisaExpiryTimelineWidget = React.forwardRef((props, ref) => {
+  const [chartData, setChartData] = useState(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    axios
+      .get(API_ENDPOINTS.getAllVisas)
+      .then(({ data }) => {
+        const visas = data || [];
+        const today = new Date();
+        const sixMonthsOut = new Date(today.getFullYear(), today.getMonth() + 6, today.getDate());
+
+        // Monthly buckets ("YYYY-MM") only for the near-term window — now
+        // through 6 months out — where the detail is actually actionable;
+        // everything else (already past, or further out than 6 months)
+        // collapses into a yearly bucket ("YYYY") so the chart doesn't
+        // stretch into a wall of mostly-empty month ticks.
+        const buckets = {};
+        visas.forEach((v) => {
+          const end = parseLocalDateSafe(v.endDate);
+          if (!end) return;
+          const inNext6Months = end >= today && end <= sixMonthsOut;
+          const y = end.getFullYear();
+          let key, sortValue, label;
+          if (inNext6Months) {
+            const m = end.getMonth() + 1;
+            key = `${y}-${String(m).padStart(2, "0")}`;
+            sortValue = y * 100 + m;
+            label = formatMonthYear(key);
+          } else {
+            key = `${y}`;
+            sortValue = y * 100;
+            label = key;
+          }
+          if (!buckets[key]) buckets[key] = { count: 0, sortValue, label };
+          buckets[key].count += 1;
+        });
+
+        const sorted = Object.values(buckets).sort((a, b) => a.sortValue - b.sortValue);
+        setChartData({
+          categories: sorted.map((b) => b.label),
+          counts: sorted.map((b) => b.count),
+        });
+      })
+      .catch(() => setFailed(true));
+  }, []);
+
+  if (failed) return <ErrorState />;
+  if (!chartData) return <CenteredSpin />;
+  if (chartData.categories.length === 0) return <Empty description="No visa expiry data" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
+
+  return <TrendLineChart ref={ref} data={chartData.counts} categories={chartData.categories} seriesName="Visas Expiring" height={props.height} />;
+});
+
 // charts: [{ key, label, title, filename, defaultSize, render(innerHeight, setChartRef) }]
 // Shape matches useChartOverview's expectations exactly (see
 // src/Utils/ChartOverviewPanel.jsx) — any page can filter this list down to
@@ -852,6 +1089,13 @@ export const GLOBAL_CHARTS = [
     filename: "workforce-status",
     defaultSize: { width: 560, height: 340 },
     render: (innerHeight, setChartRef) => <WorkforceStatusWidget ref={setChartRef} height={innerHeight - 40} />,
+  },
+  {
+    key: "employeeVisaType",
+    label: "Employees by Visa",
+    filename: "employees-by-visa",
+    defaultSize: { width: 560, height: 340 },
+    render: (innerHeight, setChartRef) => <EmployeeVisaTypeWidget ref={setChartRef} height={innerHeight - 40} />,
   },
   {
     key: "revenueTrend",
@@ -928,6 +1172,27 @@ export const GLOBAL_CHARTS = [
     filename: "invoices-by-customer",
     defaultSize: { width: 800, height: 340 },
     render: (innerHeight, setChartRef) => <InvoicesByCustomerWidget ref={setChartRef} height={innerHeight} />,
+  },
+  {
+    key: "visaType",
+    label: "Visa Type",
+    filename: "visa-type",
+    defaultSize: { width: 560, height: 340 },
+    render: (innerHeight, setChartRef) => <VisaTypeWidget ref={setChartRef} height={innerHeight - 40} />,
+  },
+  {
+    key: "visaStatus",
+    label: "Visa Status",
+    filename: "visa-status",
+    defaultSize: { width: 560, height: 340 },
+    render: (innerHeight, setChartRef) => <VisaStatusWidget ref={setChartRef} height={innerHeight - 40} />,
+  },
+  {
+    key: "visaExpiryTimeline",
+    label: "Visa Expiry Timeline",
+    filename: "visa-expiry-timeline",
+    defaultSize: { width: 700, height: 380 },
+    render: (innerHeight, setChartRef) => <VisaExpiryTimelineWidget ref={setChartRef} height={innerHeight} />,
   },
 ];
 

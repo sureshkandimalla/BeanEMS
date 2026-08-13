@@ -11,11 +11,13 @@ export const ROLES = {
 // /generateInvoice, reached from multiple entry points, from being
 // accidentally locked out by an omission.
 export const ROUTE_ROLES = {
-  // Immigration's landing page is /visaEmployees (see getLandingPage), not
-  // the shared Home/Dashboard overview pages built around HR/Accounting
-  // data — so they're excluded here rather than left open to "any role".
+  // Immigration's landing page is /immigrationDashboard (see
+  // getLandingPage), not the shared Home/Dashboard overview pages built
+  // around HR/Accounting data — so they're excluded here rather than left
+  // open to "any role".
   "/home": [ROLES.HR, ROLES.ACCOUNTING],
   "/dashboard": [ROLES.HR, ROLES.ACCOUNTING],
+  "/immigrationDashboard": [ROLES.IMMIGRATION],
 
   // Team/Employees is visible to all three non-Admin roles (Accounting bills
   // them, HR manages them, Immigration handles their visas) — only the
@@ -93,6 +95,6 @@ export function canAccessEntity(userRole, entityKey) {
 // "back to home" from Access Denied) — everyone else still gets the shared
 // /home dashboard.
 export function getLandingPage(userRole) {
-  if (userRole === ROLES.IMMIGRATION) return "/visaEmployees";
+  if (userRole === ROLES.IMMIGRATION) return "/immigrationDashboard";
   return "/home";
 }

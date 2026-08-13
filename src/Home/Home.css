@@ -75,3 +75,29 @@
   margin: 4px 4px 4px;
 }
 
+/* Colored icon chip backgrounds for .home-chip-row (Home.jsx and
+   ImmigrationDashboard.jsx) — previously lived in LeftTabs.css from the
+   old nav design; restored here since both pages depend on these classes
+   and the new nav rail doesn't use them anymore. */
+.left-tab-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.left-tab-icon.icon-team        { color: #52c41a; background: #f6ffed; }
+.left-tab-icon.icon-customer    { color: #fa8c16; background: #fff7e6; }
+.left-tab-icon.icon-vendor      { color: #faad14; background: #fffbe6; }
+.left-tab-icon.icon-invoice     { color: #13c2c2; background: #e6fffb; }
+.left-tab-icon.icon-expenses    { color: #f5222d; background: #fff1f0; }
+.left-tab-icon.icon-projects    { color: #2f54eb; background: #f0f5ff; }
+.left-tab-icon.icon-payroll     { color: #eb2f96; background: #fff0f6; }
+.left-tab-icon.icon-time        { color: #1677ff; background: #e6f4ff; }
+.left-tab-icon.icon-lca         { color: #7cb305; background: #fcffe6; }
+.left-tab-icon.icon-visa        { color: #08979c; background: #e6fffb; }
+.left-tab-icon.icon-visadetails { color: #597ef7; background: #f0f5ff; }
+

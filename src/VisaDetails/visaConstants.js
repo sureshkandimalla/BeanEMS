@@ -30,6 +30,7 @@ export const VISA_FIELD_LABELS = {
   jobLocation2:    "Job Location 2",
   startDate:       "Start Date",
   endDate:         "End Date",
+  approvedDate:    "Approved Date",
   status:          "Status",
   lastUpdated:     "Last Updated",
   employeeId:      "Employee ID",
@@ -118,6 +119,7 @@ export const DETAIL_FIELD_LABELS = {
   status:          "Status",
   startDate:       "Visa Start Date",
   endDate:         "Visa End Date",
+  approvedDate:    "Approved Date",
   lastUpdated:     "Last Updated",
 };
 

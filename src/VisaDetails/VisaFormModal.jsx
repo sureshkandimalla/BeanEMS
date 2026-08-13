@@ -179,6 +179,11 @@ export default function VisaFormModal({
             </Form.Item>
           </Col>
           <Col span={12}>
+            <Form.Item name="approvedDate" label={VISA_FIELD_LABELS.approvedDate}>
+              <DatePicker style={{ width: "100%" }} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
             <Form.Item name="status" label={VISA_FIELD_LABELS.status}>
               <Select options={visaStatusList} />
             </Form.Item>
