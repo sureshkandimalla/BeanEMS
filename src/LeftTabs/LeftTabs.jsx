@@ -163,6 +163,12 @@ const REPORTS_MENU = [
       { label: "Immigration Dashboard", to: "/immigrationDashboard" },
     ],
   },
+  {
+    title: "Accounting",
+    items: [
+      { label: "Project Invoice Summary", to: "/projectInvoiceSummary" },
+    ],
+  },
 ];
 
 const LeftTabs = () => {

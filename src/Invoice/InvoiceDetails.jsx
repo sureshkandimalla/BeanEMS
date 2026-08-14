@@ -2,7 +2,8 @@ import React, { useContext, useState, useEffect, useRef, useMemo } from "react";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Card, Drawer, message, Popover, Badge, List, Empty } from "antd";
+import { Button, Card, Drawer, message, Popover, Badge, List, Empty, Modal, DatePicker as AntDatePicker } from "antd";
+import dayjs from "dayjs";
 
 import { PlusOutlined, ReloadOutlined, FileExcelOutlined, SaveOutlined, CloseOutlined, BellOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
@@ -289,6 +290,11 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
   // tracked here so the Save/Cancel buttons only appear once something has
   // actually changed.
   const [modifiedRows, setModifiedRows] = useState({});
+  // Set when a row's status is changed to "Paid" with no invoicePaidDate
+  // already on it — blocks nothing by itself, but the modal it triggers
+  // reverts the status edit unless the user actually picks a date.
+  const [paidDatePrompt, setPaidDatePrompt] = useState(null); // { node, oldStatus }
+  const [promptPaidDate, setPromptPaidDate] = useState(null);
 
   const onCellValueChanged = (params) => {
     const invoiceId = params.data?.invoiceId;
@@ -301,7 +307,31 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       params.api.refreshCells({ rowNodes: [params.node], columns: ["total"] });
     }
 
+    // Marking an invoice Paid with no paid date set — prompt for one right
+    // away instead of silently saving a Paid invoice with a blank date.
+    if (params.column.colId === "status" && params.newValue === "Paid" && !params.data.invoicePaidDate) {
+      setPromptPaidDate(dayjs());
+      setPaidDatePrompt({ node: params.node, oldStatus: params.oldValue });
+    }
+
     setModifiedRows((prev) => ({ ...prev, [invoiceId]: params.data }));
+  };
+
+  const confirmPaidDate = () => {
+    if (!promptPaidDate || !paidDatePrompt) return;
+    paidDatePrompt.node.setDataValue("invoicePaidDate", promptPaidDate.format("YYYY-MM-DD"));
+    setPaidDatePrompt(null);
+    setPromptPaidDate(null);
+  };
+
+  // Backing out without picking a date undoes the Paid transition — an
+  // invoice shouldn't end up marked Paid with no paid date.
+  const cancelPaidDatePrompt = () => {
+    if (paidDatePrompt) {
+      paidDatePrompt.node.setDataValue("status", paidDatePrompt.oldStatus);
+    }
+    setPaidDatePrompt(null);
+    setPromptPaidDate(null);
   };
 
   const handleSaveChanges = () => {
@@ -417,11 +447,31 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
         valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
       },
       {
+        headerName: "Discounts",
+        field: "discounts",
+        sortable: isSortable,
+        editable: editableUnlessPaid,
+        aggFunc: "sum",
+        valueFormatter: (params) => formatCurrency(params.value || 0),
+      },
+      {
         headerName: "Invoice PaidAmount",
         field: "invoicePaidAmount",
         sortable: isSortable,
         aggFunc: "sum",
         valueFormatter: (params) => formatCurrency(params.value), // Format with dollar sign
+      },
+      {
+        headerName: "Invoice PaidDate",
+        field: "invoicePaidDate",
+        sortable: isSortable,
+        // Always editable, even on an otherwise-locked Paid row — the whole
+        // point is letting the user correct/set this after marking Paid.
+        editable: true,
+        // Date-picker editor (matches the "yyyy-MM-dd" string this field is
+        // stored as) instead of a free-text cell.
+        cellEditor: "agDateStringCellEditor",
+        filter: "agSetColumnFilter",
       },
       { headerName: "Start Date", field: "startDate", sortable: isSortable },
       { headerName: "End Date", field: "endDate", sortable: isSortable },
@@ -495,6 +545,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
           invoiceId: "Total",
           hours: visibleRows.reduce((sum, row) => sum + (row.hours || 0), 0),
           total: visibleRows.reduce((sum, row) => sum + (row.total || 0), 0),
+          discounts: visibleRows.reduce((sum, row) => sum + (row.discounts || 0), 0),
           invoicePaidAmount: visibleRows.reduce(
             (sum, row) => sum + (row.invoicePaidAmount || 0),
             0,
@@ -615,6 +666,22 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       >
         <NewInvoice onClose={onClose} employeeId={employeeId} open={open} />
       </Drawer>
+      <Modal
+        title="Select Paid Date"
+        open={!!paidDatePrompt}
+        onOk={confirmPaidDate}
+        onCancel={cancelPaidDatePrompt}
+        okText="Confirm"
+        cancelText="Cancel"
+        okButtonProps={{ disabled: !promptPaidDate }}
+      >
+        <p>This invoice is being marked as Paid. Please choose the paid date.</p>
+        <AntDatePicker
+          style={{ width: "100%" }}
+          value={promptPaidDate}
+          onChange={setPromptPaidDate}
+        />
+      </Modal>
       <div className="workforce-search-container" style={{ gap: "32px" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <Button

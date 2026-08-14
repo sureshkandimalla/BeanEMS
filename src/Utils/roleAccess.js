@@ -45,6 +45,7 @@ export const ROUTE_ROLES = {
   "/timesheets": [ROLES.ACCOUNTING],
   "/monthlytimesheets": [ROLES.ACCOUNTING],
   "/hoursreport": [ROLES.ACCOUNTING],
+  "/projectInvoiceSummary": [ROLES.ACCOUNTING],
   "/projects": [ROLES.ACCOUNTING],
   "/projectFullDetails": [ROLES.ACCOUNTING],
   "/generateInvoice": [ROLES.ACCOUNTING],
