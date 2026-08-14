@@ -304,7 +304,15 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       const hours = Number(params.data.hours) || 0;
       const billing = Number(params.data.billing) || 0;
       params.data.total = hours * billing;
-      params.api.refreshCells({ rowNodes: [params.node], columns: ["total"] });
+    }
+
+    // Invoice PaidAmount tracks Invoice Amount minus Discounts — recomputed
+    // whenever either changes so it's always what would actually be paid.
+    if (params.column.colId === "hours" || params.column.colId === "discounts") {
+      const total = Number(params.data.total) || 0;
+      const discounts = Number(params.data.discounts) || 0;
+      params.data.invoicePaidAmount = Math.max(total - discounts, 0);
+      params.api.refreshCells({ rowNodes: [params.node], columns: ["total", "invoicePaidAmount"] });
     }
 
     // Marking an invoice Paid with no paid date set — prompt for one right
@@ -480,7 +488,10 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
         headerName: "Status",
         field: "status",
         sortable: isSortable,
-        editable: editableUnlessPaid,
+        // Always editable, even on an otherwise-locked Paid row — the whole
+        // point is letting the user correct a wrong status after the fact
+        // (e.g. un-mark a row accidentally set to Paid).
+        editable: true,
         cellEditor: "agSelectCellEditor",
         cellEditorParams: {
           values: ["Created", "Paid", "Partially Paid"],
