@@ -10,6 +10,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatDate } from "../Utils/dateFormat";
+import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 
 const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCollapsed, gridHeight = "calc(100vh - 500px)" }) => {
   const [searchText, setSearchText] = useState("");
@@ -41,8 +42,7 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
         sortable: true,
         minWidth: 160,
         hide: true,
-        valueFormatter: (params) =>
-          params.node.rowPinned === "top" ? "Total" : params.value,
+        valueFormatter: (params) => params.value,
       },
       { headerName: "Employee Id", field: "employeeId", sortable: true, hide: true },
       {
@@ -64,7 +64,7 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
         valueGetter: (params) =>
           params.data?.checkDate ? params.data.checkDate.substring(0, 4) : null,
         valueFormatter: (params) =>
-          params.node.rowPinned === "top" ? "" : params.value,
+          params.node.rowPinned ? "" : params.value,
       },
       {
         headerName: "Pay Check Date",
@@ -127,27 +127,28 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
     [employeeId],
   );
 
-  const pinnedTopRowData = useMemo(() =>
-    rowData.length > 0
-      ? [
-          {
-            payrollSummaryId: "Total",
-            totalPaid: rowData.reduce((sum, row) => sum + (row.totalPaid || 0), 0),
-            hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
-            taxWithheld: rowData.reduce((sum, row) => sum + (row.taxWithheld || 0), 0),
-            deductions: rowData.reduce((sum, row) => sum + (row.deductions || 0), 0),
-            netPay: rowData.reduce((sum, row) => sum + (row.netPay || 0), 0),
-            employerLiability: rowData.reduce((sum, row) => sum + (row.employerLiability || 0), 0),
-          },
-        ]
-      : [],
-  [rowData]);
+  const sumPayrollRows = (rows, label) => ({
+    payrollSummaryId: label,
+    totalPaid: rows.reduce((sum, row) => sum + (row.totalPaid || 0), 0),
+    hours: rows.reduce((sum, row) => sum + (row.hours || 0), 0),
+    taxWithheld: rows.reduce((sum, row) => sum + (row.taxWithheld || 0), 0),
+    deductions: rows.reduce((sum, row) => sum + (row.deductions || 0), 0),
+    netPay: rows.reduce((sum, row) => sum + (row.netPay || 0), 0),
+    employerLiability: rows.reduce((sum, row) => sum + (row.employerLiability || 0), 0),
+  });
 
-  useEffect(() => {
-    if (gridRef.current?.api && pinnedTopRowData.length > 0) {
-      gridRef.current.api.setGridOption("pinnedTopRowData", pinnedTopRowData);
-    }
-  }, [pinnedTopRowData]);
+  // Bottom row: grand total, regardless of the search box or any AG Grid
+  // column filter.
+  const pinnedBottomRowData = useMemo(
+    () => (rowData.length > 0 ? [sumPayrollRows(rowData, "Total")] : []),
+    [rowData],
+  );
+
+  // Top row: same totals, but only over rows currently passing both the
+  // search box (quickFilterText) and every AG Grid column filter.
+  const { pinnedTopRowData, onModelUpdated } = useFilteredTotalsRow((rows) =>
+    sumPayrollRows(rows, "Filtered Total"),
+  );
 
   const handleExport = () => {
     if (gridRef.current?.api) {
@@ -220,6 +221,7 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
             ref={gridRef}
             onSortChanged={(params) => params.api.refreshCells({ force: true })}
             onFilterChanged={(params) => params.api.refreshCells({ force: true })}
+            onModelUpdated={onModelUpdated}
             onFirstDataRendered={(params) => {
               try { params.api.autoSizeAllColumns(); } catch (e) {}
             }}
@@ -229,6 +231,7 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
             quickFilterText={searchText}
             columnDefs={sizeColumnsForHeader(columnDefs)}
             pinnedTopRowData={pinnedTopRowData}
+            pinnedBottomRowData={pinnedBottomRowData}
             defaultColDef={{
               minWidth: 100,
               maxWidth: 220,

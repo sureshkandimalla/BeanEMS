@@ -12,6 +12,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "react-datepicker/dist/react-datepicker.css";
 import AdjustmentForm from "./AdjustmentForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 
 const AdjustementDetails = ({ employeeId, isCollapsed }) => {
   const gridRef = useRef(null);
@@ -130,16 +131,21 @@ const AdjustementDetails = ({ employeeId, isCollapsed }) => {
 
   useEffect(() => {
     if (rowData && rowData.length > 0) {
-      console.log(rowData);
       setPinnedBottomRowData([
         {
           adjustmentId: "Total",
           amount: rowData.reduce((sum, row) => sum + (row.amount || 0), 0),
         },
       ]);
-      console.log(pinnedBottomRowData);
     }
   }, [rowData]);
+
+  // Top row: same total, but only over rows currently passing both the
+  // search box and every AG Grid column filter.
+  const { pinnedTopRowData, onModelUpdated } = useFilteredTotalsRow((rows) => ({
+    adjustmentId: "Filtered Total",
+    amount: rows.reduce((sum, row) => sum + (row.amount || 0), 0),
+  }));
 
   const getRowStyle = (params) => {
     if (params.node.rowPinned) {
@@ -201,6 +207,7 @@ const AdjustementDetails = ({ employeeId, isCollapsed }) => {
         }}
         onSortChanged={(params) => params.api.refreshCells({ force: true })}
         onFilterChanged={(params) => params.api.refreshCells({ force: true })}
+        onModelUpdated={onModelUpdated}
         onFirstDataRendered={(params) => {
           try { params.api.autoSizeAllColumns(); } catch (e) {}
         }}
@@ -244,7 +251,8 @@ const AdjustementDetails = ({ employeeId, isCollapsed }) => {
         paginationPageSize={100}
         paginationPageSizeSelector={[100,200, 300]}
         domLayout="normal"
-        pinnedTopRowData={pinnedBottomRowData} // Set pinned bottom row data here
+        pinnedTopRowData={pinnedTopRowData}
+        pinnedBottomRowData={pinnedBottomRowData}
         getRowStyle={getRowStyle}
         enableBrowserTooltips={true}
         popupParent={document.body}

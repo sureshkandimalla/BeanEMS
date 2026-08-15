@@ -10,6 +10,7 @@ import axios from "axios";
 import API_ENDPOINTS from "../config";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 
 // Accounting-style negative display: (1,234.56) instead of -1,234.56, in red.
 const formatSignedCurrency = (value) => {
@@ -180,30 +181,38 @@ export default function CompanyFinalReportDetails() {
     }
   };
 
-  const pinnedTopRowData = useMemo(() => {
-    const visibleRows = filterData();
-    return visibleRows.length > 0
-      ? [
-          {
-            employeeName: "Company Total",
-            totalInvoiceAmount: visibleRows.reduce((sum, row) => sum + (row.totalInvoiceAmount || 0), 0),
-            invoicesPaid: visibleRows.reduce((sum, row) => sum + (row.invoicesPaid || 0), 0),
-            employeePay: visibleRows.reduce((sum, row) => sum + (row.employeePay || 0), 0),
-            incomePaid: visibleRows.reduce((sum, row) => sum + (row.incomePaid || 0), 0),
-            totalPayment: visibleRows.reduce((sum, row) => sum + (row.totalPayment || 0), 0),
-            adjustmentsPaid: visibleRows.reduce((sum, row) => sum + (row.adjustmentsPaid || 0), 0),
-            adjustmentsReceived: visibleRows.reduce((sum, row) => sum + (row.adjustmentsReceived || 0), 0),
-            companyExpenses: visibleRows.reduce((sum, row) => sum + (row.companyExpenses || 0), 0),
-            expenses: visibleRows.reduce((sum, row) => sum + (row.expenses || 0), 0),
-            employerTax: visibleRows.reduce((sum, row) => sum + (row.employerTax || 0), 0),
-            gross: visibleRows.reduce((sum, row) => sum + (row.gross || 0), 0),
-            balance: visibleRows.reduce((sum, row) => sum + (row.balance || 0), 0),
-            balancePaid: visibleRows.reduce((sum, row) => sum + (row.balancePaid || 0), 0),
-          },
-        ]
-      : [];
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rowData, searchText, showNewHires]);
+  const sumCompanyRows = (rows, label) => ({
+    employeeName: label,
+    totalInvoiceAmount: rows.reduce((sum, row) => sum + (row.totalInvoiceAmount || 0), 0),
+    invoicesPaid: rows.reduce((sum, row) => sum + (row.invoicesPaid || 0), 0),
+    employeePay: rows.reduce((sum, row) => sum + (row.employeePay || 0), 0),
+    incomePaid: rows.reduce((sum, row) => sum + (row.incomePaid || 0), 0),
+    totalPayment: rows.reduce((sum, row) => sum + (row.totalPayment || 0), 0),
+    adjustmentsPaid: rows.reduce((sum, row) => sum + (row.adjustmentsPaid || 0), 0),
+    adjustmentsReceived: rows.reduce((sum, row) => sum + (row.adjustmentsReceived || 0), 0),
+    companyExpenses: rows.reduce((sum, row) => sum + (row.companyExpenses || 0), 0),
+    expenses: rows.reduce((sum, row) => sum + (row.expenses || 0), 0),
+    employerTax: rows.reduce((sum, row) => sum + (row.employerTax || 0), 0),
+    gross: rows.reduce((sum, row) => sum + (row.gross || 0), 0),
+    balance: rows.reduce((sum, row) => sum + (row.balance || 0), 0),
+    balancePaid: rows.reduce((sum, row) => sum + (row.balancePaid || 0), 0),
+  });
+
+  // Bottom row: grand total for the current "Show New Hires" scope (a
+  // deliberate toggle of what's even in the report, not a browsing filter),
+  // regardless of the search box or any AG Grid column filter.
+  const pinnedBottomRowData = useMemo(() => {
+    const scopedRows = showNewHires
+      ? rowData
+      : rowData.filter((row) => row.employeeRecord?.status !== "NewHires");
+    return scopedRows.length > 0 ? [sumCompanyRows(scopedRows, "Company Total")] : [];
+  }, [rowData, showNewHires]);
+
+  // Top row: same totals, but only over rows currently passing both the
+  // search box and every AG Grid column filter.
+  const { pinnedTopRowData, onModelUpdated } = useFilteredTotalsRow((rows) =>
+    sumCompanyRows(rows, "Filtered Total"),
+  );
 
   const columnDefs = [
     {
@@ -354,6 +363,7 @@ export default function CompanyFinalReportDetails() {
             }}
             onSortChanged={(params) => params.api.refreshCells({ force: true })}
             onFilterChanged={(params) => params.api.refreshCells({ force: true })}
+            onModelUpdated={onModelUpdated}
             onFirstDataRendered={(params) => {
               try {
                 params.api.autoSizeAllColumns();
@@ -364,6 +374,7 @@ export default function CompanyFinalReportDetails() {
             rowData={filterData()}
             columnDefs={sizeColumnsForHeader(columnDefs)}
             pinnedTopRowData={pinnedTopRowData}
+            pinnedBottomRowData={pinnedBottomRowData}
             getRowStyle={(params) =>
               params.node.rowPinned ? { backgroundColor: "#d3f4ff", fontWeight: "bold" } : null
             }

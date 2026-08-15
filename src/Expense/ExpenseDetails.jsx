@@ -12,6 +12,7 @@ import "../Invoice/Invoice.css";
 import NewExpense from "./NewExpense";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatDate } from "../Utils/dateFormat";
+import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 
 const editableUnlessReimbursed = (params) => params.data?.status !== "Reimbursed";
 
@@ -24,7 +25,7 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState();
   const [employees, setEmployeesData] = useState([]);
-  const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
+  const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
   const [modifiedRows, setModifiedRows] = useState({});
   const [open, setOpen] = useState(false);
 
@@ -107,20 +108,25 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
     );
   };
 
+  // Bottom row: grand total across every expense currently in scope
+  // (employeeId/statusFilter props), regardless of the search box or any
+  // AG Grid column filter.
   useEffect(() => {
-    const visibleRows = filterData();
-    if (visibleRows && visibleRows.length > 0) {
-      setPinnedTopRowData([
-        {
-          expenseId: "Total",
-          amount: visibleRows.reduce((sum, row) => sum + (row.amount || 0), 0),
-        },
+    if (enrichedRowData && enrichedRowData.length > 0) {
+      setPinnedBottomRowData([
+        { expenseId: "Total", amount: enrichedRowData.reduce((sum, row) => sum + (row.amount || 0), 0) },
       ]);
     } else {
-      setPinnedTopRowData([]);
+      setPinnedBottomRowData([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enrichedRowData, searchText]);
+  }, [enrichedRowData]);
+
+  // Top row: same total, but only over rows currently passing both the
+  // search box and every AG Grid column filter.
+  const { pinnedTopRowData, onModelUpdated } = useFilteredTotalsRow((rows) => ({
+    expenseId: "Filtered Total",
+    amount: rows.reduce((sum, row) => sum + (row.amount || 0), 0),
+  }));
 
   const onBtnExportDataAsExcel = () => {
     if (gridRef.current) {
@@ -144,8 +150,7 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
       headerName: "Expense Id",
       field: "expenseId",
       sortable: isSortable,
-      valueFormatter: (params) =>
-        params.node.rowPinned === "top" ? "Total" : params.value,
+      valueFormatter: (params) => params.value,
     },
     { headerName: "Employee Name", field: "employeeName", sortable: isSortable, enableRowGroup: true },
     {
@@ -170,8 +175,7 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
       sortable: isSortable,
       editable: editableUnlessReimbursed,
       aggFunc: "sum",
-      valueFormatter: (params) =>
-        params.node.rowPinned === "top" ? formatCurrency(params.value) : formatCurrency(params.value),
+      valueFormatter: (params) => formatCurrency(params.value),
     },
     {
       headerName: "Reimbursable",
@@ -181,7 +185,7 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
       cellEditor: "agSelectCellEditor",
       cellEditorParams: { values: [true, false] },
       valueFormatter: (params) =>
-        params.node.rowPinned === "top" ? "" : params.value ? "Yes" : "No",
+        params.node.rowPinned ? "" : params.value ? "Yes" : "No",
       enableRowGroup: true,
     },
     {
@@ -190,7 +194,7 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
       sortable: isSortable,
       editable: editableUnlessReimbursed,
       valueFormatter: (params) =>
-        params.node.rowPinned === "top" ? "" : formatDate(params.value),
+        params.node.rowPinned ? "" : formatDate(params.value),
     },
     {
       headerName: "Status",
@@ -279,6 +283,7 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
               }}
               onSortChanged={(params) => params.api.refreshCells({ force: true })}
               onFilterChanged={(params) => params.api.refreshCells({ force: true })}
+              onModelUpdated={onModelUpdated}
               onFirstDataRendered={(params) => {
                 try {
                   params.api.autoSizeAllColumns();
@@ -327,6 +332,7 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
               paginationPageSize={100}
               paginationPageSizeSelector={[20, 50, 100]}
               pinnedTopRowData={pinnedTopRowData}
+              pinnedBottomRowData={pinnedBottomRowData}
               getRowStyle={getRowStyle}
               enableBrowserTooltips={true}
               popupParent={document.body}

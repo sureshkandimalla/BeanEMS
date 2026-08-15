@@ -9,13 +9,14 @@ import axios from "axios";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 import "./ReconciliationDetails.css"
 
 export default function ReconciliationDetails({ employeeId }) {
   const gridRef = useRef(null);
   const [rowData, setRowData] = useState([]);
-  const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
-  
+  const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
+
 
   const isInitialRender = useRef(true);
 
@@ -55,37 +56,29 @@ export default function ReconciliationDetails({ employeeId }) {
     return updatedData || [];
   };
 
+    const sumReconciliationRows = (rows, label) => ({
+      description: label,
+      hours: rows.reduce((sum, row) => sum + (row.hours || 0), 0),
+      income: rows.reduce((sum, row) => sum + (row.income || 0), 0),
+      expense: rows.reduce((sum, row) => sum + (row.expense || 0), 0),
+      invoiceTotal: rows.reduce((sum, row) => sum + (row.invoiceTotal || 0), 0),
+      invoicePaidAmount: rows.reduce((sum, row) => sum + (row.invoicePaidAmount || 0), 0),
+      projectBilling: rows.reduce((sum, row) => sum + (row.projectBilling || 0), 0),
+      wage: rows.reduce((sum, row) => sum + (row.wage || 0), 0),
+      actions: null,
+    });
+
     useEffect(() => {
       if (rowData && rowData.length > 0) {
-        console.log(rowData);
-        setPinnedTopRowData([
-          {
-            description: "Total",
-            hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
-            income: rowData.reduce((sum, row) => sum + (row.income || 0), 0),
-            expense: rowData.reduce((sum, row) => sum + (row.expense || 0), 0),
-            invoiceTotal: rowData.reduce(
-              (sum, row) => sum + (row.invoiceTotal || 0),
-              0,
-            ),
-            invoicePaidAmount: rowData.reduce(
-              (sum, row) => sum + (row.invoicePaidAmount || 0),
-              0,
-            ), // Summing billRate values
-            projectBilling: rowData.reduce(
-              (sum, row) => sum + (row.projectBilling || 0),
-              0,
-            ),
-            wage: rowData.reduce(
-              (sum, row) => sum + (row.wage || 0),
-              0,
-            ),
-            actions: null,
-          },
-        ]);
-        console.log(pinnedTopRowData);
+        setPinnedBottomRowData([sumReconciliationRows(rowData, "Total")]);
       }
     }, [rowData]);
+
+    // Top row: same totals, but only over rows currently passing every
+    // AG Grid column filter (this grid has no separate search box).
+    const { pinnedTopRowData, onModelUpdated } = useFilteredTotalsRow((rows) =>
+      sumReconciliationRows(rows, "Filtered Total"),
+    );
   const columnDefs = [
     {
       field: "description",
@@ -208,6 +201,7 @@ export default function ReconciliationDetails({ employeeId }) {
         }}
         onSortChanged={(params) => params.api.refreshCells({ force: true })}
         onFilterChanged={(params) => params.api.refreshCells({ force: true })}
+        onModelUpdated={onModelUpdated}
         onFirstDataRendered={(params) => {
           try { params.api.autoSizeAllColumns(); } catch (e) {}
         }}
@@ -217,7 +211,8 @@ export default function ReconciliationDetails({ employeeId }) {
         columnDefs={sizeColumnsForHeader(columnDefs)}
         masterDetail={true}
         detailCellRendererParams={detailCellRendererParams}
-        pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here
+        pinnedTopRowData={pinnedTopRowData}
+        pinnedBottomRowData={pinnedBottomRowData}
         getRowStyle={getRowStyle}
         defaultColDef={{
           minWidth: 100,

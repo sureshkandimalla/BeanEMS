@@ -12,6 +12,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 import "./BillingDetails.css"
 
 const BillingDetails = ({ url, isCollapsed, onRefresh }) => {
@@ -143,22 +144,24 @@ const BillingDetails = ({ url, isCollapsed, onRefresh }) => {
     );
   };
 
+  const sumBillRows = (rows, label) => ({
+    billType: label,
+    hours: rows.reduce((sum, row) => sum + (row.hours || 0), 0),
+    total: rows.reduce((sum, row) => sum + (row.total || 0), 0),
+    billPaidAmount: rows.reduce((sum, row) => sum + (row.billPaidAmount || 0), 0),
+  });
+
   useEffect(() => {
     if (rowData && rowData.length > 0) {
-      console.log(rowData);
-      setPinnedBottomRowData([
-        {
-          billType: "Total",
-          hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
-          total: rowData.reduce((sum, row) => sum + (row.total || 0), 0),
-          billPaidAmount: rowData.reduce(
-            (sum, row) => sum + (row.billPaidAmount || 0),
-            0
-          ), // Summing billRate values
-        },
-      ]);
+      setPinnedBottomRowData([sumBillRows(rowData, "Total")]);
     }
   }, [rowData]);
+
+  // Top row: same totals, but only over rows currently passing both the
+  // search box and every AG Grid column filter.
+  const { pinnedTopRowData, onModelUpdated } = useFilteredTotalsRow((rows) =>
+    sumBillRows(rows, "Filtered Total"),
+  );
 
   const getRowStyle = (params) => {
     if (params.node.rowPinned) {
@@ -221,6 +224,7 @@ const BillingDetails = ({ url, isCollapsed, onRefresh }) => {
         }}
         onSortChanged={(params) => params.api.refreshCells({ force: true })}
         onFilterChanged={(params) => params.api.refreshCells({ force: true })}
+        onModelUpdated={onModelUpdated}
         onFirstDataRendered={(params) => {
           try { params.api.autoSizeAllColumns(); } catch (e) {}
         }}
@@ -263,7 +267,8 @@ const BillingDetails = ({ url, isCollapsed, onRefresh }) => {
         pagination={true}
         paginationPageSize={100}
         paginationPageSizeSelector={[20, 50, 100]}
-        pinnedTopRowData={pinnedBottomRowData}
+        pinnedTopRowData={pinnedTopRowData}
+        pinnedBottomRowData={pinnedBottomRowData}
         getRowStyle={getRowStyle}
         enableBrowserTooltips={true}
         popupParent={document.body}

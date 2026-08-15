@@ -24,6 +24,7 @@ import ChartOverviewPanel from "../Utils/ChartOverviewPanel";
 import { GLOBAL_CHARTS } from "../Charts/globalChartRegistry";
 import AuthContext from "../Authentication/Context/AuthContext";
 import { canAccessEntity } from "../Utils/roleAccess";
+import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 
 // employeeId/projectId are optional — when provided (e.g. embedded in the
 // Employee Full Details "INVOICES" tab, or the Project Full Details
@@ -41,7 +42,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
   const [projects, setProjectsData] = useState([]);
   const [referralEmployeeIds, setReferralEmployeeIds] = useState(new Set());
   const navigate = useNavigate();
-  const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
+  const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
 
   //  const columnsList = ['Customer Id', 'Company Name', 'Email Id', 'Phone', 'Status', 'ein', 'Website','startDate','endDate' ];
@@ -548,28 +549,31 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
     }
   }, []);
 
+  const sumInvoiceRows = (rows, label) => ({
+    invoiceId: label,
+    hours: rows.reduce((sum, row) => sum + (row.hours || 0), 0),
+    total: rows.reduce((sum, row) => sum + (row.total || 0), 0),
+    discounts: rows.reduce((sum, row) => sum + (row.discounts || 0), 0),
+    invoicePaidAmount: rows.reduce((sum, row) => sum + (row.invoicePaidAmount || 0), 0),
+  });
+
+  // Bottom row: grand total across every invoice currently in scope
+  // (employee/project/status props), regardless of the search box or any
+  // AG Grid column filter.
   useEffect(() => {
-    const visibleRows = filterData();
-    if (visibleRows && visibleRows.length > 0) {
-      setPinnedTopRowData([
-        {
-          invoiceId: "Total",
-          hours: visibleRows.reduce((sum, row) => sum + (row.hours || 0), 0),
-          total: visibleRows.reduce((sum, row) => sum + (row.total || 0), 0),
-          discounts: visibleRows.reduce((sum, row) => sum + (row.discounts || 0), 0),
-          invoicePaidAmount: visibleRows.reduce(
-            (sum, row) => sum + (row.invoicePaidAmount || 0),
-            0,
-          ), // Summing billRate values
-        },
-      ]);
+    if (enrichedRowData && enrichedRowData.length > 0) {
+      setPinnedBottomRowData([sumInvoiceRows(enrichedRowData, "Total")]);
     } else {
-      setPinnedTopRowData([]);
+      setPinnedBottomRowData([]);
     }
-    // Recompute whenever the underlying data or the search filter changes —
-    // the totals row must reflect exactly what's currently visible.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enrichedRowData, searchText]);
+  }, [enrichedRowData]);
+
+  // Top row: same totals, but only over rows currently passing both the
+  // search box and every AG Grid column filter.
+  const { pinnedTopRowData, onModelUpdated } = useFilteredTotalsRow((rows) =>
+    sumInvoiceRows(rows, "Filtered Total"),
+  );
 
   const generateInvoice = () => {
     if (employeeId) {
@@ -789,6 +793,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
         }}
         onSortChanged={(params) => params.api.refreshCells({ force: true })}
         onFilterChanged={(params) => params.api.refreshCells({ force: true })}
+        onModelUpdated={onModelUpdated}
         onFirstDataRendered={(params) => {
           try { params.api.autoSizeAllColumns(); } catch (e) {}
         }}
@@ -835,7 +840,8 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
         pagination={true}
         paginationPageSize={100}
         paginationPageSizeSelector={[20, 50, 100]}
-        pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here
+        pinnedTopRowData={pinnedTopRowData}
+        pinnedBottomRowData={pinnedBottomRowData}
         getRowStyle={getRowStyle}
         enableBrowserTooltips={true}
         popupParent={document.body}

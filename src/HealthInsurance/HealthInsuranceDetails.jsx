@@ -10,6 +10,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatDate } from "../Utils/dateFormat";
+import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 
 const HealthInsuranceDetails = ({ rowData: externalRowData, onRefresh, employeeId, gridHeight = "calc(100vh - 500px)" }) => {
   const [searchText, setSearchText] = useState("");
@@ -123,26 +124,27 @@ const HealthInsuranceDetails = ({ rowData: externalRowData, onRefresh, employeeI
     [employeeId],
   );
 
-  const pinnedTopRowData = useMemo(() =>
-    rowData.length > 0
-      ? [
-          {
-            healthInsuranceId: "Total",
-            claimPrefund: rowData.reduce((sum, row) => sum + (row.claimPrefund || 0), 0),
-            specificStopLoss: rowData.reduce((sum, row) => sum + (row.specificStopLoss || 0), 0),
-            aggregateStopLoss: rowData.reduce((sum, row) => sum + (row.aggregateStopLoss || 0), 0),
-            adminFee: rowData.reduce((sum, row) => sum + (row.adminFee || 0), 0),
-            total: rowData.reduce((sum, row) => sum + (row.total || 0), 0),
-          },
-        ]
-      : [],
-  [rowData]);
+  const sumHealthInsuranceRows = (rows, label) => ({
+    healthInsuranceId: label,
+    claimPrefund: rows.reduce((sum, row) => sum + (row.claimPrefund || 0), 0),
+    specificStopLoss: rows.reduce((sum, row) => sum + (row.specificStopLoss || 0), 0),
+    aggregateStopLoss: rows.reduce((sum, row) => sum + (row.aggregateStopLoss || 0), 0),
+    adminFee: rows.reduce((sum, row) => sum + (row.adminFee || 0), 0),
+    total: rows.reduce((sum, row) => sum + (row.total || 0), 0),
+  });
 
-  useEffect(() => {
-    if (gridRef.current?.api && pinnedTopRowData.length > 0) {
-      gridRef.current.api.setGridOption("pinnedTopRowData", pinnedTopRowData);
-    }
-  }, [pinnedTopRowData]);
+  // Bottom row: grand total across every record, regardless of the search
+  // box or any AG Grid column filter.
+  const pinnedBottomRowData = useMemo(
+    () => (rowData.length > 0 ? [sumHealthInsuranceRows(rowData, "Total")] : []),
+    [rowData],
+  );
+
+  // Top row: same totals, but only over rows currently passing both the
+  // search box (quickFilterText) and every AG Grid column filter.
+  const { pinnedTopRowData, onModelUpdated } = useFilteredTotalsRow((rows) =>
+    sumHealthInsuranceRows(rows, "Filtered Total"),
+  );
 
   const handleExport = () => {
     if (gridRef.current?.api) {
@@ -228,6 +230,7 @@ const HealthInsuranceDetails = ({ rowData: externalRowData, onRefresh, employeeI
             ref={gridRef}
             onSortChanged={(params) => params.api.refreshCells({ force: true })}
             onFilterChanged={(params) => params.api.refreshCells({ force: true })}
+            onModelUpdated={onModelUpdated}
             onFirstDataRendered={(params) => {
               try { params.api.autoSizeAllColumns(); } catch (e) {}
             }}
@@ -237,6 +240,7 @@ const HealthInsuranceDetails = ({ rowData: externalRowData, onRefresh, employeeI
             quickFilterText={searchText}
             columnDefs={sizeColumnsForHeader(columnDefs)}
             pinnedTopRowData={pinnedTopRowData}
+            pinnedBottomRowData={pinnedBottomRowData}
             defaultColDef={{
               minWidth: 100,
               maxWidth: 220,

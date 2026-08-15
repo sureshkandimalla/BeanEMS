@@ -10,6 +10,7 @@ import API_ENDPOINTS from "../config";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatMonthYear } from "../Utils/dateFormat";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 
 // One row per Project — Total Invoice/Invoice Paid/Discounts/Pending are
 // aggregated across every invoice billed against that project, and Last
@@ -93,9 +94,8 @@ export default function ProjectInvoiceSummary() {
     );
   }, [rowData, searchText]);
 
-  const pinnedTopRowData = useMemo(() => {
-    if (filteredRowData.length === 0) return [];
-    const totals = filteredRowData.reduce(
+  const sumProjectRows = (rows, label) => {
+    const totals = rows.reduce(
       (acc, row) => ({
         totalInvoice: acc.totalInvoice + row.totalInvoice,
         totalPaid: acc.totalPaid + row.totalPaid,
@@ -104,8 +104,21 @@ export default function ProjectInvoiceSummary() {
       }),
       { totalInvoice: 0, totalPaid: 0, totalDiscounts: 0, pending: 0 },
     );
-    return [{ projectName: "Total", ...totals }];
-  }, [filteredRowData]);
+    return { projectName: label, ...totals };
+  };
+
+  // Bottom row: grand total across every project, regardless of the search
+  // box or any AG Grid column filter.
+  const pinnedBottomRowData = useMemo(
+    () => (rowData.length > 0 ? [sumProjectRows(rowData, "Total")] : []),
+    [rowData],
+  );
+
+  // Top row: same totals, but only over rows currently passing both the
+  // search box and every AG Grid column filter.
+  const { pinnedTopRowData, onModelUpdated } = useFilteredTotalsRow((rows) =>
+    sumProjectRows(rows, "Filtered Total"),
+  );
 
   const cellClassRules = {
     darkGreyBackground: (params) =>
@@ -253,6 +266,7 @@ export default function ProjectInvoiceSummary() {
             }}
             onSortChanged={(params) => params.api.refreshCells({ force: true })}
             onFilterChanged={(params) => params.api.refreshCells({ force: true })}
+            onModelUpdated={onModelUpdated}
             onFirstDataRendered={(params) => {
               try {
                 params.api.autoSizeAllColumns();
@@ -266,6 +280,7 @@ export default function ProjectInvoiceSummary() {
             detailCellRendererParams={detailCellRendererParams}
             detailRowAutoHeight={true}
             pinnedTopRowData={pinnedTopRowData}
+            pinnedBottomRowData={pinnedBottomRowData}
             getRowStyle={(params) =>
               params.node.rowPinned ? { backgroundColor: "#d3f4ff", fontWeight: "bold" } : null
             }

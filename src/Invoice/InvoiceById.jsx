@@ -12,12 +12,13 @@ import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { Button } from "antd";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 import "./InvoiceById.css";
 
 const InvoiceById = ({ url, employeeId, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
-  const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
+  const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
   const navigate = useNavigate();
 
   //  const columnsList = ['Customer Id', 'Company Name', 'Email Id', 'Phone', 'Status', 'ein', 'Website','startDate','endDate' ];
@@ -151,24 +152,25 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
     });
   };
 
+  const sumInvoiceByIdRows = (rows, label) => ({
+    invoiceId: label,
+    hours: rows.reduce((sum, row) => sum + (row.hours || 0), 0),
+    total: rows.reduce((sum, row) => sum + (row.total || 0), 0),
+    invoicePaidAmount: rows.reduce((sum, row) => sum + (row.invoicePaidAmount || 0), 0),
+    actions: null,
+  });
+
   useEffect(() => {
     if (rowData && rowData.length > 0) {
-      console.log(rowData);
-      setPinnedTopRowData([
-        {
-          invoiceId: "Total",
-          hours: rowData.reduce((sum, row) => sum + (row.hours || 0), 0),
-          total: rowData.reduce((sum, row) => sum + (row.total || 0), 0),
-          invoicePaidAmount: rowData.reduce(
-            (sum, row) => sum + (row.invoicePaidAmount || 0),
-            0,
-          ), // Summing billRate values
-          actions: null,
-        },
-      ]);
-      console.log(pinnedTopRowData);
+      setPinnedBottomRowData([sumInvoiceByIdRows(rowData, "Total")]);
     }
   }, [rowData]);
+
+  // Top row: same totals, but only over rows currently passing both the
+  // search box and every AG Grid column filter.
+  const { pinnedTopRowData, onModelUpdated } = useFilteredTotalsRow((rows) =>
+    sumInvoiceByIdRows(rows, "Filtered Total"),
+  );
 
   return (
     <div
@@ -210,6 +212,7 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
         ensureDomOrder={true}
         onSortChanged={(params) => params.api.refreshCells({ force: true })}
         onFilterChanged={(params) => params.api.refreshCells({ force: true })}
+        onModelUpdated={onModelUpdated}
         onFirstDataRendered={(params) => {
           try { params.api.autoSizeAllColumns(); } catch (e) {}
         }}
@@ -253,7 +256,8 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
         pagination={true}        
         paginationPageSize={100}
         paginationPageSizeSelector={[100,200, 300]}
-        pinnedTopRowData={pinnedTopRowData} // Set pinned bottom row data here
+        pinnedTopRowData={pinnedTopRowData}
+        pinnedBottomRowData={pinnedBottomRowData}
         getRowStyle={getRowStyle}
         enableBrowserTooltips={true} 
         popupParent={document.body} 

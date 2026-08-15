@@ -22,6 +22,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
+  const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
   const [modifiedRows, setModifiedRows] = useState({});
 
   const onCellValueChanged = (params) => {
@@ -65,31 +66,39 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
     setRowData((prevState) => (projectsList ? [...projectsList] : prevState));
   }, [projectsList]);
 
+  // Sums the same set of columns the bottom Total row uses, over whatever
+  // list of rows is passed in — reused for both the grand total (bottom,
+  // every row) and the filtered total (top, only what's currently visible).
+  const sumTotals = (rows) => ({
+    billRate: rows.reduce((sum, row) => sum + (row.billRate || 0), 0),
+    net: rows.reduce((sum, row) => sum + (row.net || 0), 0),
+    employeePay: rows.reduce((sum, row) => sum + (row.employeePay || 0), 0),
+    expenseExternal: rows.reduce((sum, row) => sum + (row.expenseExternal || 0), 0),
+    expenseInternal: rows.reduce((sum, row) => sum + (row.expenseInternal || 0), 0),
+  });
+
   useEffect(() => {
     if (rowData && rowData.length > 0) {
-      console.log(rowData);
-      setPinnedBottomRowData([
-        {
-          projectName: "Total",
-          billRate: rowData.reduce((sum, row) => sum + (row.billRate || 0), 0),
-          net: rowData.reduce((sum, row) => sum + (row.net || 0), 0),
-          employeePay: rowData.reduce(
-            (sum, row) => sum + (row.employeePay || 0),
-            0
-          ),
-          expenseExternal: rowData.reduce(
-            (sum, row) => sum + (row.expenseExternal || 0),
-            0
-          ), // Summing billRate values
-          expenseInternal: rowData.reduce(
-            (sum, row) => sum + (row.expenseInternal || 0),
-            0
-          ),
-        },
-      ]);
-      console.log(pinnedBottomRowData);
+      setPinnedBottomRowData([{ projectName: "Total", ...sumTotals(rowData) }]);
     }
   }, [rowData]);
+
+  // Top pinned row — same totals, but only over rows currently passing both
+  // the search box and every AG Grid column filter. onModelUpdated fires
+  // whenever the grid's displayed rows change for any reason (rowData prop
+  // changing via the search box, a column filter being applied, etc.), so
+  // it's the one hook that covers every "filtered" case.
+  const updateFilteredTotals = (params) => {
+    const visibleRows = [];
+    params.api.forEachNodeAfterFilter((node) => {
+      if (node.data) visibleRows.push(node.data);
+    });
+    const next = visibleRows.length > 0 ? [{ projectName: "Filtered Total", ...sumTotals(visibleRows) }] : [];
+    // Setting pinnedTopRowData itself triggers another onModelUpdated, so
+    // bail out (same reference) once the computed totals stop changing —
+    // otherwise this feeds back into itself forever.
+    setPinnedTopRowData((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+  };
 
   const getColumnsDefList = (isSortable) => {
     var columns = [
@@ -341,6 +350,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
           onCellValueChanged={onCellValueChanged}
           onSortChanged={(params) => params.api.refreshCells({ force: true })}
           onFilterChanged={(params) => params.api.refreshCells({ force: true })}
+          onModelUpdated={updateFilteredTotals}
           onFirstDataRendered={(params) => {
             try { params.api.autoSizeAllColumns(); } catch (e) {}
           }}
@@ -388,6 +398,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
           paginationPageSize={100}
           paginationPageSizeSelector={[20, 50, 100]}
           domLayout="normal"
+          pinnedTopRowData={pinnedTopRowData}
           pinnedBottomRowData={pinnedBottomRowData}
           enableBrowserTooltips={true}
           popupParent={document.body}

@@ -7,6 +7,7 @@ import API_ENDPOINTS from "../config";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatDate } from "../Utils/dateFormat";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -230,21 +231,26 @@ const PayrollEligibility = () => {
     );
   }, [rowData, searchText]);
 
-  const pinnedTopRowData = useMemo(
-    () =>
-      filteredRowData.length > 0
-        ? [
-            {
-              employeeName: "Total",
-              hours: filteredRowData.reduce((sum, row) => sum + (row.hours || 0), 0),
-              amount: filteredRowData.reduce((sum, row) => sum + (row.wage || 0) * (row.hours || 0), 0),
-              actualHours: filteredRowData.reduce((sum, row) => sum + (row.actualHours || 0), 0),
-              grossAmount: filteredRowData.reduce((sum, row) => sum + (row.grossAmount || 0), 0),
-              employerContribution: filteredRowData.reduce((sum, row) => sum + (row.employerContribution || 0), 0),
-            },
-          ]
-        : [],
-    [filteredRowData],
+  const sumEligibilityRows = (rows, label) => ({
+    employeeName: label,
+    hours: rows.reduce((sum, row) => sum + (row.hours || 0), 0),
+    amount: rows.reduce((sum, row) => sum + (row.wage || 0) * (row.hours || 0), 0),
+    actualHours: rows.reduce((sum, row) => sum + (row.actualHours || 0), 0),
+    grossAmount: rows.reduce((sum, row) => sum + (row.grossAmount || 0), 0),
+    employerContribution: rows.reduce((sum, row) => sum + (row.employerContribution || 0), 0),
+  });
+
+  // Bottom row: grand total for the selected pay period, regardless of the
+  // search box or any AG Grid column filter.
+  const pinnedBottomRowData = useMemo(
+    () => (rowData.length > 0 ? [sumEligibilityRows(rowData, "Total")] : []),
+    [rowData],
+  );
+
+  // Top row: same totals, but only over rows currently passing both the
+  // search box and every AG Grid column filter.
+  const { pinnedTopRowData, onModelUpdated } = useFilteredTotalsRow((rows) =>
+    sumEligibilityRows(rows, "Filtered Total"),
   );
 
   const getRowStyle = (params) => {
@@ -319,7 +325,9 @@ const PayrollEligibility = () => {
           ref={gridRef}
           rowData={filteredRowData}
           columnDefs={sizeColumnsForHeader(columnDefs)}
+          onModelUpdated={onModelUpdated}
           pinnedTopRowData={pinnedTopRowData}
+          pinnedBottomRowData={pinnedBottomRowData}
           loading={loading}
           defaultColDef={{ resizable: true, filter: "agSetColumnFilter", enableRowGroup: true }}
           rowGroupPanelShow="always"
