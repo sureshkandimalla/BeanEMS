@@ -15,7 +15,7 @@ import {
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
 import AuthContext from "../Authentication/Context/AuthContext";
-import { canAccess } from "../Utils/roleAccess";
+import { canAccess, getLandingPage, ROLES } from "../Utils/roleAccess";
 import "./LeftTabs.css";
 
 // The rail icons themselves are still PLACEHOLDER labels/icons, kept
@@ -29,13 +29,18 @@ const RAIL_ITEMS_TOP = [
   { key: "team", label: "Team", icon: <TeamOutlined />, hasFlyout: true },
   { key: "immigration", label: "Immigration", icon: <GlobalOutlined />, hasFlyout: true },
   { key: "reports", label: "Reports", icon: <LineChartOutlined />, hasFlyout: true },
-  { key: "allapps", label: "All apps", icon: <AppstoreOutlined /> },
+  // "All apps" is a generic app-switcher, not scoped to any one role's
+  // work — hidden for Immigration since it has no accounting/HR apps to
+  // switch into anyway.
+  { key: "allapps", label: "All apps", icon: <AppstoreOutlined />, hideForRoles: [ROLES.IMMIGRATION] },
 ];
 
+// Accounting/Expenses/Sales are Accounting-department concerns — hidden for
+// Immigration the same way ROUTE_ROLES already hides the pages they lead to.
 const RAIL_ITEMS_PINNED = [
-  { key: "accounting", label: "Accounting", icon: <PieChartOutlined />, hasFlyout: true },
-  { key: "expenses", label: "Expenses", icon: <DollarOutlined /> },
-  { key: "sales", label: "Sales", icon: <TagsOutlined /> },
+  { key: "accounting", label: "Accounting", icon: <PieChartOutlined />, hasFlyout: true, hideForRoles: [ROLES.IMMIGRATION] },
+  { key: "expenses", label: "Expenses", icon: <DollarOutlined />, hideForRoles: [ROLES.IMMIGRATION] },
+  { key: "sales", label: "Sales", icon: <TagsOutlined />, hideForRoles: [ROLES.IMMIGRATION] },
 ];
 
 // Same 4-column layout as the QuickBooks reference, but each column now
@@ -109,7 +114,10 @@ const ACCOUNTING_MENU = [
     })),
   {
     title: "Adjustments",
-    items: [{ label: "Adjustments", to: "/adjustmentDetails" }],
+    items: [
+      { label: "Adjustments", to: "/adjustmentDetails" },
+      { label: "All Bills", to: "/allBills" },
+    ],
   },
 ];
 
@@ -182,6 +190,17 @@ const LeftTabs = () => {
   const [flyoutPos, setFlyoutPos] = useState({ top: 0, left: 0 });
   const closeTimer = useRef(null);
   const itemRefs = useRef({});
+
+  // Home always points at each role's own landing page (e.g. Immigration's
+  // is /immigrationDashboard, not the shared HR/Accounting /home) — same
+  // mapping used for the post-login redirect and Access Denied's "back to
+  // home" link, so all three stay in sync automatically.
+  const visibleToRole = (item) => !item.hideForRoles || !item.hideForRoles.includes(user?.role);
+
+  const railItemsTop = RAIL_ITEMS_TOP.filter(visibleToRole).map((item) =>
+    item.key === "home" ? { ...item, to: getLandingPage(user?.role) } : item,
+  );
+  const railItemsPinned = RAIL_ITEMS_PINNED.filter(visibleToRole);
 
   const visibleSections = CREATE_MENU.map((section) => ({
     ...section,
@@ -260,10 +279,14 @@ const LeftTabs = () => {
 
   return (
     <div className="bean-left-rail">
-      <div className="rail-section">{RAIL_ITEMS_TOP.map(renderItem)}</div>
+      <div className="rail-section">{railItemsTop.map(renderItem)}</div>
 
-      <div className="rail-pinned-label">PINNED</div>
-      <div className="rail-section">{RAIL_ITEMS_PINNED.map(renderItem)}</div>
+      {railItemsPinned.length > 0 && (
+        <>
+          <div className="rail-pinned-label">PINNED</div>
+          <div className="rail-section">{railItemsPinned.map(renderItem)}</div>
+        </>
+      )}
 
       <div className="rail-spacer" />
 

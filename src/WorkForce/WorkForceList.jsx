@@ -21,6 +21,14 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
   const [rowData, setRowData] = useState([]);
   const [modifiedRows, setModifiedRows] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [vendors, setVendors] = useState([]);
+
+  useEffect(() => {
+    axios
+      .get(API_ENDPOINTS.getAllVendors)
+      .then((res) => setVendors(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setVendors([]));
+  }, []);
   const columnsList = [
     "First Name",
     "Last Name",
@@ -258,6 +266,35 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
 
   // compute columnDefs once per rowData change
   const workforceColumnDefs = useMemo(() => {
+    // agRichSelectCellEditor isn't registered (no rich-select enterprise
+    // module imported), so id↔label mapping is done via valueGetter/
+    // valueSetter instead — the editor works on vendor names, the
+    // underlying field stays vendorId for the PUT payload.
+    const vendorNameById = new Map(vendors.map((v) => [v.vendorId, v.vendorCompanyName || v.vendorName]));
+    const vendorIdByName = new Map(vendors.map((v) => [v.vendorCompanyName || v.vendorName, v.vendorId]));
+    const vendorColumnDef = {
+      colId: "vendorId",
+      headerName: "Vendor",
+      field: "vendorId",
+      sortable: true,
+      editable: true,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: ["", ...vendors.map((v) => v.vendorCompanyName || v.vendorName)] },
+      valueGetter: (params) => vendorNameById.get(params.data?.vendorId) || "",
+      valueSetter: (params) => {
+        params.data.vendorId = vendorIdByName.get(params.newValue) ?? null;
+        return true;
+      },
+      headerClass: "ag-header-cell",
+      filter: "agSetColumnFilter",
+      minWidth: 170,
+      suppressSizeToFit: true,
+      tooltipValueGetter: (params) => params.value,
+      cellClassRules: {
+        darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+      },
+      tooltipShowDelay: 0,
+    };
     return [
       {
         colId: "rowNum",
@@ -280,8 +317,9 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
         },
       },
       ...getColumnsDefList(columnsList, true, false),
+      vendorColumnDef,
     ];
-  }, [rowData]);
+  }, [rowData, vendors]);
 
   // Append any additional fields present in service response that are not in the default columns
   const combinedColumnDefs = useMemo(() => {

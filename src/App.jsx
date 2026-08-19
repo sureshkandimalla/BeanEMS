@@ -46,6 +46,7 @@ import MasterDataLoad from "./MasterDataLoad/MasterDataLoad";
 import HoursReport from "./HoursReport/HoursReport";
 import ProjectInvoiceSummary from "./ProjectInvoiceSummary/ProjectInvoiceSummary";
 import ImmigrationIntake from "./ImmigrationIntake/ImmigrationIntake";
+import AllBills from "./Billings/AllBills";
 import UserRoles from "./Admin/UserRoles";
 const clientId = '34277343649-4552ljfqc3ccsipco8jbf7jr3mu279j0.apps.googleusercontent.com';
 const { Content } = Layout;
@@ -95,6 +96,7 @@ const App = () => {
               <Route path="/hoursreport" element={<HoursReport />} />
               <Route path="/projectInvoiceSummary" element={<ProjectInvoiceSummary />} />
               <Route path="/immigrationIntake" element={<ImmigrationIntake />} />
+              <Route path="/allBills" element={<AllBills />} />
               <Route
                 path="/employeeFullDetails"
                 element={<EmployeeFullDetailsComponent />}

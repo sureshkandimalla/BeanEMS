@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Card, Form, message } from "antd";
 import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
+import { useLocation } from "react-router-dom";
 import dayjs from "dayjs";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
@@ -19,10 +20,39 @@ import {
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
+// Mirrors the exact predicates ImmigrationDashboard.jsx uses to compute its
+// feed card counts, so "Review all" always lands on a grid whose row count
+// matches the number shown on the card it was clicked from.
+const DAY_MS = 24 * 60 * 60 * 1000;
+const DASHBOARD_FILTER_LABELS = { approved: "Approved", pending: "Pending / RFE", expiring: "Expiring in 90 Days" };
+const matchesDashboardFilter = (visa, dashboardFilter) => {
+  if (!dashboardFilter) return true;
+  if (dashboardFilter === "approved") return visa.status === "Approved";
+  if (dashboardFilter === "pending") return ["Submitted", "RFE", "In Progress"].includes(visa.status);
+  if (dashboardFilter === "expiring") {
+    if (!visa.endDate) return false;
+    const [y, m, d] = visa.endDate.split("-").map(Number);
+    if (!y || !m) return false;
+    const end = new Date(y, m - 1, d || 1);
+    const today = new Date();
+    const in90Days = new Date(today.getTime() + 90 * DAY_MS);
+    return end >= today && end <= in90Days;
+  }
+  return true;
+};
+
 const VisaMasterList = () => {
   const gridRef = useRef(null);
+  const location = useLocation();
   const [searchText, setSearchText] = useState("");
+  const [dashboardFilter, setDashboardFilter] = useState(location.state?.dashboardFilter || null);
   const [rowData, setRowData] = useState([]);
+
+  // Re-syncs if the user navigates here again with a different card's
+  // filter while the component is already mounted (e.g. via back/forward).
+  useEffect(() => {
+    if (location.state?.dashboardFilter) setDashboardFilter(location.state.dashboardFilter);
+  }, [location.state]);
   const [visaModalData, setVisaModalData] = useState(null);
   const [isNewVisa, setIsNewVisa] = useState(false);
   const [visaForm] = Form.useForm();
@@ -90,8 +120,11 @@ const VisaMasterList = () => {
   };
 
   const filterData = () => {
-    if (!searchText) return rowData;
-    return rowData.filter((row) =>
+    const dashboardFiltered = dashboardFilter
+      ? rowData.filter((row) => matchesDashboardFilter(row, dashboardFilter))
+      : rowData;
+    if (!searchText) return dashboardFiltered;
+    return dashboardFiltered.filter((row) =>
       Object.values(row).some((value) =>
         typeof value !== "object" && String(value).toLowerCase().includes(searchText.toLowerCase())
       )
@@ -300,6 +333,24 @@ const VisaMasterList = () => {
             >
               Export to Excel
             </Button>
+            {dashboardFilter && (
+              <span
+                style={{
+                  marginLeft: 10,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#e6f4ff",
+                  color: "#1677ff",
+                  padding: "4px 10px",
+                  borderRadius: 16,
+                  fontSize: 13,
+                }}
+              >
+                Filter: {DASHBOARD_FILTER_LABELS[dashboardFilter]}
+                <CloseOutlined style={{ cursor: "pointer", fontSize: 11 }} onClick={() => setDashboardFilter(null)} />
+              </span>
+            )}
             <Button
               type="primary"
               onClick={openNewVisaModal}

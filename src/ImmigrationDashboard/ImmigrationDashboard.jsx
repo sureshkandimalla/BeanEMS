@@ -132,7 +132,7 @@ const ImmigrationDashboard = () => {
             <div className="home-feed-card-body">
               {feedFailed ? "Couldn't load — try refreshing" : loaded ? `${feed.approvedCount} approved visa${feed.approvedCount === 1 ? "" : "s"}` : "Loading…"}
             </div>
-            <Link to="/visaDetails">Review all</Link>
+            <Link to="/visaDetails" state={{ dashboardFilter: "approved" }}>Review all</Link>
           </Card>
         </Col>
         <Col span={6}>
@@ -141,7 +141,7 @@ const ImmigrationDashboard = () => {
             <div className="home-feed-card-body">
               {feedFailed ? "Couldn't load — try refreshing" : loaded ? `${feed.pendingCount} awaiting action` : "Loading…"}
             </div>
-            <Link to="/visaDetails">Review all</Link>
+            <Link to="/visaDetails" state={{ dashboardFilter: "pending" }}>Review all</Link>
           </Card>
         </Col>
         <Col span={6}>
@@ -150,7 +150,7 @@ const ImmigrationDashboard = () => {
             <div className="home-feed-card-body">
               {feedFailed ? "Couldn't load — try refreshing" : loaded ? `${feed.expiringSoonCount} visa${feed.expiringSoonCount === 1 ? "" : "s"} need attention` : "Loading…"}
             </div>
-            <Link to="/visaDetails">Review all</Link>
+            <Link to="/visaDetails" state={{ dashboardFilter: "expiring" }}>Review all</Link>
           </Card>
         </Col>
       </Row>

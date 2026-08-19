@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Tag,
   Button,
@@ -104,6 +104,7 @@ const workAuthorizationList = [
 
 const Newemployee = ({ onClose }) => {
   const [form] = Form.useForm();
+  const [vendors, setVendors] = useState([]);
   const [generalDetails, setGeneralDetails] = useState({
     firstName: "",
     lastName: "",
@@ -119,6 +120,7 @@ const Newemployee = ({ onClose }) => {
     zipCode: "",
     country: "",
     employmentType: "",
+    vendorId: null,
     taxTerms: "",
     status: "",
     companyName: "",
@@ -128,6 +130,18 @@ const Newemployee = ({ onClose }) => {
     endDate: "",
     referredBy: "",
   });
+
+  useEffect(() => {
+    axios
+      .get(API_ENDPOINTS.getAllVendors)
+      .then((response) => setVendors(response.data || []))
+      .catch((error) => console.error("Error fetching vendors:", error));
+  }, []);
+
+  const vendorOptions = vendors.map((v) => ({
+    value: v.vendorId,
+    label: v.vendorCompanyName || v.vendorName,
+  }));
 
   const handleSubmit = () => {
     console.log("generalDetails: " + generalDetails);
@@ -152,7 +166,12 @@ const Newemployee = ({ onClose }) => {
     axios
       .post(
         API_ENDPOINTS.saveOnBoardDetails,
-        generalDetails,
+        // employeeType mirrors employmentType — this form only has the one
+        // selector, but the backend keeps them as separate fields (grid
+        // edits update employeeType directly), so keep both in sync at
+        // creation time too, e.g. for the C2C employer-tax exemption to
+        // apply immediately.
+        { ...generalDetails, employeeType: generalDetails.employmentType },
       )
       .then((response) => {
         if (response && response.data) {
@@ -475,6 +494,21 @@ const Newemployee = ({ onClose }) => {
               />
             </Form.Item>
           </Col>
+          {generalDetails.employmentType === "C2C" && (
+            <Col span={12}>
+              <Form.Item label="Vendor" name="vendorId">
+                <Select
+                  allowClear
+                  showSearch
+                  placeholder="Select vendor (optional)"
+                  optionFilterProp="label"
+                  options={vendorOptions}
+                  onChange={(value) => handleGeneralData(value ?? null, "vendorId")}
+                  value={generalDetails.vendorId}
+                />
+              </Form.Item>
+            </Col>
+          )}
           <Col span={12}>
             <Form.Item
               label="Tax Terms"

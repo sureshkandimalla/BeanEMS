@@ -131,9 +131,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
           if (!params.data) return null;
           const rowData = params.data;
           return (
-            <Link
-              to={{ pathname: "/employeeProjectDetails", state: { rowData } }}
-            >
+            <Link to="/employeeFullDetails" state={{ rowData }}>
               {" "}
               {rowData.employeeName}{" "}
             </Link>

@@ -6,11 +6,34 @@ import axios from "axios";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import API_ENDPOINTS from "../config";
+import API_ENDPOINTS, { workAuthorizationList } from "../config";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
 const MODAL_HEADER_COLOR = "#1677ff";
+
+// Dropdown option lists — reuses the app-wide visa/work-authorization list
+// for Visa Status; the rest are dedicated to intake tracking (no existing
+// list elsewhere in the app covers these).
+const VISA_STATUS_VALUES = workAuthorizationList.map((o) => o.value);
+const VISA_SUB_VALUES = ["Cap", "Consular", "COS", "Transfer"];
+const FILING_TYPE_VALUES = ["Regular", "Premium", "Consular", "Transfer"];
+const APPLICATION_STATUS_VALUES = [
+  "Filed",
+  "In USCIS Review",
+  "RFE Issued",
+  "RFE Responded",
+  "Approved",
+  "Denied",
+  "Withdrawn",
+];
+const CASE_ASSIGNED_TO_VALUES = ["Attorney", "Internal"];
+const FILED_ON_VALUES = ["Online", "Mail", "In-Person"];
+const PREMIUM_STATUS_VALUES = ["Not Filed", "Filed with Petition", "Upgraded to Premium", "Nil"];
+// A handful of years around today — filing year is always recent, never
+// needs the full calendar range a free-text field would allow.
+const CURRENT_YEAR = new Date().getFullYear();
+const FILING_YEAR_VALUES = Array.from({ length: 6 }, (_, i) => String(CURRENT_YEAR + 2 - i));
 
 // Field labels shared between the grid columns and the create/edit form —
 // one source of truth so the two stay in sync.
@@ -174,14 +197,78 @@ export default function ImmigrationIntake() {
         cellClassRules,
       },
       { field: "caseId", headerName: FIELD_LABELS.caseId, filter: "agSetColumnFilter", editable: true, cellClassRules },
-      { field: "visaStatus", headerName: FIELD_LABELS.visaStatus, filter: "agSetColumnFilter", editable: true, cellClassRules },
-      { field: "visaSub", headerName: FIELD_LABELS.visaSub, filter: "agSetColumnFilter", editable: true, cellClassRules },
-      { field: "filingType", headerName: FIELD_LABELS.filingType, filter: "agSetColumnFilter", editable: true, cellClassRules },
-      { field: "filingYear", headerName: FIELD_LABELS.filingYear, filter: "agSetColumnFilter", editable: true, cellClassRules },
-      { field: "applicationStatus", headerName: FIELD_LABELS.applicationStatus, filter: "agSetColumnFilter", editable: true, cellClassRules },
-      { field: "caseAssignedTo", headerName: FIELD_LABELS.caseAssignedTo, filter: "agSetColumnFilter", editable: true, cellClassRules },
-      { field: "filedOn", headerName: FIELD_LABELS.filedOn, filter: "agSetColumnFilter", editable: true, cellClassRules },
-      { field: "premiumStatus", headerName: FIELD_LABELS.premiumStatus, filter: "agSetColumnFilter", editable: true, cellClassRules },
+      {
+        field: "visaStatus",
+        headerName: FIELD_LABELS.visaStatus,
+        filter: "agSetColumnFilter",
+        editable: true,
+        cellClassRules,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: { values: VISA_STATUS_VALUES },
+      },
+      {
+        field: "visaSub",
+        headerName: FIELD_LABELS.visaSub,
+        filter: "agSetColumnFilter",
+        editable: true,
+        cellClassRules,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: { values: VISA_SUB_VALUES },
+      },
+      {
+        field: "filingType",
+        headerName: FIELD_LABELS.filingType,
+        filter: "agSetColumnFilter",
+        editable: true,
+        cellClassRules,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: { values: FILING_TYPE_VALUES },
+      },
+      {
+        field: "filingYear",
+        headerName: FIELD_LABELS.filingYear,
+        filter: "agSetColumnFilter",
+        editable: true,
+        cellClassRules,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: { values: FILING_YEAR_VALUES },
+      },
+      {
+        field: "applicationStatus",
+        headerName: FIELD_LABELS.applicationStatus,
+        filter: "agSetColumnFilter",
+        editable: true,
+        cellClassRules,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: { values: APPLICATION_STATUS_VALUES },
+      },
+      {
+        field: "caseAssignedTo",
+        headerName: FIELD_LABELS.caseAssignedTo,
+        filter: "agSetColumnFilter",
+        editable: true,
+        cellClassRules,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: { values: CASE_ASSIGNED_TO_VALUES },
+      },
+      {
+        field: "filedOn",
+        headerName: FIELD_LABELS.filedOn,
+        filter: "agSetColumnFilter",
+        editable: true,
+        cellClassRules,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: { values: FILED_ON_VALUES },
+      },
+      {
+        field: "premiumStatus",
+        headerName: FIELD_LABELS.premiumStatus,
+        filter: "agSetColumnFilter",
+        editable: true,
+        cellClassRules,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: { values: PREMIUM_STATUS_VALUES },
+      },
       { field: "receiptNumber", headerName: FIELD_LABELS.receiptNumber, filter: "agSetColumnFilter", editable: true, cellClassRules },
       { field: "startDate", headerName: FIELD_LABELS.startDate, filter: "agSetColumnFilter", editable: true, cellClassRules },
       { field: "endDate", headerName: FIELD_LABELS.endDate, filter: "agSetColumnFilter", editable: true, cellClassRules },
@@ -342,42 +429,54 @@ export default function ImmigrationIntake() {
             </Col>
             <Col span={12}>
               <Form.Item name="visaStatus" label={FIELD_LABELS.visaStatus}>
-                <Input placeholder="e.g. H1B" />
+                <Select allowClear placeholder="Select..." options={VISA_STATUS_VALUES.map((v) => ({ value: v }))} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="visaSub" label={FIELD_LABELS.visaSub}>
-                <Input placeholder="e.g. Cap" />
+                <Select allowClear placeholder="Select..." options={VISA_SUB_VALUES.map((v) => ({ value: v }))} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="filingType" label={FIELD_LABELS.filingType}>
-                <Input placeholder="e.g. Regular" />
+                <Select allowClear placeholder="Select..." options={FILING_TYPE_VALUES.map((v) => ({ value: v }))} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="filingYear" label={FIELD_LABELS.filingYear}>
-                <Input placeholder="e.g. 2026" />
+                <Select allowClear placeholder="Select..." options={FILING_YEAR_VALUES.map((v) => ({ value: v }))} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="applicationStatus" label={FIELD_LABELS.applicationStatus}>
-                <Input placeholder="e.g. Approved" />
+                <Select
+                  allowClear
+                  placeholder="Select..."
+                  options={APPLICATION_STATUS_VALUES.map((v) => ({ value: v }))}
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="caseAssignedTo" label={FIELD_LABELS.caseAssignedTo}>
-                <Input placeholder="e.g. Attorney" />
+                <Select
+                  allowClear
+                  placeholder="Select..."
+                  options={CASE_ASSIGNED_TO_VALUES.map((v) => ({ value: v }))}
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="filedOn" label={FIELD_LABELS.filedOn}>
-                <Input placeholder="e.g. Online" />
+                <Select allowClear placeholder="Select..." options={FILED_ON_VALUES.map((v) => ({ value: v }))} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="premiumStatus" label={FIELD_LABELS.premiumStatus}>
-                <Input />
+                <Select
+                  allowClear
+                  placeholder="Select..."
+                  options={PREMIUM_STATUS_VALUES.map((v) => ({ value: v }))}
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
