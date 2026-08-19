@@ -34,6 +34,7 @@ export const ROUTE_ROLES = {
   "/visaEmployees": [ROLES.IMMIGRATION],
   "/lcaDetails": [ROLES.IMMIGRATION],
   "/visaDetails": [ROLES.IMMIGRATION],
+  "/immigrationIntake": [ROLES.IMMIGRATION],
 
   "/customerdetails": [ROLES.ACCOUNTING],
   "/vendordetails": [ROLES.ACCOUNTING],

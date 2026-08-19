@@ -72,6 +72,7 @@ const CREATE_MENU = [
     items: [
       { label: "LCA", to: "/lcaDetails?new=1" },
       { label: "Visa", to: "/visaDetails?new=1" },
+      { label: "Immigration Intake", to: "/immigrationIntake?new=1" },
     ],
   },
   {

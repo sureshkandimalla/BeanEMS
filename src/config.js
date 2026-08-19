@@ -187,6 +187,10 @@ export const API_ENDPOINTS = {
   getAllUserRoles: `${API_BASE_URL}/userRoles`,
   upsertUserRole: `${API_BASE_URL}/userRoles`,
   deleteUserRole: (email) => `${API_BASE_URL}/userRoles/${encodeURIComponent(email)}`,
+  getAllImmiIntakes: `${API_BASE_URL}/immiIntake/getAll`,
+  createImmiIntake: `${API_BASE_URL}/immiIntake/create`,
+  updateImmiIntake: (intakeId) => `${API_BASE_URL}/immiIntake/${intakeId}`,
+  deleteImmiIntake: (intakeId) => `${API_BASE_URL}/immiIntake/${intakeId}`,
 };
 
 export const employeeTypeOptions = [
