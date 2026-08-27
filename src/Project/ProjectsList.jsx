@@ -34,29 +34,44 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
   const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
   const [modifiedRows, setModifiedRows] = useState({});
-  // Which projects already have a Purchase Order (and which document, so
-  // the PDF icon can open it directly) — one call for every row (see
-  // DocumentController#list, entityId omitted) instead of one per row.
-  const [poDocByProject, setPoDocByProject] = useState({});
-  const [poModalProjectId, setPoModalProjectId] = useState(null);
+  // Purchase Orders live on the work order (Wage), not the project — a
+  // project with several work orders has a PO per work order. Here we show
+  // the most recent work order's PO as "the" project PO; the WorkOrders tab
+  // (WorkOrderDetails.jsx) shows every work order's own PO individually.
+  const [poDocByWageId, setPoDocByWageId] = useState({});
+  const [poModalWageId, setPoModalWageId] = useState(null);
 
   const fetchPoDocuments = () => {
     axios
-      .get(API_ENDPOINTS.getAllDocumentsForType("ProjectPO"))
+      .get(API_ENDPOINTS.getAllDocumentsForType("WorkOrderPO"))
       .then(({ data }) => {
-        const byProject = {};
+        const byWageId = {};
         (data || []).forEach((doc) => {
-          // A project can have more than one PO — keep the most recent.
-          if (!byProject[doc.entityId] || doc.id > byProject[doc.entityId].id) {
-            byProject[doc.entityId] = doc;
+          if (!byWageId[doc.entityId] || doc.id > byWageId[doc.entityId].id) {
+            byWageId[doc.entityId] = doc;
           }
         });
-        setPoDocByProject(byProject);
+        setPoDocByWageId(byWageId);
       })
-      .catch(() => setPoDocByProject({}));
+      .catch(() => setPoDocByWageId({}));
   };
 
   useEffect(fetchPoDocuments, []);
+
+  // getProjects returns one flattened row per (project, work order) pair, so
+  // a multi-work-order project spans several rows here, each with its own
+  // wageId. Group them back by projectId and keep the highest wageId (the
+  // most recently created work order) as "the" work order for that project.
+  const latestWageIdByProject = React.useMemo(() => {
+    const byProject = {};
+    (rowData || []).forEach((row) => {
+      if (!row.projectId || !row.wageId) return;
+      if (!byProject[row.projectId] || row.wageId > byProject[row.projectId]) {
+        byProject[row.projectId] = row.wageId;
+      }
+    });
+    return byProject;
+  }, [rowData]);
 
   const onCellValueChanged = (params) => {
     const projectId = params.data?.projectId;
@@ -395,14 +410,16 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         editable: false,
         cellRenderer: (params) => {
           if (!params.data || params.node.rowPinned) return null;
-          const doc = poDocByProject[params.data.projectId];
+          const wageId = latestWageIdByProject[params.data.projectId] ?? params.data.wageId;
+          const doc = wageId ? poDocByWageId[wageId] : null;
           return (
             <Button
               type="text"
               icon={doc ? <FilePdfOutlined style={{ color: "#e64a3b" }} /> : <PlusCircleOutlined />}
-              title={doc ? "Open Purchase Order" : "Add Purchase Order"}
+              title={doc ? "Open Purchase Order" : "Add Purchase Order (latest work order)"}
+              disabled={!wageId}
               onClick={() =>
-                doc ? openDocumentInNewTab(doc.id) : setPoModalProjectId(params.data.projectId)
+                doc ? openDocumentInNewTab(doc.id) : setPoModalWageId(wageId)
               }
             />
           );
@@ -532,15 +549,15 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
       </div>
       <Modal
         title="Purchase Order"
-        open={poModalProjectId !== null}
+        open={poModalWageId !== null}
         onCancel={() => {
-          setPoModalProjectId(null);
+          setPoModalWageId(null);
           fetchPoDocuments();
         }}
         footer={null}
       >
-        {poModalProjectId !== null && (
-          <DocumentsPanel entityType="ProjectPO" entityId={poModalProjectId} />
+        {poModalWageId !== null && (
+          <DocumentsPanel entityType="WorkOrderPO" entityId={poModalWageId} />
         )}
       </Modal>
     </div>
