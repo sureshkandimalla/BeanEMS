@@ -3,20 +3,44 @@ import { AgGridReact } from "@ag-grid-community/react";
 import "@ag-grid-community/styles/ag-grid.css";
 import "./ProjectGrid.css";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
-import { PlusOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
-import { Button, Drawer } from "antd";
+import { PlusOutlined, ReloadOutlined, SaveOutlined, CloseOutlined, FilePdfOutlined, PlusCircleOutlined } from "@ant-design/icons";
+import { Button, Drawer, Modal } from "antd";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
 import "@ag-grid-community/styles/ag-theme-alpine.css";
 import WorkOrderForm from "./WorkOrderForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import "./WorkOrderDetails.css";
+import DocumentsPanel from "../Documents/DocumentsPanel";
+import { openDocumentInNewTab } from "../Documents/openDocument";
 const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
   console.log(rowData);
   //  const [rowData, setRowData] = useState();
   const [responseData, setResponseData] = useState();
   const [searchText, setSearchText] = useState("");
   const [modifiedRows, setModifiedRows] = useState({});
+  // Which work orders already have a Purchase Order (and which document,
+  // so the PDF icon can open it directly) — one call for the whole grid
+  // (see DocumentController#list, entityId omitted) instead of one per row.
+  const [poDocByWageId, setPoDocByWageId] = useState({});
+  const [poModalWageId, setPoModalWageId] = useState(null);
+
+  const fetchPoDocuments = () => {
+    axios
+      .get(API_ENDPOINTS.getAllDocumentsForType("WorkOrderPO"))
+      .then(({ data }) => {
+        const byWageId = {};
+        (data || []).forEach((doc) => {
+          if (!byWageId[doc.entityId] || doc.id > byWageId[doc.entityId].id) {
+            byWageId[doc.entityId] = doc;
+          }
+        });
+        setPoDocByWageId(byWageId);
+      })
+      .catch(() => setPoDocByWageId({}));
+  };
+
+  useEffect(fetchPoDocuments, []);
 
   const onCellValueChanged = (params) => {
     const wageId = params.data?.wageId;
@@ -55,6 +79,8 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
 
   const onClose = () => {
     setOpen(false);
+    onRefresh?.();
+    fetchPoDocuments();
   };
 
   const [open, setOpen] = useState(false);
@@ -124,6 +150,27 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
         filter: "agSetColumnFilter",
       },
       // { headerName: 'Wage', field: 'wage', sortable: isSortable, editable: true, filter: 'agTextColumnFilter' },
+      {
+        headerName: "PO",
+        field: "purchaseOrder",
+        sortable: false,
+        filter: false,
+        editable: false,
+        cellRenderer: (params) => {
+          if (!params.data) return null;
+          const doc = poDocByWageId[params.data.wageId];
+          return (
+            <Button
+              type="text"
+              icon={doc ? <FilePdfOutlined style={{ color: "#e64a3b" }} /> : <PlusCircleOutlined />}
+              title={doc ? "Open Purchase Order" : "Add Purchase Order"}
+              onClick={() =>
+                doc ? openDocumentInNewTab(doc.id) : setPoModalWageId(params.data.wageId)
+              }
+            />
+          );
+        },
+      },
     ];
     return columns;
   };
@@ -248,6 +295,19 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
         </div>
       </div>
       </div>
+      <Modal
+        title="Purchase Order"
+        open={poModalWageId !== null}
+        onCancel={() => {
+          setPoModalWageId(null);
+          fetchPoDocuments();
+        }}
+        footer={null}
+      >
+        {poModalWageId !== null && (
+          <DocumentsPanel entityType="WorkOrderPO" entityId={poModalWageId} />
+        )}
+      </Modal>
     </>
   );
 };

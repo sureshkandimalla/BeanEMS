@@ -22,6 +22,7 @@ import { INVOICE_TERM_OPTIONS, WEEK_START_DAY_OPTIONS, DEFAULT_WEEK_START_DAY } 
 //import './EmployeeOnBoarding.scss';
 import moment from "moment";
 import API_ENDPOINTS, { paymentTermsList, projectStatus } from "../config";
+import { buildPoFileName } from "../Documents/poFileName";
 //import React, { useState, useEffect } from "react";
 //import { useLocation } from 'react-router-dom'
 
@@ -67,12 +68,40 @@ const ProjectOnBoardingForm = ({ onClose }) => {
   }, []);
   console.log(employees);
   console.log(customers);
+  // Default Project Name to "<Employee first name>_<Customer's first word>"
+  // once both are picked — still a plain editable field, so the user can
+  // override it afterward.
+  const buildAutoProjectName = (employeeId, customerId) => {
+    const employee = employees?.find((e) => e.employeeId === employeeId);
+    const customer = customers?.find((c) => c.customerId === customerId);
+    if (!employee || !customer) return "";
+    const firstName = (employee.name || "").trim().split(" ")[0] || "";
+    const customerFirstWord =
+      (customer.customerCompanyName || "").trim().split(" ")[0] || "";
+    return firstName && customerFirstWord
+      ? `${firstName}_${customerFirstWord}`
+      : "";
+  };
+
   const handleEmployeeChange = (value) => {
     setSelectedEmployeeId(value);
+    const autoName = buildAutoProjectName(value, selectedCustomerId);
+    if (autoName) {
+      setGeneralDetails((prev) => ({ ...prev, projectName: autoName }));
+      // Form.Item's `name="project Name"` makes AntD's own form store the
+      // source of truth for the displayed value — updating generalDetails
+      // alone doesn't reach the DOM, so the form store needs the same push.
+      form.setFieldsValue({ "project Name": autoName });
+    }
   };
 
   const handleCustomerChange = (value) => {
     setSelectedCustomerId(value);
+    const autoName = buildAutoProjectName(selectedEmployeeId, value);
+    if (autoName) {
+      setGeneralDetails((prev) => ({ ...prev, projectName: autoName }));
+      form.setFieldsValue({ "project Name": autoName });
+    }
   };
 
   //const history = useHistory();
@@ -90,6 +119,12 @@ const ProjectOnBoardingForm = ({ onClose }) => {
     clientId: null,
     startDate: "", // ISO string format
     endDate: "", // ISO string format
+    // The work order's own dates — a project can run longer than any one
+    // work order, and later work orders (added via WorkOrderForm) each
+    // carry their own dates too, so these are kept independent of
+    // startDate/endDate above.
+    workOrderStartDate: "",
+    workOrderEndDate: "",
     billRate: 0,
     employeePay: 0,
     expenseInternal: 0,
@@ -109,11 +144,13 @@ const ProjectOnBoardingForm = ({ onClose }) => {
   // COI) — reimplemented here rather than reused because DocumentsPanel is
   // a self-fetching list+uploader that needs an existing entityId; this
   // form only has one to give it after the project save below resolves.
-  const uploadPurchaseOrder = async (projectId, file) => {
+  // Attached to the work order (wageId), not the project — a project can
+  // have several work orders, each with its own PO.
+  const uploadPurchaseOrder = async (wageId, file, fileName) => {
     const presign = await axios.post(API_ENDPOINTS.presignDocumentUpload, {
-      entityType: "ProjectPO",
-      entityId: projectId,
-      fileName: file.name,
+      entityType: "WorkOrderPO",
+      entityId: wageId,
+      fileName,
       contentType: file.type || "application/octet-stream",
     });
     const { uploadUrl, s3Key } = presign.data;
@@ -123,9 +160,9 @@ const ProjectOnBoardingForm = ({ onClose }) => {
       body: file,
     });
     await axios.post(API_ENDPOINTS.createDocument, {
-      entityType: "ProjectPO",
-      entityId: projectId,
-      fileName: file.name,
+      entityType: "WorkOrderPO",
+      entityId: wageId,
+      fileName,
       s3Key,
       contentType: file.type || "application/octet-stream",
       sizeBytes: file.size,
@@ -148,14 +185,23 @@ const ProjectOnBoardingForm = ({ onClose }) => {
       .then(async (response) => {
         if (response && response.status === 200) {
           console.log("response.data: " + JSON.stringify(response.data));
-          const newProjectId = response.data?.projectId;
-          if (poFile && newProjectId) {
+          const newWageId = response.data?.wageId;
+          if (poFile && newWageId) {
             setUploadingPo(true);
             try {
-              await uploadPurchaseOrder(newProjectId, poFile);
+              const employee = employees?.find((e) => e.employeeId === selectedEmployeeId);
+              const customer = customers?.find((c) => c.customerId === selectedCustomerId);
+              const fileName = buildPoFileName({
+                employeeName: employee?.name,
+                customerName: customer?.customerCompanyName,
+                startDate: generalDetails.workOrderStartDate || generalDetails.startDate,
+                endDate: generalDetails.workOrderEndDate || generalDetails.endDate,
+                originalFileName: poFile.name,
+              });
+              await uploadPurchaseOrder(newWageId, poFile, fileName);
             } catch (uploadError) {
               console.error("Error uploading purchase order:", uploadError);
-              message.error("Project was saved, but the Purchase Order failed to upload.");
+              message.error("Project was saved, but the Work Order file failed to upload.");
             } finally {
               setUploadingPo(false);
             }
@@ -203,6 +249,8 @@ const ProjectOnBoardingForm = ({ onClose }) => {
       clientId: null,
       startDate: "", // ISO string format
       endDate: "", // ISO string format
+      workOrderStartDate: "",
+      workOrderEndDate: "",
       billRate: 0,
       employeePay: 0,
       expenseInternal: 0,
@@ -238,7 +286,9 @@ const ProjectOnBoardingForm = ({ onClose }) => {
       !generalDetails.client ||
       !generalDetails.projectName ||
       !generalDetails.status ||
-      !generalDetails.billRate
+      !generalDetails.billRate ||
+      !generalDetails.startDate ||
+      !generalDetails.workOrderStartDate
     ) {
       alert("Please fill in all mandatory fields");
       return;
@@ -299,7 +349,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
             </Col>
           </Row>
           <Row gutter={30}>
-            <Col span={8} className="form-row">
+            <Col span={12} className="form-row">
               <Form.Item
                 label="Employee"
                 name="employeeId"
@@ -328,7 +378,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={8} className="form-row">
+            <Col span={12} className="form-row">
               <Form.Item
                 label="Customer"
                 name="customerId"
@@ -352,24 +402,9 @@ const ProjectOnBoardingForm = ({ onClose }) => {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={8} className="form-row">
-              <Form.Item
-                label="Bill Rate"
-                name="Bill Rate"
-                rules={[{ required: true }]}
-              >
-                <Input
-                  type="number"
-                  onChange={(e) =>
-                    handleGeneralData(Number(e.target.value), "billRate")
-                  }
-                  value={generalDetails.billRate}
-                />
-              </Form.Item>
-            </Col>
           </Row>
           <Row gutter={30}>
-            <Col span={8} className="form-row">
+            <Col span={12} className="form-row">
               <Form.Item
                 label="Client"
                 name="Client"
@@ -381,7 +416,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
                 />
               </Form.Item>
             </Col>
-            <Col span={8} className="form-row">
+            <Col span={12} className="form-row">
               <Form.Item
                 label="Project Name"
                 name="project Name"
@@ -402,11 +437,18 @@ const ProjectOnBoardingForm = ({ onClose }) => {
                             </Col>   */}
           </Row>
           <Row gutter={30}>
-            <Col span={8} className="form-row">
-              <Form.Item label="Start Date">
+            <Col span={12} className="form-row">
+              <Form.Item label="Start Date" rules={[{ required: true }]}>
                 <DatePicker
                   onChange={(date, dateString) =>
-                    handleGeneralData(dateString, "startDate")
+                    // WO Start Date tracks the project's own Start Date —
+                    // keeps the two in sync since a project's first work
+                    // order normally starts the same day the project does.
+                    setGeneralDetails((prevState) => ({
+                      ...prevState,
+                      startDate: dateString,
+                      workOrderStartDate: dateString,
+                    }))
                   }
                   className="dobDatepicker"
                   value={
@@ -418,7 +460,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
                 />
               </Form.Item>
             </Col>
-            <Col span={8} className="form-row">
+            <Col span={12} className="form-row">
               <Form.Item label="End Date">
                 <DatePicker
                   onChange={(date, dateString) =>
@@ -436,37 +478,58 @@ const ProjectOnBoardingForm = ({ onClose }) => {
             </Col>
           </Row>
           <Row gutter={30}>
-            <Col span={8} className="form-row">
-              <Form.Item label="Invoice Term" name="Invoice Term">
-                <Select
-                  placeholder="Select Invoice Term"
-                  value={generalDetails.invoiceTerm || undefined}
-                  onChange={(value) => handleGeneralData(value, "invoiceTerm")}
-                >
-                  {INVOICE_TERM_OPTIONS.map((option) => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
+            <Col span={12} className="form-row">
+              <Form.Item
+                label="WO Start Date"
+                rules={[{ required: true }]}
+                tooltip="Auto-filled from the project's Start Date — this project's first work order starts the same day. Later work orders (added from the project's Work Orders tab) each have their own dates too."
+              >
+                <DatePicker
+                  onChange={(date, dateString) =>
+                    handleGeneralData(dateString, "workOrderStartDate")
+                  }
+                  className="dobDatepicker"
+                  value={
+                    generalDetails.workOrderStartDate
+                      ? moment(generalDetails.workOrderStartDate)
+                      : null
+                  }
+                />
               </Form.Item>
             </Col>
-            <Col span={8} className="form-row">
-              <Form.Item label="Payment Term" name="Payment Term">
-                <Select
-                  placeholder="Select Payment Term"
-                  value={generalDetails.paymentTerm || undefined}
-                  onChange={(value) => handleGeneralData(value, "paymentTerm")}
-                >
-                  {paymentTermsList.map((option) => (
-                    <Option key={option.value} value={option.value}>
-                      {option.label}
-                    </Option>
-                  ))}
-                </Select>
+            <Col span={12} className="form-row">
+              <Form.Item label="WO End Date">
+                <DatePicker
+                  onChange={(date, dateString) =>
+                    handleGeneralData(dateString, "workOrderEndDate")
+                  }
+                  className="dobDatepicker"
+                  value={
+                    generalDetails.workOrderEndDate
+                      ? moment(generalDetails.workOrderEndDate)
+                      : null
+                  }
+                />
               </Form.Item>
             </Col>
-            <Col span={8} className="form-row">
+          </Row>
+          <Row gutter={30}>
+            <Col span={12} className="form-row">
+              <Form.Item
+                label="Bill Rate"
+                name="Bill Rate"
+                rules={[{ required: true }]}
+              >
+                <Input
+                  type="number"
+                  onChange={(e) =>
+                    handleGeneralData(Number(e.target.value), "billRate")
+                  }
+                  value={generalDetails.billRate}
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12} className="form-row">
               <Form.Item
                 label="Status"
                 name="Status"
@@ -487,7 +550,39 @@ const ProjectOnBoardingForm = ({ onClose }) => {
             </Col>
           </Row>
           <Row gutter={30}>
-            <Col span={8} className="form-row">
+            <Col span={12} className="form-row">
+              <Form.Item label="Invoice Term" name="Invoice Term">
+                <Select
+                  placeholder="Select Invoice Term"
+                  value={generalDetails.invoiceTerm || undefined}
+                  onChange={(value) => handleGeneralData(value, "invoiceTerm")}
+                >
+                  {INVOICE_TERM_OPTIONS.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={12} className="form-row">
+              <Form.Item label="Payment Term" name="Payment Term">
+                <Select
+                  placeholder="Select Payment Term"
+                  value={generalDetails.paymentTerm || undefined}
+                  onChange={(value) => handleGeneralData(value, "paymentTerm")}
+                >
+                  {paymentTermsList.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={30}>
+            <Col span={12} className="form-row">
               <Form.Item
                 label="Week Start Day"
                 name="Week Start Day"
@@ -506,8 +601,8 @@ const ProjectOnBoardingForm = ({ onClose }) => {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={8} className="form-row">
-              <Form.Item label="Purchase Order">
+            <Col span={12} className="form-row">
+              <Form.Item label="Work Order">
                 <Upload
                   beforeUpload={(file) => {
                     setPoFile(file);

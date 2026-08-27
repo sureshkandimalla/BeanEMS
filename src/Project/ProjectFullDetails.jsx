@@ -10,7 +10,6 @@ import AssignmentDetails from "./AssignmentDetails";
 import WorkOrderDetails from "./WorkOrderDetails";
 import InvoiceDetails from "../Invoice/InvoiceDetails";
 import BillingDetails from "../Billings/BillingDetails";
-import DocumentsPanel from "../Documents/DocumentsPanel";
 import { UpOutlined, DownOutlined,CalendarOutlined, DollarOutlined, ProjectOutlined, BankOutlined, UserOutlined } from "@ant-design/icons";
 import { Tabs, Card,Typography,Collapse, Row, Col, Button, Drawer, Spin, message } from "antd";
 import axios from "axios";
@@ -30,7 +29,6 @@ const TAB_ROLES = {
   WorkOrders: [ROLES.ACCOUNTING],
   Invoices: [ROLES.ACCOUNTING],
   Bills: [ROLES.ACCOUNTING],
-  "Purchase Order": [ROLES.ACCOUNTING],
 };
 
 const tabAllowed = (role, label) => {
@@ -195,11 +193,6 @@ const ProjectFullDetails = () => {
           onRefresh={refreshOverview}
         />
       ),
-    },
-    {
-      key: 6,
-      label: "Purchase Order",
-      children: <DocumentsPanel entityType="ProjectPO" entityId={rowData.projectId} />,
     },
   ];
   const visibleItems = items.filter((item) => tabAllowed(user?.role, item.label));
