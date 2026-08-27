@@ -18,7 +18,7 @@ import { INVOICE_TERM_OPTIONS, WEEK_START_DAY_OPTIONS, DEFAULT_WEEK_START_DAY } 
 //import Sidebar from '../../Commons/Sidebar/Sidebar';
 //import './EmployeeOnBoarding.scss';
 import moment from "moment";
-import API_ENDPOINTS from "../config";
+import API_ENDPOINTS, { paymentTermsList, projectStatus } from "../config";
 //import React, { useState, useEffect } from "react";
 //import { useLocation } from 'react-router-dom'
 
@@ -404,12 +404,17 @@ const ProjectOnBoardingForm = ({ onClose }) => {
             </Col>
             <Col span={8} className="form-row">
               <Form.Item label="Payment Term" name="Payment Term">
-                <Input
-                  onChange={(e) =>
-                    handleGeneralData(e.target.value, "paymentTerm")
-                  }
-                  value={generalDetails.paymentTerm}
-                />
+                <Select
+                  placeholder="Select Payment Term"
+                  value={generalDetails.paymentTerm || undefined}
+                  onChange={(value) => handleGeneralData(value, "paymentTerm")}
+                >
+                  {paymentTermsList.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
             <Col span={8} className="form-row">
@@ -418,10 +423,17 @@ const ProjectOnBoardingForm = ({ onClose }) => {
                 name="Status"
                 rules={[{ required: true }]}
               >
-                <Input
-                  onChange={(e) => handleGeneralData(e.target.value, "status")}
-                  value={generalDetails.status}
-                />
+                <Select
+                  placeholder="Select Status"
+                  value={generalDetails.status || undefined}
+                  onChange={(value) => handleGeneralData(value, "status")}
+                >
+                  {projectStatus.map((option) => (
+                    <Option key={option.value} value={option.value}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
           </Row>

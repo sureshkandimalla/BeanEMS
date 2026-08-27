@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button } from "antd";
-import { ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
+import { Button, Modal, message } from "antd";
+import { ReloadOutlined, SaveOutlined, CloseOutlined, DeleteOutlined, ExclamationCircleFilled } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
@@ -60,6 +60,53 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   const handleCancelChanges = () => {
     setModifiedRows({});
     onRefresh?.();
+  };
+
+  const doDeleteProject = (projectId) => {
+    axios
+      .delete(API_ENDPOINTS.projectsById(projectId))
+      .then(() => {
+        message.success("Project deleted");
+        onRefresh?.();
+      })
+      .catch((error) => {
+        console.error("Error deleting project:", error);
+        message.error("Failed to delete project. Please try again.");
+      });
+  };
+
+  const handleDeleteProject = (row) => {
+    axios
+      .get(API_ENDPOINTS.projectDeletionImpact(row.projectId))
+      .then(({ data }) => {
+        const { invoices = 0, bills = 0, assignments = 0 } = data || {};
+        const hasReferences = invoices > 0 || bills > 0 || assignments > 0;
+        Modal.confirm({
+          title: `Delete "${row.projectName}"?`,
+          icon: <ExclamationCircleFilled />,
+          content: hasReferences ? (
+            <div>
+              <p>This project has:</p>
+              <ul>
+                {invoices > 0 && <li>{invoices} invoice(s)</li>}
+                {bills > 0 && <li>{bills} bill(s)</li>}
+                {assignments > 0 && <li>{assignments} assignment(s)</li>}
+              </ul>
+              <p>Deleting it will permanently delete all of these too. Do you really want to delete it?</p>
+            </div>
+          ) : (
+            "This project has no invoices, bills, or assignments. Are you sure you want to delete it?"
+          ),
+          okText: "Delete",
+          okType: "danger",
+          cancelText: "Cancel",
+          onOk: () => doDeleteProject(row.projectId),
+        });
+      })
+      .catch((error) => {
+        console.error("Error checking project references:", error);
+        message.error("Couldn't check what this project references. Please try again.");
+      });
   };
 
   useEffect(() => {
@@ -287,6 +334,25 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         sortable: isSortable,
         editable: false,
         filter: "agSetColumnFilter",
+      },
+      {
+        headerName: "Actions",
+        field: "actions",
+        sortable: false,
+        filter: false,
+        editable: false,
+        cellRenderer: (params) => {
+          // Pinned total rows and group rows have no params.data.
+          if (!params.data || params.node.rowPinned) return null;
+          return (
+            <Button
+              danger
+              type="text"
+              icon={<DeleteOutlined />}
+              onClick={() => handleDeleteProject(params.data)}
+            />
+          );
+        },
       },
     ];
     return columns;

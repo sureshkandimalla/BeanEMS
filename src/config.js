@@ -122,6 +122,7 @@ export const API_ENDPOINTS = {
   getHoursReport: (payPeriodId, employeeId) =>
     `${API_BASE_URL}/hours-report/getReport?payPeriodId=${payPeriodId}${employeeId ? `&employeeId=${employeeId}` : ""}`,
   projectsById: (projectId) => `${API_BASE_URL}/projects/${projectId}`,
+  projectDeletionImpact: (projectId) => `${API_BASE_URL}/projects/${projectId}/deletionImpact`,
   employeeById: (employeeId) => `${API_BASE_URL}/employees/employee/${employeeId}`,
   updateEmployee: (employeeId) => `${API_BASE_URL}/employees/${employeeId}`,
   projectsByEmployeeId: (employeeId) => `${API_BASE_URL}/projects?employeeId=${employeeId}`,
