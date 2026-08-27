@@ -24,6 +24,7 @@ import {
   invoiceTermCode,
 } from "../Utils/invoiceTerm";
 import DocumentsPanel from "../Documents/DocumentsPanel";
+import { openDocumentInNewTab } from "../Documents/openDocument";
 
 const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   console.log(projectsList);
@@ -33,16 +34,26 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
   const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
   const [modifiedRows, setModifiedRows] = useState({});
-  // Which projects already have a Purchase Order — one call for every row
-  // (see DocumentController#list, entityId omitted) instead of one per row.
-  const [projectIdsWithPo, setProjectIdsWithPo] = useState(new Set());
+  // Which projects already have a Purchase Order (and which document, so
+  // the PDF icon can open it directly) — one call for every row (see
+  // DocumentController#list, entityId omitted) instead of one per row.
+  const [poDocByProject, setPoDocByProject] = useState({});
   const [poModalProjectId, setPoModalProjectId] = useState(null);
 
   const fetchPoDocuments = () => {
     axios
       .get(API_ENDPOINTS.getAllDocumentsForType("ProjectPO"))
-      .then(({ data }) => setProjectIdsWithPo(new Set((data || []).map((doc) => doc.entityId))))
-      .catch(() => setProjectIdsWithPo(new Set()));
+      .then(({ data }) => {
+        const byProject = {};
+        (data || []).forEach((doc) => {
+          // A project can have more than one PO — keep the most recent.
+          if (!byProject[doc.entityId] || doc.id > byProject[doc.entityId].id) {
+            byProject[doc.entityId] = doc;
+          }
+        });
+        setPoDocByProject(byProject);
+      })
+      .catch(() => setPoDocByProject({}));
   };
 
   useEffect(fetchPoDocuments, []);
@@ -384,13 +395,15 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         editable: false,
         cellRenderer: (params) => {
           if (!params.data || params.node.rowPinned) return null;
-          const hasPo = projectIdsWithPo.has(params.data.projectId);
+          const doc = poDocByProject[params.data.projectId];
           return (
             <Button
               type="text"
-              icon={hasPo ? <FilePdfOutlined style={{ color: "#e64a3b" }} /> : <PlusCircleOutlined />}
-              title={hasPo ? "View Purchase Order" : "Add Purchase Order"}
-              onClick={() => setPoModalProjectId(params.data.projectId)}
+              icon={doc ? <FilePdfOutlined style={{ color: "#e64a3b" }} /> : <PlusCircleOutlined />}
+              title={doc ? "Open Purchase Order" : "Add Purchase Order"}
+              onClick={() =>
+                doc ? openDocumentInNewTab(doc.id) : setPoModalProjectId(params.data.projectId)
+              }
             />
           );
         },
