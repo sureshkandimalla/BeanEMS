@@ -545,6 +545,11 @@ const InvoiceDetails = ({ employeeId, projectId, customerId, statusFilter, isCol
   };
   const onClose = () => {
     setOpen(false);
+    // NewInvoice's own submit already saves successfully — this grid just
+    // never refetched afterward, so a new invoice was invisible until a
+    // manual Refresh, which looked exactly like Submit silently failing.
+    fetchData();
+    onRefresh?.();
   };
 
   // Left-nav "Create > Customers > Invoice" links here with ?new=1 to land
