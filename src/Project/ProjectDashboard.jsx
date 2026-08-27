@@ -44,9 +44,14 @@ const ProjectDashboard = () => {
 
   const processedData = useMemo(() => {
     if (!rowData) return {};
+    const today = new Date().toISOString().split("T")[0];
+    const isActive = ({ status }) => (status || "").toUpperCase() === "ACTIVE";
+    const isYetToStart = ({ startDate }) => !!startDate && startDate > today;
     return {
       all: rowData,
-      active: rowData.filter(({ status }) => (status || "").toUpperCase() === "ACTIVE"),
+      active: rowData.filter(isActive),
+      yetToStart: rowData.filter(isYetToStart),
+      current: rowData.filter((row) => isActive(row) || isYetToStart(row)),
     };
   }, [rowData]);
 
@@ -153,6 +158,16 @@ const ProjectDashboard = () => {
       key: "1",
       label: "Active",
       children: <ProjectList projectsList={processedData?.active} isCollapsed={isCollapsed} onRefresh={fetchData} />,
+    },
+    {
+      key: "3",
+      label: "Yet to Start",
+      children: <ProjectList projectsList={processedData?.yetToStart} isCollapsed={isCollapsed} onRefresh={fetchData} />,
+    },
+    {
+      key: "4",
+      label: "Current",
+      children: <ProjectList projectsList={processedData?.current} isCollapsed={isCollapsed} onRefresh={fetchData} />,
     },
     {
       key: "2",

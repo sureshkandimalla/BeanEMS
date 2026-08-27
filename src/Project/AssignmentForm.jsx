@@ -116,7 +116,13 @@ const AssignmentForm = ({ onClose }) => {
 
     // Validate the form data
     // !updatedDetails.clientName ||
-    if (!updatedDetails.assignmentType || !updatedDetails.wage) {
+    // employeeId is required (see the Select's `rules` above) but that
+    // Ant Design validation never actually runs since this handler reads
+    // state directly instead of calling form.validateFields() — checking
+    // it here is what actually enforces it. Without this, employeeId ends
+    // up undefined in the request and the backend's primitive `long`
+    // field silently saves it as 0 (a real, invalid employee id).
+    if (!updatedDetails.employeeId || !updatedDetails.assignmentType || !updatedDetails.wage) {
       alert("Please fill in all mandatory fields");
       return;
     }
