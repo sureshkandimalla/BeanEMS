@@ -3,12 +3,13 @@ import { AgGridReact } from "@ag-grid-community/react";
 import { Card, Button, Drawer } from "antd";
 import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { Link, useLocation } from "react-router-dom";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./Vendor.css";
 import NewVendor from "./NewVendor";
-import API_ENDPOINTS from "../config";
+import API_ENDPOINTS, { vendorTypeList, vendorStatusList, paymentTermsList } from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
 const columnsList = [
@@ -16,17 +17,47 @@ const columnsList = [
   { headerName: "Name", field: "vendorCompanyName", type: "text" },
   { headerName: "Email", field: "vendorEmail", type: "text" },
   { headerName: "Phone", field: "vendorPhone", type: "text" },
-  { headerName: "Status", field: "vendorStatus", type: "text" },
+  { headerName: "Vendor Type", field: "vendorType", type: "select", options: vendorTypeList },
+  { headerName: "Status", field: "vendorStatus", type: "select", options: vendorStatusList },
   { headerName: "ein", field: "ein", type: "text" },
   { headerName: "Website", field: "website", type: "text" },
   { headerName: "Start Date", field: "vendorStartDate", type: "date" },
   { headerName: "End Date", field: "vendorEndDate", type: "date" },
+  { headerName: "Payment Terms", field: "paymentTerms", type: "select", options: paymentTermsList },
+  { headerName: "Payment Policy", field: "paymentPolicy", type: "text" },
 ];
+
+// Mirrors the exact predicates VendorDashboard.jsx uses to compute its feed
+// card counts, so "Review all" always lands on a grid whose row count
+// matches the number shown on the card it was clicked from.
+const DAY_MS = 24 * 60 * 60 * 1000;
+const DASHBOARD_FILTER_LABELS = { active: "Active", pending: "Pending", expiring: "Expiring in 90 Days" };
+const matchesDashboardFilter = (vendor, dashboardFilter) => {
+  if (!dashboardFilter) return true;
+  if (dashboardFilter === "active") return vendor.vendorStatus === "Active";
+  if (dashboardFilter === "pending") return vendor.vendorStatus === "Pending";
+  if (dashboardFilter === "expiring") {
+    if (!vendor.vendorEndDate) return false;
+    const [y, m, d] = vendor.vendorEndDate.split("-").map(Number);
+    if (!y || !m) return false;
+    const end = new Date(y, m - 1, d || 1);
+    const today = new Date();
+    const in90Days = new Date(today.getTime() + 90 * DAY_MS);
+    return end >= today && end <= in90Days;
+  }
+  return true;
+};
 
 const VendorDetails = () => {
   const gridRef = useRef(null);
+  const location = useLocation();
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
+  const [dashboardFilter, setDashboardFilter] = useState(location.state?.dashboardFilter || null);
+
+  useEffect(() => {
+    if (location.state?.dashboardFilter) setDashboardFilter(location.state.dashboardFilter);
+  }, [location.state]);
   const [open, setOpen] = useState(false);
   const [modifiedRows, setModifiedRows] = useState({});
 
@@ -102,13 +133,14 @@ const VendorDetails = () => {
   ];
 
   const getColumnsDefList = (columnsList, isSortable) => {
-    return columnsList.map(({ headerName, field, type }) => {
+    return columnsList.map(({ headerName, field, type, options }) => {
       // Every column uses the checkbox/select-values Set Filter — kept
       // consistent across every grid in the app rather than per-type
       // filter widgets (contains/equals/etc.).
       const columnFilter = "agSetColumnFilter";
 
       const isIdColumn = field === "vendorId";
+      const isSelect = type === "select";
       const autoWidth = type === "date" || field === "vendorStatus" || isIdColumn ? 145 : 170;
 
       return {
@@ -116,6 +148,8 @@ const VendorDetails = () => {
         field,
         sortable: isSortable,
         editable: true,
+        cellEditor: isSelect ? "agSelectCellEditor" : undefined,
+        cellEditorParams: isSelect ? { values: options.map((o) => o.value) } : undefined,
         headerClass: isIdColumn ? "ag-center-cols" : "ag-header-cell",
         filter: columnFilter,
         minWidth: autoWidth,
@@ -129,6 +163,14 @@ const VendorDetails = () => {
         },
         cellClass: isIdColumn ? "ag-center-cols" : undefined,
         cellStyle: isIdColumn ? { textAlign: "center" } : undefined,
+        cellRenderer:
+          field === "vendorCompanyName"
+            ? (params) => (
+                <Link to="/vendorFullDetails" state={{ rowData: params.data }}>
+                  {params.value}
+                </Link>
+              )
+            : undefined,
         tooltipShowDelay: 0,
       };
     });
@@ -146,11 +188,14 @@ const VendorDetails = () => {
 
   const filterData = () => {
     const source = Array.isArray(rowData) ? rowData : [];
+    const dashboardFiltered = dashboardFilter
+      ? source.filter((row) => matchesDashboardFilter(row, dashboardFilter))
+      : source;
     if (!searchText) {
-      return source;
+      return dashboardFiltered;
     }
 
-    return source.filter((row) =>
+    return dashboardFiltered.filter((row) =>
       Object.values(row || {}).some((value) =>
         String(value).toLowerCase().includes(searchText.toLowerCase()),
       ),
@@ -273,6 +318,24 @@ const VendorDetails = () => {
           >
             Export to Excel
           </Button>
+          {dashboardFilter && (
+            <span
+              style={{
+                marginLeft: 10,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                background: "#e6f4ff",
+                color: "#1677ff",
+                padding: "4px 10px",
+                borderRadius: 16,
+                fontSize: 13,
+              }}
+            >
+              Filter: {DASHBOARD_FILTER_LABELS[dashboardFilter]}
+              <CloseOutlined style={{ cursor: "pointer", fontSize: 11 }} onClick={() => setDashboardFilter(null)} />
+            </span>
+          )}
           <Button
             type="primary"
             className="button-vendor"

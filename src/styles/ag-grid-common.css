@@ -117,6 +117,18 @@
   line-height: 28px !important;
 }
 
+/* ── Custom popup cell editors (e.g. DateEditor's antd DatePicker) ──
+   cellEditorPopup:true makes AG Grid render the editor in a floating
+   wrapper that has its own border/padding by default — that nests visibly
+   around the wrapped component's own border, looking like two stacked
+   boxes. Strip AG's own chrome so only the wrapped component's border shows. */
+.ag-theme-alpine .ag-popup-editor {
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
 /* ── Responsive adjustments ── */
 @media screen and (max-width: 1024px) {
   .ag-grid-wrapper {

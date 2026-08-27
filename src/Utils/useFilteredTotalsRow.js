@@ -7,7 +7,7 @@ import { useCallback, useState } from "react";
 // internally and this reads back via forEachNodeAfterFilter).
 //
 // sumRows(visibleRows) must return the pinned row object itself (including
-// whatever label field identifies it, e.g. { invoiceId: "Filtered Total",
+// whatever label field identifies it, e.g. { invoiceNumber: "Filtered Total",
 // ...sums }) — same shape as whatever the grand-total bottom row already
 // builds, just fed a different row set.
 //

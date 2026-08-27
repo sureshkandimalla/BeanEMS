@@ -4,18 +4,19 @@ import { Button, Modal, Input } from "antd";
 
 const EditHoursInvoiceModal = ({ open, onClose, onSave, initialData }) => {
   const [hours, setHours] = useState(initialData.hours || 0);
-  const [invoiceId, setInvoiceId] = useState(initialData.invoiceId || "");
+  // Cosmetic/business label only — not unique, not identity.
+  const [invoiceNumber, setInvoiceNumber] = useState(initialData.invoiceNumber || "");
 
   useEffect(() => {
     setHours(initialData.hours || 0);
-    setInvoiceId(initialData.invoiceId || "");
+    setInvoiceNumber(initialData.invoiceNumber || "");
   }, [initialData]);
 
   const handleSave = () => {
-    if (hours > 0 && invoiceId > 0) {
-      onSave({ hours, invoiceId });
+    if (hours > 0 && invoiceNumber > 0) {
+      onSave({ hours, invoiceNumber });
     } else {
-      alert("Please enter hours and Invoice Id Greater than Zero");
+      alert("Please enter hours and Invoice Number Greater than Zero");
     }
   };
 
@@ -44,11 +45,11 @@ const EditHoursInvoiceModal = ({ open, onClose, onSave, initialData }) => {
         />
       </div>
       <div style={{ marginTop: "10px" }}>
-        <label>Invoice ID:</label>
+        <label>Invoice #:</label>
         <Input
           type="text"
-          value={invoiceId}
-          onChange={(e) => setInvoiceId(e.target.value)}
+          value={invoiceNumber}
+          onChange={(e) => setInvoiceNumber(e.target.value)}
         />
       </div>
     </Modal>

@@ -26,14 +26,15 @@ import AuthContext from "../Authentication/Context/AuthContext";
 import { canAccessEntity } from "../Utils/roleAccess";
 import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 
-// employeeId/projectId are optional — when provided (e.g. embedded in the
-// Employee Full Details "INVOICES" tab, or the Project Full Details
-// "Invoices" tab), the grid scopes down to just that employee's/project's
-// invoices, with every other feature (search, edit, Save/Cancel, Export to
-// Excel, Add New Invoice, Generate Invoice, totals) unchanged. statusFilter
-// is likewise optional — when provided (e.g. embedded in a status tab on
-// the Dashboard), only invoices with that exact status are shown.
-const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, gridHeight, onRefresh } = {}) => {
+// employeeId/projectId/customerId are optional — when provided (e.g.
+// embedded in the Employee Full Details "INVOICES" tab, the Project Full
+// Details "Invoices" tab, or the Customer Full Details "INVOICES" tab), the
+// grid scopes down to just that employee's/project's/customer's invoices,
+// with every other feature (search, edit, Save/Cancel, Export to Excel, Add
+// New Invoice, Generate Invoice, totals) unchanged. statusFilter is
+// likewise optional — when provided (e.g. embedded in a status tab on the
+// Dashboard), only invoices with that exact status are shown.
+const InvoiceDetails = ({ employeeId, projectId, customerId, statusFilter, isCollapsed, gridHeight, onRefresh } = {}) => {
   const { user } = useContext(AuthContext);
   const gridRef = useRef(null);
   const [searchText, setSearchText] = useState("");
@@ -57,13 +58,16 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
   }, []);
 
   // Projects carry their own employeeName/projectName/customerName — used to
-  // look up those display columns for each invoice by its projectId.
+  // look up those display columns for each invoice by its projectId. When
+  // scoped to one customer, fetch just that customer's own projects instead
+  // of every project in the tenant.
   useEffect(() => {
-    fetch(API_ENDPOINTS.getProjects)
+    const url = customerId ? API_ENDPOINTS.getProjectsByCustomer(customerId) : API_ENDPOINTS.getProjects;
+    fetch(url)
       .then((response) => response.json())
       .then((data) => setProjectsData(data || []))
       .catch((error) => console.error("Error fetching projects:", error));
-  }, []);
+  }, [customerId]);
 
   // Referral-company employees aren't run through invoicing — exclude them
   // from the page-level invoice alert below.
@@ -93,7 +97,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
   const [invoiceAlerts, setInvoiceAlerts] = useState([]);
 
   useEffect(() => {
-    if (employeeId || projectId) return;
+    if (employeeId || projectId || customerId) return;
     if (!projects || projects.length === 0) return;
 
     const activeEmployeeIds = Array.from(
@@ -266,18 +270,15 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
   const fetchData = () => {
     //default status =viewAll
     setRowData([]);
-    axios
-      .get(
-        API_ENDPOINTS.getAllInvoices,
-        {
-          params: {
-            // selectedDate: '2023-11-01',//formattedDate,
-            //status: 'viewAll'
-          },
-        },
-      )
+    // Scoped to one customer's own invoices server-side instead of fetching
+    // every invoice in the tenant — same idea as the employeeId/projectId
+    // client-side filters below, just done in the DB for this one since a
+    // customer-scoped endpoint already exists (see InvoiceController).
+    const request = customerId
+      ? axios.get(API_ENDPOINTS.getInvoicesForCustomer(customerId))
+      : axios.get(API_ENDPOINTS.getAllInvoices, { params: {} });
+    request
       .then((response) => {
-        console.log(response.data);
         setRowData(getFlattenedData(response.data));
       })
       .catch((error) => {
@@ -298,8 +299,8 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
   const [promptPaidDate, setPromptPaidDate] = useState(null);
 
   const onCellValueChanged = (params) => {
-    const invoiceId = params.data?.invoiceId;
-    if (invoiceId === undefined || invoiceId === null) return;
+    const rowId = params.data?.id;
+    if (rowId === undefined || rowId === null) return;
 
     if (params.column.colId === "hours") {
       const hours = Number(params.data.hours) || 0;
@@ -323,7 +324,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       setPaidDatePrompt({ node: params.node, oldStatus: params.oldValue });
     }
 
-    setModifiedRows((prev) => ({ ...prev, [invoiceId]: params.data }));
+    setModifiedRows((prev) => ({ ...prev, [rowId]: params.data }));
   };
 
   const confirmPaidDate = () => {
@@ -347,7 +348,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
     const rows = Object.values(modifiedRows);
     if (rows.length === 0) return;
     Promise.all(
-      rows.map((row) => axios.put(API_ENDPOINTS.invoiceById(row.invoiceId), row)),
+      rows.map((row) => axios.put(API_ENDPOINTS.invoiceById(row.id), row)),
     )
       .then(() => {
         setModifiedRows({});
@@ -403,8 +404,13 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
 
     var columns = [
       {
-        headerName: "Invoice Id",
-        field: "invoiceId",
+        // invoiceNumber is a cosmetic, user-editable business label with
+        // no identity meaning — the row's real identity (used for the
+        // save PUT below) is the server-assigned `id`, which is never
+        // shown as an editable cell so it can't be typo'd into colliding
+        // with another invoice's number.
+        headerName: "Invoice #",
+        field: "invoiceNumber",
         sortable: isSortable,
         editable: editableUnlessPaid,
         valueFormatter: (params) => {
@@ -550,7 +556,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
   }, []);
 
   const sumInvoiceRows = (rows, label) => ({
-    invoiceId: label,
+    invoiceNumber: label,
     hours: rows.reduce((sum, row) => sum + (row.hours || 0), 0),
     total: rows.reduce((sum, row) => sum + (row.total || 0), 0),
     discounts: rows.reduce((sum, row) => sum + (row.discounts || 0), 0),
@@ -650,7 +656,7 @@ const InvoiceDetails = ({ employeeId, projectId, statusFilter, isCollapsed, grid
       overflow: "hidden",
     }}
   >
-    {!employeeId && !projectId && (
+    {!employeeId && !projectId && !customerId && (
       <ChartOverviewPanel
         panelTitle="Invoice Overview"
         charts={visibleInvoiceOverviewCharts}

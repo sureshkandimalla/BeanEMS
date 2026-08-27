@@ -222,11 +222,11 @@ const getSelectedLabel = (labelText) => {
 };
 
 const fillRequiredScalarFields = async ({
-  invoiceId = "INV-1",
+  invoiceNumber = "INV-1",
   billRate,
   hours = "10",
 } = {}) => {
-  await userEvent.type(screen.getByPlaceholderText("Invoice Id"), invoiceId);
+  await userEvent.type(screen.getByPlaceholderText("Invoice Number"), invoiceNumber);
   if (billRate !== undefined) {
     const billInput = screen.getByPlaceholderText("Bill Amount");
     await userEvent.clear(billInput);
@@ -299,7 +299,7 @@ describe("NewInvoice — R1 Data loading", () => {
     // `value={generalDetails.x}` prop on first render, so numeric defaults
     // (0) display as an empty input rather than "0" — see Known gaps.
     await renderForm();
-    expect(screen.getByPlaceholderText("Invoice Id")).toHaveValue("");
+    expect(screen.getByPlaceholderText("Invoice Number")).toHaveValue("");
     expect(screen.getByPlaceholderText("Bill Amount")).toHaveValue(null);
     expect(screen.getByPlaceholderText("Hours")).toHaveValue("");
     expect(getSelectedLabel("Employee")).toBeUndefined();
@@ -547,7 +547,7 @@ describe("NewInvoice — R10 Start/End Date must stay within the project's date 
     // react-datepicker's own internal display-text tracking still shows what
     // was typed) — confirm the *submitted* value is still the pre-rejection
     // one, not the rejected typed text.
-    await fillRequiredScalarFields({ invoiceId: "INV-10", hours: "5" });
+    await fillRequiredScalarFields({ invoiceNumber: "INV-10", hours: "5" });
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));
     await waitFor(() =>
       expect(global.fetch).toHaveBeenCalledWith(
@@ -708,7 +708,7 @@ describe("NewInvoice — R6 Required fields / submission", () => {
   it("R6.2/R6.4 submits with computed total and clears the form on success", async () => {
     const { onClose } = await renderForm({ submitStatus: 201 });
     await selectDropdownOption("Customer", "Customer A");
-    await fillRequiredScalarFields({ invoiceId: "INV-9", hours: "10" });
+    await fillRequiredScalarFields({ invoiceNumber: "INV-9", hours: "10" });
     await setInvoiceMonth("07/2026");
 
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));
@@ -730,7 +730,7 @@ describe("NewInvoice — R6 Required fields / submission", () => {
   it("R6.3 shows an error modal and preserves data when submit fails", async () => {
     await renderForm({ submitStatus: 500 });
     await selectDropdownOption("Customer", "Customer A");
-    await fillRequiredScalarFields({ invoiceId: "INV-9", hours: "10" });
+    await fillRequiredScalarFields({ invoiceNumber: "INV-9", hours: "10" });
     await setInvoiceMonth("07/2026");
 
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));
@@ -744,7 +744,7 @@ describe("NewInvoice — R6 Required fields / submission", () => {
         expect.any(Object),
       ),
     );
-    expect(screen.getByPlaceholderText("Invoice Id")).toHaveValue("INV-9");
+    expect(screen.getByPlaceholderText("Invoice Number")).toHaveValue("INV-9");
   });
 });
 
@@ -753,7 +753,7 @@ describe("NewInvoice — R7 Clear / Cancel", () => {
     await renderForm();
     await selectDropdownOption("Employee", "Employee One");
     await waitFor(() => expect(getSelectedLabel("Project")).toBe("Project A"));
-    await fillRequiredScalarFields({ invoiceId: "INV-1", hours: "5" });
+    await fillRequiredScalarFields({ invoiceNumber: "INV-1", hours: "5" });
 
     await userEvent.click(screen.getByRole("button", { name: "Clear" }));
 
@@ -762,7 +762,7 @@ describe("NewInvoice — R7 Clear / Cancel", () => {
     expect(getSelectedLabel("Project")).toBeUndefined();
     // form.resetFields() clears back to Form.Item's unset state (blank),
     // same as the pristine-mount state asserted in R1.3.
-    expect(screen.getByPlaceholderText("Invoice Id")).toHaveValue("");
+    expect(screen.getByPlaceholderText("Invoice Number")).toHaveValue("");
     expect(screen.getByPlaceholderText("Bill Amount")).toHaveValue(null);
     expect(screen.getByPlaceholderText("Hours")).toHaveValue("");
   });
@@ -785,7 +785,7 @@ describe("NewInvoice — Known gaps", () => {
     await renderForm();
     await selectDropdownOption("Employee", "Employee Three");
     await waitFor(() => expect(getSelectedLabel("Project")).toBeUndefined());
-    await fillRequiredScalarFields({ invoiceId: "INV-7", hours: "3" });
+    await fillRequiredScalarFields({ invoiceNumber: "INV-7", hours: "3" });
     await setInvoiceMonth("07/2026");
 
     await userEvent.click(screen.getByRole("button", { name: "Submit" }));

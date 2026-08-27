@@ -29,7 +29,7 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
     invoiceTerm: null,
     billRate: 0,
     hours: 0,
-    invoiceId: 0,
+    invoiceNumber: 0,
     invoiceMonth: "",
     total: 0,
   };
@@ -81,7 +81,7 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
     // Validate required fields
     if (
       !generalDetails.customerId ||
-      !generalDetails.invoiceId ||
+      !generalDetails.invoiceNumber ||
       !generalDetails.billRate ||
       !generalDetails.invoiceMonth ||
       !generalDetails.hours
@@ -513,14 +513,14 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
         <Row gutter={25}>
           <Col span={8}>
             <Form.Item
-              label="Invoice Id"
-              name="invoiceId"
-              rules={[{ required: true, message: "Please enter invoice id" }]}
+              label="Invoice Number"
+              name="invoiceNumber"
+              rules={[{ required: true, message: "Please enter invoice number" }]}
             >
               <Input
-                placeholder="Invoice Id"
-                onChange={(e) => handleGeneralData(e.target.value, "invoiceId")}
-                value={generalDetails.invoiceId}
+                placeholder="Invoice Number"
+                onChange={(e) => handleGeneralData(e.target.value, "invoiceNumber")}
+                value={generalDetails.invoiceNumber}
               />
             </Form.Item>
           </Col>

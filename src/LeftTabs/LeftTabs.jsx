@@ -5,12 +5,12 @@ import {
   BookOutlined,
   HomeOutlined,
   TeamOutlined,
+  UserOutlined,
+  ShopOutlined,
   GlobalOutlined,
   LineChartOutlined,
-  AppstoreOutlined,
   PieChartOutlined,
   DollarOutlined,
-  TagsOutlined,
   SlidersOutlined,
 } from "@ant-design/icons";
 import { Link, useLocation } from "react-router-dom";
@@ -27,20 +27,31 @@ const RAIL_ITEMS_TOP = [
   { key: "bookmarks", label: "Bookmarks", icon: <BookOutlined /> },
   { key: "home", label: "Home", icon: <HomeOutlined />, to: "/home" },
   { key: "team", label: "Team", icon: <TeamOutlined />, hasFlyout: true },
+  {
+    key: "customers",
+    label: "Customers",
+    icon: <UserOutlined />,
+    to: "/customerDashboard",
+    hasFlyout: true,
+    hideForRoles: [ROLES.IMMIGRATION],
+  },
+  {
+    key: "vendors",
+    label: "Vendors",
+    icon: <ShopOutlined />,
+    to: "/vendorDashboard",
+    hasFlyout: true,
+    hideForRoles: [ROLES.IMMIGRATION],
+  },
   { key: "immigration", label: "Immigration", icon: <GlobalOutlined />, hasFlyout: true },
   { key: "reports", label: "Reports", icon: <LineChartOutlined />, hasFlyout: true },
-  // "All apps" is a generic app-switcher, not scoped to any one role's
-  // work — hidden for Immigration since it has no accounting/HR apps to
-  // switch into anyway.
-  { key: "allapps", label: "All apps", icon: <AppstoreOutlined />, hideForRoles: [ROLES.IMMIGRATION] },
 ];
 
-// Accounting/Expenses/Sales are Accounting-department concerns — hidden for
+// Accounting/Expenses are Accounting-department concerns — hidden for
 // Immigration the same way ROUTE_ROLES already hides the pages they lead to.
 const RAIL_ITEMS_PINNED = [
   { key: "accounting", label: "Accounting", icon: <PieChartOutlined />, hasFlyout: true, hideForRoles: [ROLES.IMMIGRATION] },
   { key: "expenses", label: "Expenses", icon: <DollarOutlined />, hideForRoles: [ROLES.IMMIGRATION] },
-  { key: "sales", label: "Sales", icon: <TagsOutlined />, hideForRoles: [ROLES.IMMIGRATION] },
 ];
 
 // Same 4-column layout as the QuickBooks reference, but each column now
@@ -128,6 +139,25 @@ const ACCOUNTING_MENU_COLUMNS = [
   ["Vendors", "Adjustments"],
 ];
 
+// The rail's own "Customers"/"Vendors" icons reuse the exact same
+// Customers/Vendors sections as the Accounting flyout (same items, same
+// plain-navigation links) rather than re-deriving from CREATE_MENU again —
+// plus each rail icon's own Dashboard link up front (the icon's own click
+// target, per REPORTS_MENU's Accounting section), since hovering should
+// surface that destination too, not just reveal it on click.
+const CUSTOMERS_MENU = ACCOUNTING_MENU
+  .filter((section) => section.title === "Customers")
+  .map((section) => ({
+    ...section,
+    items: [{ label: "Customer Dashboard", to: "/customerDashboard" }, ...section.items],
+  }));
+const VENDORS_MENU = ACCOUNTING_MENU
+  .filter((section) => section.title === "Vendors")
+  .map((section) => ({
+    ...section,
+    items: [{ label: "Vendor Dashboard", to: "/vendorDashboard" }, ...section.items],
+  }));
+
 // "Immigration" rail icon's flyout — same Immigration section as the
 // Create mega-menu (and same card look — white rounded panel with a
 // titled section, per CREATE_MENU_COLUMNS), stripped of "?new=1" since
@@ -176,6 +206,8 @@ const REPORTS_MENU = [
     title: "Accounting",
     items: [
       { label: "Project Invoice Summary", to: "/projectInvoiceSummary" },
+      { label: "Customer Dashboard", to: "/customerDashboard" },
+      { label: "Vendor Dashboard", to: "/vendorDashboard" },
     ],
   },
 ];
@@ -230,6 +262,16 @@ const LeftTabs = () => {
 
   const visibleTeamItems = TEAM_MENU.filter((it) => canAccess(user?.role, it.to));
 
+  const visibleCustomersSections = CUSTOMERS_MENU.map((section) => ({
+    ...section,
+    items: section.items.filter((it) => canAccess(user?.role, it.to)),
+  })).filter((section) => section.items.length > 0);
+
+  const visibleVendorsSections = VENDORS_MENU.map((section) => ({
+    ...section,
+    items: section.items.filter((it) => canAccess(user?.role, it.to)),
+  })).filter((section) => section.items.length > 0);
+
   const visibleReportsSections = REPORTS_MENU.map((section) => ({
     ...section,
     items: section.items.filter((it) => canAccess(user?.role, it.to)),
@@ -282,10 +324,7 @@ const LeftTabs = () => {
       <div className="rail-section">{railItemsTop.map(renderItem)}</div>
 
       {railItemsPinned.length > 0 && (
-        <>
-          <div className="rail-pinned-label">PINNED</div>
-          <div className="rail-section">{railItemsPinned.map(renderItem)}</div>
-        </>
+        <div className="rail-section">{railItemsPinned.map(renderItem)}</div>
       )}
 
       <div className="rail-spacer" />
@@ -371,6 +410,62 @@ const LeftTabs = () => {
             onMouseLeave={closeFlyout}
           >
             {visibleImmigrationSections.map((section) => (
+              <div className="create-flyout-section" key={section.title}>
+                <div className="create-flyout-column-title">{section.title}</div>
+                {section.items.map((it) => (
+                  <Link
+                    to={it.to}
+                    className="create-flyout-item"
+                    key={it.label}
+                    onClick={() => setActiveFlyout(null)}
+                  >
+                    <span>{it.label}</span>
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </div>,
+          document.body,
+        )}
+
+      {activeFlyout === "customers" &&
+        visibleCustomersSections.length > 0 &&
+        createPortal(
+          <div
+            className="create-flyout immigration-flyout"
+            style={{ top: flyoutPos.top, left: flyoutPos.left }}
+            onMouseEnter={() => openFlyout("customers")}
+            onMouseLeave={closeFlyout}
+          >
+            {visibleCustomersSections.map((section) => (
+              <div className="create-flyout-section" key={section.title}>
+                <div className="create-flyout-column-title">{section.title}</div>
+                {section.items.map((it) => (
+                  <Link
+                    to={it.to}
+                    className="create-flyout-item"
+                    key={it.label}
+                    onClick={() => setActiveFlyout(null)}
+                  >
+                    <span>{it.label}</span>
+                  </Link>
+                ))}
+              </div>
+            ))}
+          </div>,
+          document.body,
+        )}
+
+      {activeFlyout === "vendors" &&
+        visibleVendorsSections.length > 0 &&
+        createPortal(
+          <div
+            className="create-flyout immigration-flyout"
+            style={{ top: flyoutPos.top, left: flyoutPos.left }}
+            onMouseEnter={() => openFlyout("vendors")}
+            onMouseLeave={closeFlyout}
+          >
+            {visibleVendorsSections.map((section) => (
               <div className="create-flyout-section" key={section.title}>
                 <div className="create-flyout-column-title">{section.title}</div>
                 {section.items.map((it) => (

@@ -11,7 +11,7 @@ import { invoiceTermLabel } from "../Utils/invoiceTerm";
 import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
 import NewCustomer from "../Customer/NewCustomer";
 
-const ProjectGrid = ({ employeeId, isCollapsed }) => {
+const ProjectGrid = ({ employeeId, customerId, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
   const [projectDrawerOpen, setProjectDrawerOpen] = useState(false);
@@ -52,7 +52,10 @@ const ProjectGrid = ({ employeeId, isCollapsed }) => {
   ];
 
   const fetchData = () => {
-    fetch(API_ENDPOINTS.projectsByEmployeeId(employeeId))
+    const url = customerId
+      ? API_ENDPOINTS.projectsByCustomerId(customerId)
+      : API_ENDPOINTS.projectsByEmployeeId(employeeId);
+    fetch(url)
       .then((response) => response.json())
       .then((data) => {
         const transformedData = flattenObject(data);

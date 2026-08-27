@@ -213,8 +213,16 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         headerName: "Client",
         field: "clientName",
         sortable: isSortable,
-        editable: false,
+        editable: true,
         filter: "agSetColumnFilter",
+        // Backend entity field is "client" (see ProjectController#updateProject),
+        // grid/domain field is "clientName" — keep both in sync on edit so the
+        // PUT payload (the whole row) carries the key the backend reads.
+        valueSetter: (params) => {
+          params.data.clientName = params.newValue;
+          params.data.client = params.newValue;
+          return true;
+        },
       },
       {
         headerName: "Project Start Date",

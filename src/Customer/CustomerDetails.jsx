@@ -3,12 +3,18 @@ import { AgGridReact } from "@ag-grid-community/react";
 import { Card, Button, Drawer } from "antd";
 import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { Link, useLocation } from "react-router-dom";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./Customer.css";
 import NewCustomer from "./NewCustomer";
-import API_ENDPOINTS from "../config";
+import API_ENDPOINTS, {
+  currencyList,
+  msaStatusList,
+  billingMethodList,
+  paymentTermsList,
+} from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 
 const columnsList = [
@@ -16,19 +22,62 @@ const columnsList = [
   { headerName: "Name", field: "customerCompanyName", type: "text" },
   { headerName: "Email", field: "customerEmail", type: "text" },
   { headerName: "Phone", field: "customerPhone", type: "text" },
+  { headerName: "Parent Company", field: "parentCompany", type: "text" },
+  { headerName: "Billing Contact", field: "billingContact", type: "text" },
+  { headerName: "Accounts Payable Contact", field: "apContact", type: "text" },
+  { headerName: "MSA Status", field: "msaStatus", type: "select", options: msaStatusList },
   { headerName: "Status", field: "customerStatus", type: "text" },
+  { headerName: "Customer Contact Email", field: "customerContactEmail", type: "text" },
+  { headerName: "Customer Type", field: "customerType", type: "text" },
+  { headerName: "Customer Address", field: "customerAddress", type: "text" },
   { headerName: "ein", field: "ein", type: "text" },
   { headerName: "Website", field: "website", type: "text" },
   { headerName: "Start Date", field: "customerStartDate", type: "date" },
   { headerName: "End Date", field: "customerEndDate", type: "date" },
+  { headerName: "Credit Limit", field: "creditLimit", type: "number" },
+  { headerName: "Standard Currency", field: "standardCurrency", type: "select", options: currencyList },
+  { headerName: "Default Billing Method", field: "defaultBillingMethod", type: "select", options: billingMethodList },
+  { headerName: "Payment Terms", field: "paymentTerms", type: "select", options: paymentTermsList },
+  { headerName: "Notes", field: "notes", type: "text" },
+  { headerName: "Customer Name", field: "customerName", type: "text" },
+  { headerName: "Last Updated", field: "lastUpdated", type: "date" },
 ];
+
+// Mirrors the exact predicates CustomerDashboard.jsx uses to compute its
+// feed card counts, so "Review all" always lands on a grid whose row count
+// matches the number shown on the card it was clicked from.
+const DAY_MS = 24 * 60 * 60 * 1000;
+const DASHBOARD_FILTER_LABELS = { active: "Active", msaPending: "MSA Pending", expiring: "Expiring in 90 Days" };
+const matchesDashboardFilter = (customer, dashboardFilter) => {
+  if (!dashboardFilter) return true;
+  if (dashboardFilter === "active") return customer.customerStatus === "Active";
+  if (dashboardFilter === "msaPending") return customer.msaStatus === "Pending";
+  if (dashboardFilter === "expiring") {
+    if (!customer.customerEndDate) return false;
+    const [y, m, d] = customer.customerEndDate.split("-").map(Number);
+    if (!y || !m) return false;
+    const end = new Date(y, m - 1, d || 1);
+    const today = new Date();
+    const in90Days = new Date(today.getTime() + 90 * DAY_MS);
+    return end >= today && end <= in90Days;
+  }
+  return true;
+};
 
 const CustomerDetails = () => {
   const gridRef = useRef(null);
+  const location = useLocation();
   const [searchText, setSearchText] = useState("");
   const [rowData, setRowData] = useState([]);
   const [open, setOpen] = useState(false);
   const [modifiedRows, setModifiedRows] = useState({});
+  const [dashboardFilter, setDashboardFilter] = useState(location.state?.dashboardFilter || null);
+
+  // Re-syncs if the user navigates here again with a different card's
+  // filter while the component is already mounted (e.g. via back/forward).
+  useEffect(() => {
+    if (location.state?.dashboardFilter) setDashboardFilter(location.state.dashboardFilter);
+  }, [location.state]);
 
   const onCellValueChanged = (params) => {
     const customerId = params.data?.customerId;
@@ -102,13 +151,14 @@ const CustomerDetails = () => {
   ];
 
   const getColumnsDefList = (columnsList, isSortable) => {
-    return columnsList.map(({ headerName, field, type }) => {
+    return columnsList.map(({ headerName, field, type, options }) => {
       // Every column uses the checkbox/select-values Set Filter — kept
       // consistent across every grid in the app rather than per-type
       // filter widgets (contains/equals/etc.).
       const columnFilter = "agSetColumnFilter";
 
       const isIdColumn = field === "customerId";
+      const isSelect = type === "select";
       const autoWidth = type === "date" || field === "customerStatus" || isIdColumn ? 145 : 170;
 
       return {
@@ -116,6 +166,8 @@ const CustomerDetails = () => {
         field,
         sortable: isSortable,
         editable: true,
+        cellEditor: isSelect ? "agSelectCellEditor" : undefined,
+        cellEditorParams: isSelect ? { values: options.map((o) => o.value) } : undefined,
         headerClass: isIdColumn ? "ag-center-cols" : "ag-header-cell",
         filter: columnFilter,
         minWidth: autoWidth,
@@ -129,6 +181,14 @@ const CustomerDetails = () => {
         },
         cellClass: isIdColumn ? "ag-center-cols" : undefined,
         cellStyle: isIdColumn ? { textAlign: "center" } : undefined,
+        cellRenderer:
+          field === "customerCompanyName"
+            ? (params) => (
+                <Link to="/customerFullDetails" state={{ rowData: params.data }}>
+                  {params.value}
+                </Link>
+              )
+            : undefined,
         tooltipShowDelay: 0,
       };
     });
@@ -146,11 +206,14 @@ const CustomerDetails = () => {
 
   const filterData = () => {
     const source = Array.isArray(rowData) ? rowData : [];
+    const dashboardFiltered = dashboardFilter
+      ? source.filter((row) => matchesDashboardFilter(row, dashboardFilter))
+      : source;
     if (!searchText) {
-      return source;
+      return dashboardFiltered;
     }
 
-    return source.filter((row) =>
+    return dashboardFiltered.filter((row) =>
       Object.values(row || {}).some((value) =>
         String(value).toLowerCase().includes(searchText.toLowerCase()),
       ),
@@ -273,6 +336,24 @@ const CustomerDetails = () => {
           >
             Export to Excel
           </Button>
+          {dashboardFilter && (
+            <span
+              style={{
+                marginLeft: 10,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                background: "#e6f4ff",
+                color: "#1677ff",
+                padding: "4px 10px",
+                borderRadius: 16,
+                fontSize: 13,
+              }}
+            >
+              Filter: {DASHBOARD_FILTER_LABELS[dashboardFilter]}
+              <CloseOutlined style={{ cursor: "pointer", fontSize: 11 }} onClick={() => setDashboardFilter(null)} />
+            </span>
+          )}
           <Button
             type="primary"
             className="button-customer"

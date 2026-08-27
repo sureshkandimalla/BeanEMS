@@ -69,8 +69,8 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
   const getColumnsDefList = (isSortable, isEditable, hasFilter) => {
     var columns = [
       {
-        headerName: "Invoice Id",
-        field: "invoiceId",
+        headerName: "Invoice #",
+        field: "invoiceNumber",
         sortable: isSortable,
         valueFormatter: (params) => {
           return params.node.rowPinned === "bottom" ? "Total" : params.value;
@@ -153,7 +153,7 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
   };
 
   const sumInvoiceByIdRows = (rows, label) => ({
-    invoiceId: label,
+    invoiceNumber: label,
     hours: rows.reduce((sum, row) => sum + (row.hours || 0), 0),
     total: rows.reduce((sum, row) => sum + (row.total || 0), 0),
     invoicePaidAmount: rows.reduce((sum, row) => sum + (row.invoicePaidAmount || 0), 0),

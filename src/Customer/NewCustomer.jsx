@@ -1,10 +1,10 @@
 import React, { useState, useRef } from "react";
 import moment from "moment";
 import {
-  Tag,
   Button,
   Form,
   Input,
+  InputNumber,
   Radio,
   Row,
   Col,
@@ -15,7 +15,12 @@ import {
 } from "antd";
 import "./Customer.css";
 import axios from "axios";
-import API_ENDPOINTS from "../config";
+import API_ENDPOINTS, {
+  currencyList,
+  msaStatusList,
+  billingMethodList,
+  paymentTermsList,
+} from "../config";
 import { useNavigate } from "react-router-dom";
 
 const onFinish = (values) => {
@@ -54,6 +59,15 @@ const NewCustomer = () => {
     state: "",
     zipCode: "",
     country: "USA",
+    creditLimit: null,
+    parentCompany: "",
+    billingContact: "",
+    apContact: "",
+    standardCurrency: "USD",
+    msaStatus: null,
+    defaultBillingMethod: null,
+    paymentTerms: null,
+    notes: "",
   });
   // Customer Company Name auto-fills from Customer Name until the user directly
   // edits Company Name themselves — then it stops following.
@@ -110,10 +124,7 @@ const NewCustomer = () => {
 
   return (
     <>
-      <p>
-        Mandatory fields are marked with <Tag color="error">*</Tag>
-      </p>
-      <h3>Personal Details </h3>
+      <h3>Business Details</h3>
       <Form
         layout="vertical"
         form={form}
@@ -173,6 +184,28 @@ const NewCustomer = () => {
                   handleGeneralData(e.target.value, "customerCompanyName");
                 }}
                 value={generalDetails.customerCompanyName}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={25}>
+          <Col span={12}>
+            <Form.Item label="Parent Company" name="parentCompany">
+              <Input
+                placeholder="Parent Company"
+                onChange={(e) => handleGeneralData(e.target.value, "parentCompany")}
+                value={generalDetails.parentCompany}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="Credit Limit" name="creditLimit">
+              <InputNumber
+                style={{ width: "100%" }}
+                min={0}
+                placeholder="Credit Limit"
+                onChange={(value) => handleGeneralData(value, "creditLimit")}
+                value={generalDetails.creditLimit}
               />
             </Form.Item>
           </Col>
@@ -263,7 +296,39 @@ const NewCustomer = () => {
               </Space>
             </Form.Item>
           </Col>
+        </Row>
+        <Row gutter={25}>
           <Col span={12}>
+            <Form.Item
+              label="Billing Contact"
+              name="billingContact"
+              rules={[{ type: "email", message: "Please enter a valid email" }]}
+            >
+              <Input
+                placeholder="billing@company.com"
+                type="email"
+                onChange={(e) => handleGeneralData(e.target.value, "billingContact")}
+                value={generalDetails.billingContact}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Accounts Payable Contact"
+              name="apContact"
+              rules={[{ type: "email", message: "Please enter a valid email" }]}
+            >
+              <Input
+                placeholder="ap@company.com"
+                type="email"
+                onChange={(e) => handleGeneralData(e.target.value, "apContact")}
+                value={generalDetails.apContact}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={16}>
+          <Col span={8}>
             <Form.Item
               label="Start Date"
               name="startDate"
@@ -282,12 +347,23 @@ const NewCustomer = () => {
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Form.Item label="End Date" name="endDate">
               <DatePicker
                 onChange={(date, dateString) =>
                   handleGeneralData(dateString, "endDate")
                 }
+              />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item label="MSA Status" name="msaStatus">
+              <Select
+                options={msaStatusList}
+                placeholder="Select MSA status"
+                allowClear
+                onChange={(value) => handleGeneralData(value ?? null, "msaStatus")}
+                value={generalDetails.msaStatus}
               />
             </Form.Item>
           </Col>
@@ -315,8 +391,8 @@ const NewCustomer = () => {
             />
           </Form.Item>
         </Col>
-        <Row gutter={25}>
-          <Col span={12}>
+        <Row gutter={16}>
+          <Col span={6}>
             <Form.Item
               label="City"
               name="city"
@@ -334,7 +410,7 @@ const NewCustomer = () => {
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={6}>
             <Form.Item
               label="State"
               name="state"
@@ -352,11 +428,8 @@ const NewCustomer = () => {
               />
             </Form.Item>
           </Col>
-        </Row>
-
-        <Row gutter={16}>
-          <Col span={12}>
-            <Form.Item label="Zip Code/Postal Code" name="zipCode">
+          <Col span={6}>
+            <Form.Item label="Zip Code" name="zipCode">
               <Input
                 placeholder="Enter Zip Code"
                 onChange={(e) => handleGeneralData(e.target.value, "zipCode")}
@@ -364,7 +437,7 @@ const NewCustomer = () => {
               />
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={6}>
             <Form.Item
               label="Country"
               name="country"
@@ -383,6 +456,51 @@ const NewCustomer = () => {
             </Form.Item>
           </Col>
         </Row>
+
+        <Row gutter={16}>
+          <Col span={8}>
+            <Form.Item label="Standard Currency" name="standardCurrency">
+              <Select
+                options={currencyList}
+                placeholder="Select currency"
+                onChange={(value) => handleGeneralData(value, "standardCurrency")}
+                value={generalDetails.standardCurrency}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item label="Default Billing Method" name="defaultBillingMethod">
+              <Select
+                options={billingMethodList}
+                placeholder="Select billing method"
+                allowClear
+                onChange={(value) => handleGeneralData(value ?? null, "defaultBillingMethod")}
+                value={generalDetails.defaultBillingMethod}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item label="Payment Terms" name="paymentTerms">
+              <Select
+                options={paymentTermsList}
+                placeholder="Select payment terms"
+                allowClear
+                onChange={(value) => handleGeneralData(value ?? null, "paymentTerms")}
+                value={generalDetails.paymentTerms}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Col span={24}>
+          <Form.Item label="Notes" name="notes">
+            <Input.TextArea
+              rows={3}
+              placeholder="Notes"
+              onChange={(e) => handleGeneralData(e.target.value, "notes")}
+              value={generalDetails.notes}
+            />
+          </Form.Item>
+        </Col>
 
         <Form.Item>
           <Button type="primary" htmlType="submit" onClick={handleSubmit} block>

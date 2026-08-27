@@ -299,6 +299,82 @@ const RevenueTrendWidget = React.forwardRef((props, ref) => {
   );
 });
 
+// ── Customer Revenue Trend (Bills vs Invoice vs Invoice Paid, all
+// customers) ─────────────────────────────────────────────────────────────
+// Company-wide version of the same Bills/Invoice/Invoice Paid chart shown
+// on a single customer's own detail page (see
+// CustomerFullDetailsComponent.jsx's revenueTrend) — same three fields,
+// same series order/colors, just summed across every customer instead of
+// scoped to one.
+const CustomerRevenueTrendWidget = React.forwardRef((props, ref) => {
+  const [raw, setRaw] = useState(null);
+  const [failed, setFailed] = useState(false);
+  const [range, setRange] = useState(DEFAULT_TIME_RANGE);
+
+  useEffect(() => {
+    Promise.all([axios.get(API_ENDPOINTS.getAllInvoices), axios.get(API_ENDPOINTS.getAllBills)])
+      .then(([invoicesRes, billsRes]) => setRaw({ invoices: invoicesRes.data || [], bills: billsRes.data || [] }))
+      .catch(() => setFailed(true));
+  }, []);
+
+  const chartData = useMemo(() => {
+    if (!raw) return null;
+    const bounds = getRangeBounds(range);
+    const byMonth = {};
+    raw.invoices
+      .filter((inv) => isDateInRange(inv.invoiceMonth, bounds))
+      .forEach((inv) => {
+        const month = (inv.invoiceMonth || "").slice(0, 7);
+        if (!month) return;
+        if (!byMonth[month]) byMonth[month] = { invoice: 0, invoicePaid: 0, bills: 0 };
+        byMonth[month].invoice += inv.total || 0;
+        byMonth[month].invoicePaid += inv.invoicePaidAmount || 0;
+      });
+    raw.bills
+      .filter((bill) => isDateInRange(bill.invoiceMonth, bounds))
+      .forEach((bill) => {
+        const month = (bill.invoiceMonth || "").slice(0, 7);
+        if (!month) return;
+        if (!byMonth[month]) byMonth[month] = { invoice: 0, invoicePaid: 0, bills: 0 };
+        byMonth[month].bills += bill.total || 0;
+      });
+    const months = Object.keys(byMonth).sort();
+    return {
+      categories: months.map((m) => formatMonthYear(`${m}-01`)),
+      invoice: months.map((m) => Math.round(byMonth[m].invoice)),
+      invoicePaid: months.map((m) => Math.round(byMonth[m].invoicePaid)),
+      bills: months.map((m) => Math.round(byMonth[m].bills)),
+    };
+  }, [raw, range]);
+
+  if (failed) return <ErrorState />;
+  if (!chartData) return <CenteredSpin />;
+
+  return (
+    <div style={{ height: "100%" }}>
+      <RangeHeader range={range} onChange={setRange} />
+      {chartData.categories.length === 0 ? (
+        <Empty description="No revenue data in this range" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <RevenueCharts
+          ref={ref}
+          thisMonthData={chartData.bills}
+          lastMonthData={chartData.invoice}
+          thirdSeriesData={chartData.invoicePaid}
+          categories={chartData.categories}
+          series1Name="Bills"
+          series2Name="Invoice"
+          series3Name="Invoice Paid"
+          colors={["#6bcbe2", "#63abfd", "#e697ff"]}
+          visibleCategories={4}
+          pxPerCategory={150}
+          height={props.height - 40}
+        />
+      )}
+    </div>
+  );
+});
+
 // ── Expenses by Type ────────────────────────────────────────────────────────
 const ExpensesByTypeWidget = React.forwardRef((props, ref) => {
   const [expenses, setExpenses] = useState(null);
@@ -1071,6 +1147,238 @@ const VisaExpiryTimelineWidget = React.forwardRef((props, ref) => {
   return <TrendLineChart ref={ref} data={chartData.counts} categories={chartData.categories} seriesName="Visas Expiring" height={props.height} />;
 });
 
+// ── Customer Status ──────────────────────────────────────────────────────
+const CustomerStatusWidget = React.forwardRef((props, ref) => {
+  const [customers, setCustomers] = useState(null);
+  const [failed, setFailed] = useState(false);
+  const [range, setRange] = useState("allTime");
+
+  useEffect(() => {
+    axios
+      .get(API_ENDPOINTS.getAllCustomers)
+      .then(({ data }) => setCustomers(data || []))
+      .catch(() => setFailed(true));
+  }, []);
+
+  const slices = useMemo(() => {
+    if (!customers) return null;
+    const bounds = getRangeBounds(range);
+    const filtered =
+      range === "allTime" ? customers : customers.filter((c) => isDateInRange(c.customerStartDate, bounds));
+    const byStatus = {};
+    filtered.forEach((c) => {
+      const status = c.customerStatus || "Unknown";
+      byStatus[status] = (byStatus[status] || 0) + 1;
+    });
+    const labels = Object.keys(byStatus);
+    const colors = revenueTrendPieColors(labels.length);
+    return labels.map((label, i) => ({ label, value: byStatus[label], color: colors[i] }));
+  }, [customers, range]);
+
+  if (failed) return <ErrorState />;
+  if (!slices) return <CenteredSpin />;
+
+  const total = slices.reduce((sum, s) => sum + (s.value || 0), 0);
+
+  return (
+    <div style={{ height: "100%" }}>
+      <RangeHeader range={range} onChange={setRange} />
+      {slices.length === 0 ? (
+        <Empty description="No customers in this range" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <Row align="middle">
+          <Col span={10}>
+            <div style={{ width: "100%", height: props.height }}>
+              <PieCharts ref={ref} chartData={slices.map((s) => s.value)} chartLabels={slices.map((s) => s.label)} colors={slices.map((s) => s.color)} showLegend={false} />
+            </div>
+          </Col>
+          <Col span={8}>
+            <PieLegend slices={slices} fontSize={13} rowGap={6} />
+          </Col>
+          <Col span={6} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 28, fontWeight: 600 }}>{total}</div>
+            <div style={{ color: "#888" }}>Total</div>
+          </Col>
+        </Row>
+      )}
+    </div>
+  );
+});
+
+// ── Customer MSA Status ──────────────────────────────────────────────────
+const CustomerMsaStatusWidget = React.forwardRef((props, ref) => {
+  const [customers, setCustomers] = useState(null);
+  const [failed, setFailed] = useState(false);
+  const [range, setRange] = useState("allTime");
+
+  useEffect(() => {
+    axios
+      .get(API_ENDPOINTS.getAllCustomers)
+      .then(({ data }) => setCustomers(data || []))
+      .catch(() => setFailed(true));
+  }, []);
+
+  const slices = useMemo(() => {
+    if (!customers) return null;
+    const bounds = getRangeBounds(range);
+    const filtered =
+      range === "allTime" ? customers : customers.filter((c) => isDateInRange(c.customerStartDate, bounds));
+    const byStatus = {};
+    filtered.forEach((c) => {
+      const status = c.msaStatus || "Not Set";
+      byStatus[status] = (byStatus[status] || 0) + 1;
+    });
+    const labels = Object.keys(byStatus);
+    const colors = revenueTrendPieColors(labels.length);
+    return labels.map((label, i) => ({ label, value: byStatus[label], color: colors[i] }));
+  }, [customers, range]);
+
+  if (failed) return <ErrorState />;
+  if (!slices) return <CenteredSpin />;
+
+  const total = slices.reduce((sum, s) => sum + (s.value || 0), 0);
+
+  return (
+    <div style={{ height: "100%" }}>
+      <RangeHeader range={range} onChange={setRange} />
+      {slices.length === 0 ? (
+        <Empty description="No customers in this range" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <Row align="middle">
+          <Col span={10}>
+            <div style={{ width: "100%", height: props.height }}>
+              <PieCharts ref={ref} chartData={slices.map((s) => s.value)} chartLabels={slices.map((s) => s.label)} colors={slices.map((s) => s.color)} showLegend={false} />
+            </div>
+          </Col>
+          <Col span={8}>
+            <PieLegend slices={slices} fontSize={13} rowGap={6} />
+          </Col>
+          <Col span={6} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 28, fontWeight: 600 }}>{total}</div>
+            <div style={{ color: "#888" }}>Total</div>
+          </Col>
+        </Row>
+      )}
+    </div>
+  );
+});
+
+// ── Vendor Status ─────────────────────────────────────────────────────────
+const VendorStatusWidget = React.forwardRef((props, ref) => {
+  const [vendors, setVendors] = useState(null);
+  const [failed, setFailed] = useState(false);
+  const [range, setRange] = useState("allTime");
+
+  useEffect(() => {
+    axios
+      .get(API_ENDPOINTS.getAllVendors)
+      .then(({ data }) => setVendors(data || []))
+      .catch(() => setFailed(true));
+  }, []);
+
+  const slices = useMemo(() => {
+    if (!vendors) return null;
+    const bounds = getRangeBounds(range);
+    const filtered =
+      range === "allTime" ? vendors : vendors.filter((v) => isDateInRange(v.vendorStartDate, bounds));
+    const byStatus = {};
+    filtered.forEach((v) => {
+      const status = v.vendorStatus || "Unknown";
+      byStatus[status] = (byStatus[status] || 0) + 1;
+    });
+    const labels = Object.keys(byStatus);
+    const colors = revenueTrendPieColors(labels.length);
+    return labels.map((label, i) => ({ label, value: byStatus[label], color: colors[i] }));
+  }, [vendors, range]);
+
+  if (failed) return <ErrorState />;
+  if (!slices) return <CenteredSpin />;
+
+  const total = slices.reduce((sum, s) => sum + (s.value || 0), 0);
+
+  return (
+    <div style={{ height: "100%" }}>
+      <RangeHeader range={range} onChange={setRange} />
+      {slices.length === 0 ? (
+        <Empty description="No vendors in this range" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <Row align="middle">
+          <Col span={10}>
+            <div style={{ width: "100%", height: props.height }}>
+              <PieCharts ref={ref} chartData={slices.map((s) => s.value)} chartLabels={slices.map((s) => s.label)} colors={slices.map((s) => s.color)} showLegend={false} />
+            </div>
+          </Col>
+          <Col span={8}>
+            <PieLegend slices={slices} fontSize={13} rowGap={6} />
+          </Col>
+          <Col span={6} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 28, fontWeight: 600 }}>{total}</div>
+            <div style={{ color: "#888" }}>Total</div>
+          </Col>
+        </Row>
+      )}
+    </div>
+  );
+});
+
+// ── Vendor Type ───────────────────────────────────────────────────────────
+const VendorTypeWidget = React.forwardRef((props, ref) => {
+  const [vendors, setVendors] = useState(null);
+  const [failed, setFailed] = useState(false);
+  const [range, setRange] = useState("allTime");
+
+  useEffect(() => {
+    axios
+      .get(API_ENDPOINTS.getAllVendors)
+      .then(({ data }) => setVendors(data || []))
+      .catch(() => setFailed(true));
+  }, []);
+
+  const slices = useMemo(() => {
+    if (!vendors) return null;
+    const bounds = getRangeBounds(range);
+    const filtered =
+      range === "allTime" ? vendors : vendors.filter((v) => isDateInRange(v.vendorStartDate, bounds));
+    const byType = {};
+    filtered.forEach((v) => {
+      const type = v.vendorType || "Not Set";
+      byType[type] = (byType[type] || 0) + 1;
+    });
+    const labels = Object.keys(byType);
+    const colors = revenueTrendPieColors(labels.length);
+    return labels.map((label, i) => ({ label, value: byType[label], color: colors[i] }));
+  }, [vendors, range]);
+
+  if (failed) return <ErrorState />;
+  if (!slices) return <CenteredSpin />;
+
+  const total = slices.reduce((sum, s) => sum + (s.value || 0), 0);
+
+  return (
+    <div style={{ height: "100%" }}>
+      <RangeHeader range={range} onChange={setRange} />
+      {slices.length === 0 ? (
+        <Empty description="No vendors in this range" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      ) : (
+        <Row align="middle">
+          <Col span={10}>
+            <div style={{ width: "100%", height: props.height }}>
+              <PieCharts ref={ref} chartData={slices.map((s) => s.value)} chartLabels={slices.map((s) => s.label)} colors={slices.map((s) => s.color)} showLegend={false} />
+            </div>
+          </Col>
+          <Col span={8}>
+            <PieLegend slices={slices} fontSize={13} rowGap={6} />
+          </Col>
+          <Col span={6} style={{ textAlign: "center" }}>
+            <div style={{ fontSize: 28, fontWeight: 600 }}>{total}</div>
+            <div style={{ color: "#888" }}>Total</div>
+          </Col>
+        </Row>
+      )}
+    </div>
+  );
+});
+
 // charts: [{ key, label, title, filename, defaultSize, render(innerHeight, setChartRef) }]
 // Shape matches useChartOverview's expectations exactly (see
 // src/Utils/ChartOverviewPanel.jsx) — any page can filter this list down to
@@ -1103,6 +1411,13 @@ export const GLOBAL_CHARTS = [
     filename: "revenue-trend",
     defaultSize: { width: 700, height: 380 },
     render: (innerHeight, setChartRef) => <RevenueTrendWidget ref={setChartRef} height={innerHeight} />,
+  },
+  {
+    key: "customerRevenueTrend",
+    label: "Revenue Trend",
+    filename: "customer-revenue-trend",
+    defaultSize: { width: 700, height: 380 },
+    render: (innerHeight, setChartRef) => <CustomerRevenueTrendWidget ref={setChartRef} height={innerHeight} />,
   },
   {
     key: "expensesByType",
@@ -1193,6 +1508,34 @@ export const GLOBAL_CHARTS = [
     filename: "visa-expiry-timeline",
     defaultSize: { width: 700, height: 380 },
     render: (innerHeight, setChartRef) => <VisaExpiryTimelineWidget ref={setChartRef} height={innerHeight} />,
+  },
+  {
+    key: "customerStatus",
+    label: "Customer Status",
+    filename: "customer-status",
+    defaultSize: { width: 560, height: 340 },
+    render: (innerHeight, setChartRef) => <CustomerStatusWidget ref={setChartRef} height={innerHeight - 40} />,
+  },
+  {
+    key: "customerMsaStatus",
+    label: "Customer MSA Status",
+    filename: "customer-msa-status",
+    defaultSize: { width: 560, height: 340 },
+    render: (innerHeight, setChartRef) => <CustomerMsaStatusWidget ref={setChartRef} height={innerHeight - 40} />,
+  },
+  {
+    key: "vendorStatus",
+    label: "Vendor Status",
+    filename: "vendor-status",
+    defaultSize: { width: 560, height: 340 },
+    render: (innerHeight, setChartRef) => <VendorStatusWidget ref={setChartRef} height={innerHeight - 40} />,
+  },
+  {
+    key: "vendorType",
+    label: "Vendor Type",
+    filename: "vendor-type",
+    defaultSize: { width: 560, height: 340 },
+    render: (innerHeight, setChartRef) => <VendorTypeWidget ref={setChartRef} height={innerHeight - 40} />,
   },
 ];
 

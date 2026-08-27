@@ -94,6 +94,7 @@ export const API_ENDPOINTS = {
   employeesCountByStatus: `${API_BASE_URL}/employees/employeesCountByStatus`,
   invoicesCountByStatus: `${API_BASE_URL}/invoice/invoicesCountByStatus`,
   getProjects: `${API_BASE_URL}/getProjects`,
+  getProjectsByCustomer: (customerId) => `${API_BASE_URL}/getProjectsByCustomer/${customerId}`,
   wagesById: (wageId) => `${API_BASE_URL}/wages/${wageId}`,
   getEmployees: `${API_BASE_URL}/employees/getEmployees`,
   getAllEmployees: `${API_BASE_URL}/employees/getAllEmployees`,
@@ -124,6 +125,7 @@ export const API_ENDPOINTS = {
   employeeById: (employeeId) => `${API_BASE_URL}/employees/employee/${employeeId}`,
   updateEmployee: (employeeId) => `${API_BASE_URL}/employees/${employeeId}`,
   projectsByEmployeeId: (employeeId) => `${API_BASE_URL}/projects?employeeId=${employeeId}`,
+  projectsByCustomerId: (customerId) => `${API_BASE_URL}/projects?customerId=${customerId}`,
   getAllPotentialEmployees: `${API_BASE_URL}/visa/getAllPotentialEmployees`,
   savePotentialEmployees: `${API_BASE_URL}/visa/savePotentialEmployees`,
   addInvoices: `${API_BASE_URL}/invoice/addInvoices`,
@@ -138,6 +140,7 @@ export const API_ENDPOINTS = {
   vendorsById: (vendorId) => `${API_BASE_URL}/vendors/vendors/${vendorId}`,
   saveOnBoardDetailsVendor: `${API_BASE_URL}/vendors/saveOnBoardDetails`,
   getInvoicesForProject: (projectId) => `${API_BASE_URL}/invoice/getInvoicesForProject?projectId=${projectId}`,
+  getInvoicesForCustomer: (customerId) => `${API_BASE_URL}/invoice/getInvoicesForCustomer?customerId=${customerId}`,
   getInvoicesForEmployee: `${API_BASE_URL}/invoice/getInvoicesForEmployee`,
   addExpense: `${API_BASE_URL}/expense/addExpense`,
   getAllExpenses: `${API_BASE_URL}/expense/getAllExpenses`,
@@ -146,6 +149,20 @@ export const API_ENDPOINTS = {
   expensesCountByStatus: `${API_BASE_URL}/expense/expensesCountByStatus`,
   getBillsForProject: (projectId) => `${API_BASE_URL}/bills/getBillsForProject?projectId=${projectId}`,
   getBillsForEmployee: (employeeId) => `${API_BASE_URL}/bills/getBillsForEmployee?employeeId=${employeeId}`,
+  getBillsForCustomer: (customerId) => `${API_BASE_URL}/bills/getBillsForCustomer?customerId=${customerId}`,
+  coiById: (id) => `${API_BASE_URL}/coi/${id}`,
+  createCoi: `${API_BASE_URL}/coi`,
+  getAllCoi: `${API_BASE_URL}/coi/getAllCoi`,
+  getCoiForVendor: (vendorId) => `${API_BASE_URL}/coi/getCoiForVendor?vendorId=${vendorId}`,
+  getCoiForCustomer: (customerId) => `${API_BASE_URL}/coi/getCoiForCustomer?customerId=${customerId}`,
+  // Generic document attachments (Insurance, Customer MSAs, Project POs,
+  // Employee docs, ...) — entityType/entityId scoped, see DocumentController.
+  presignDocumentUpload: `${API_BASE_URL}/documents/presign`,
+  createDocument: `${API_BASE_URL}/documents`,
+  getDocumentsForEntity: (entityType, entityId) => `${API_BASE_URL}/documents?entityType=${entityType}&entityId=${entityId}`,
+  getAllDocumentsForType: (entityType) => `${API_BASE_URL}/documents?entityType=${entityType}`,
+  documentDownloadUrl: (id) => `${API_BASE_URL}/documents/${id}/downloadUrl`,
+  documentById: (id) => `${API_BASE_URL}/documents/${id}`,
   assignments: `${API_BASE_URL}/assignments`,
   assignmentsById: (assignmentId) => `${API_BASE_URL}/assignments/${assignmentId}`,
   saveOnBoardProject: `${API_BASE_URL}/saveOnBoardProject`,
@@ -216,6 +233,51 @@ export const projectStatus = [
   { value: "Inactive", label: "Inactive" },
   { value: "Hold", label: "Hold" },
   { value: "OnBoarding", label: "On-Boarding" },
+];
+
+export const currencyList = [
+  { value: "USD", label: "USD" },
+  { value: "EUR", label: "EUR" },
+  { value: "GBP", label: "GBP" },
+  { value: "CAD", label: "CAD" },
+  { value: "AUD", label: "AUD" },
+  { value: "INR", label: "INR" },
+];
+
+export const msaStatusList = [
+  { value: "Signed", label: "Signed" },
+  { value: "Pending", label: "Pending" },
+  { value: "Not Required", label: "Not Required" },
+  { value: "Expired", label: "Expired" },
+];
+
+export const billingMethodList = [
+  { value: "ACH", label: "ACH" },
+  { value: "Wire Transfer", label: "Wire Transfer" },
+  { value: "Check", label: "Check" },
+  { value: "Credit Card", label: "Credit Card" },
+];
+
+export const paymentTermsList = [
+  { value: "Due on Receipt", label: "Due on Receipt" },
+  { value: "Net 15", label: "Net 15" },
+  { value: "Net 30", label: "Net 30" },
+  { value: "Net 45", label: "Net 45" },
+  { value: "Net 60", label: "Net 60" },
+];
+
+export const vendorTypeList = [
+  { value: "Individual", label: "Individual" },
+  { value: "LLC", label: "LLC" },
+  { value: "Staffing Firm", label: "Staffing Firm" },
+  { value: "Subcontractor", label: "Subcontractor" },
+];
+
+export const vendorStatusList = [
+  { value: "Pending", label: "Pending" },
+  { value: "Active", label: "Active" },
+  { value: "On Hold", label: "On Hold" },
+  { value: "Inactive", label: "Inactive" },
 ];
 
 // Backwards-compatible alias

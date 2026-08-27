@@ -1,0 +1,271 @@
+/* QuickBooks-style customer detail page, recolored to BeanEMS's palette. */
+
+.cfd-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden auto;
+}
+
+.cfd-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 4px 12px;
+}
+
+.cfd-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #1677ff;
+  font-weight: 500;
+}
+
+.cfd-topbar-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.cfd-header-collapse.ant-collapse {
+  border-radius: 10px;
+  margin-bottom: 12px;
+  border: 1px solid #f0f0f0;
+  background: #fff;
+}
+
+.cfd-header-collapse .ant-collapse-item {
+  border-radius: 10px;
+}
+
+.cfd-header-collapse .ant-collapse-header {
+  font-weight: 600;
+  align-items: center !important;
+}
+
+.cfd-header-collapse .ant-collapse-content-box {
+  padding: 20px 24px !important;
+}
+
+.cfd-header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+/* Two roughly-equal halves: contact details + financial summary on the
+   left, revenue trend chart on the right. */
+.cfd-header-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cfd-header-left-top {
+  display: flex;
+  gap: 32px;
+}
+
+.cfd-header-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cfd-avatar-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  min-width: 160px;
+}
+
+.cfd-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #e6f4ff;
+  color: #1677ff;
+  font-size: 22px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.cfd-avatar-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+.cfd-avatar-sub {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  margin-top: 2px;
+}
+
+.cfd-avatar-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.cfd-avatar-actions a {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  color: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cfd-avatar-actions a:hover {
+  background: #e6f4ff;
+  color: #1677ff;
+}
+
+.cfd-info-cols {
+  flex: 1;
+  display: flex;
+  gap: 40px;
+  border-left: 1px solid #f0f0f0;
+  padding-left: 32px;
+}
+
+.cfd-info-col {
+  flex: 1;
+  min-width: 0;
+}
+
+.cfd-info-block {
+  margin-bottom: 18px;
+}
+
+.cfd-info-label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+  margin-bottom: 3px;
+}
+
+.cfd-info-value {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.cfd-fin-summary {
+  background: #e6f4ff;
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.cfd-fin-summary-row {
+  display: flex;
+  gap: 32px;
+}
+
+.cfd-fin-item {
+  flex: 1;
+}
+
+.cfd-revenue-trend {
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.cfd-fin-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #1677ff;
+  margin-bottom: 14px;
+}
+
+.cfd-fin-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.65);
+  margin-bottom: 2px;
+}
+
+.cfd-fin-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.cfd-fin-dot.open {
+  background: #fa8c16;
+}
+
+.cfd-fin-dot.overdue {
+  background: #f5222d;
+}
+
+.cfd-fin-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.88);
+}
+
+/* ── Tabs & Customer Details two-column row list ─────────────────────── */
+
+.cfd-tabs-card.ant-card {
+  border-radius: 10px;
+  flex: 1;
+}
+
+.cfd-tabs-card .ant-card-body {
+  height: 100%;
+  padding: 4px 20px 20px;
+}
+
+.cfd-detail-cols {
+  display: flex;
+  gap: 48px;
+  padding-top: 8px;
+  flex-wrap: wrap;
+}
+
+.cfd-detail-col {
+  flex: 1;
+  min-width: 320px;
+}
+
+.cfd-detail-col-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+  margin-bottom: 6px;
+}
+
+.cfd-detail-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cfd-detail-row .row-label {
+  width: 180px;
+  flex-shrink: 0;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.cfd-detail-row .row-value {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
+}

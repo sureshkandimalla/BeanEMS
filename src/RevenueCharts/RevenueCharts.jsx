@@ -24,10 +24,13 @@ const truncateLabel = (value, maxLength) =>
 const RevenueCharts = React.forwardRef(({
   thisMonthData,
   lastMonthData,
+  thirdSeriesData,
   categories = ["Company 1", "Company 2", "Company 3", "Company 4", "Company 5"],
   series1Name = "This Month",
   series2Name = "Last Month",
-  colors = ["#63abfd", "#e697ff"],
+  series3Name = "Third Series",
+  colors = ["#63abfd", "#e697ff", "#7c8db5"],
+  showLegend = true,
   xaxisLabelRotate = -45,
   maxLabelLength,
   dataLabelFormatter = formatWholeCurrency,
@@ -79,10 +82,11 @@ const RevenueCharts = React.forwardRef(({
     };
   }, [scrollable, categories.length]);
 
-  // lastMonthData is optional — omitted entirely, a single-series bar chart
-  // (e.g. a plain monthly count) instead of the usual two-series comparison.
+  // lastMonthData/thirdSeriesData are optional — omitted entirely for a
+  // single- or two-series chart instead of the usual comparison.
   const series = [{ name: series1Name, data: thisMonthData }];
   if (lastMonthData) series.push({ name: series2Name, data: lastMonthData });
+  if (thirdSeriesData) series.push({ name: series3Name, data: thirdSeriesData });
 
   // The horizontal scrollbar needs its own slice of the wrapper's height —
   // without it, the ancestor ChartCard/Resizable box (which clips overflow
@@ -128,6 +132,7 @@ const RevenueCharts = React.forwardRef(({
         show: false,
       },
       legend: {
+        show: showLegend,
         position: "top",
       },
       // Same formatter as the on-bar data labels, so a value reads

@@ -18,6 +18,10 @@ import WorkForce from "./WorkForce/WorkForce";
 import EmployeeOnboard from "./EmployeeOnboard/EmployeeOnboard";
 import CustomerDetails from "./Customer/CustomerDetails";
 import VendorDetails from "./Vendor/VendorDetails";
+import CustomerDashboard from "./CustomerDashboard/CustomerDashboard";
+import VendorDashboard from "./VendorDashboard/VendorDashboard";
+import CustomerFullDetailsComponent from "./CustomerDetailsComponent/CustomerFullDetailsComponent";
+import VendorFullDetailsComponent from "./VendorDetailsComponent/VendorFullDetailsComponent";
 import InvoiceDetails from "./Invoice/InvoiceDetails";
 import ExpenseDetails from "./Expense/ExpenseDetails";
 import CompanyFinalReportDetails from "./CompanyDashboard/CompanyFinalReportDetails";
@@ -83,6 +87,10 @@ const App = () => {
               <Route path="/employeeonboard" element={<EmployeeOnboard />} />
               <Route path="/customerdetails" element={<CustomerDetails />} />
               <Route path="/vendordetails" element={<VendorDetails />} />
+              <Route path="/customerDashboard" element={<CustomerDashboard />} />
+              <Route path="/vendorDashboard" element={<VendorDashboard />} />
+              <Route path="/customerFullDetails" element={<CustomerFullDetailsComponent />} />
+              <Route path="/vendorFullDetails" element={<VendorFullDetailsComponent />} />
               <Route path="/invoicedetails" element={<InvoiceDetails />} />
               <Route path="/expensedetails" element={<ExpenseDetails />} />
               <Route path="/companyreport" element={<CompanyFinalReportDetails />} />

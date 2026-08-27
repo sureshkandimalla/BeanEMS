@@ -248,7 +248,7 @@ const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {})
 
     // Validate each row
     // const updatedRowData = rowData.map((row) => {
-    //   const isRowValid = (row.hours == 0 && row.invoiceId == 0) || (row.hours > 0 && row.invoiceId > 0);
+    //   const isRowValid = (row.hours == 0 && row.invoiceNumber == 0) || (row.hours > 0 && row.invoiceNumber > 0);
     //   if (!isRowValid) {
     //     isAllValid = false;
     //     invalidRowsIds.push(row.projectId);
@@ -372,8 +372,11 @@ const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {})
       },
       { headerName: "Hours", field: "hours", sortable: true, editable: true },
       {
-        headerName: "Invoice ID",
-        field: "invoiceId",
+        // Cosmetic/business label the user types — no identity meaning.
+        // Whether this period already has an invoice is tracked
+        // separately via the row's (non-editable) invoiceId.
+        headerName: "Invoice #",
+        field: "invoiceNumber",
         sortable: true,
         editable: true,
       },
@@ -422,7 +425,7 @@ const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {})
         setHasUnsavedChanges(true);
       }
       params.data.total = hours * billRate;
-      if (params.data.hours > 0 && params.data.invoiceId > 0) {
+      if (params.data.hours > 0 && params.data.invoiceNumber > 0) {
         setInvalidRows((prevInvalidRows) => {
           console.log(prevInvalidRows);
           const updatedInvalidRows = prevInvalidRows.filter(
@@ -435,11 +438,11 @@ const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {})
       params.api.refreshCells({ rowNodes: [params.node], columns: ["total"] }); // Refresh total column
     }
     console.log(params);
-    if (params.column.colId === "invoiceId") {
-      if (params.data.invoiceId > 0) {
+    if (params.column.colId === "invoiceNumber") {
+      if (params.data.invoiceNumber > 0) {
         setHasUnsavedChanges(true);
       }
-      if (params.data.hours > 0 && params.data.invoiceId > 0) {
+      if (params.data.hours > 0 && params.data.invoiceNumber > 0) {
         console.log(params.data.projectId);
         console.log([...invalidRows]);
         setInvalidRows((prevInvalidRows) => {

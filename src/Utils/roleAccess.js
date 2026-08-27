@@ -38,6 +38,10 @@ export const ROUTE_ROLES = {
 
   "/customerdetails": [ROLES.ACCOUNTING],
   "/vendordetails": [ROLES.ACCOUNTING],
+  "/customerDashboard": [ROLES.ACCOUNTING],
+  "/vendorDashboard": [ROLES.ACCOUNTING],
+  "/customerFullDetails": [ROLES.ACCOUNTING],
+  "/vendorFullDetails": [ROLES.ACCOUNTING],
   "/invoicedetails": [ROLES.ACCOUNTING],
   "/expensedetails": [ROLES.ACCOUNTING],
   "/companyreport": [ROLES.ACCOUNTING],

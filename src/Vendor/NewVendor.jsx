@@ -15,7 +15,7 @@ import {
 } from "antd";
 import "./Vendor.css";
 import axios from "axios";
-import API_ENDPOINTS from "../config";
+import API_ENDPOINTS, { vendorTypeList, vendorStatusList, paymentTermsList } from "../config";
 import { useNavigate } from "react-router-dom";
 
 const onFinish = (values) => {
@@ -54,6 +54,10 @@ const NewVendor = () => {
     state: "",
     zipCode: "",
     country: "USA",
+    vendorType: null,
+    paymentTerms: null,
+    paymentPolicy: "",
+    status: "Pending",
   });
   // Vendor Company Name auto-fills from Vendor Name until the user directly
   // edits Company Name themselves — then it stops following.
@@ -292,6 +296,54 @@ const NewVendor = () => {
             </Form.Item>
           </Col>
         </Row>
+
+        <h3>Business Details</h3>
+        <Row gutter={25}>
+          <Col span={12}>
+            <Form.Item label="Vendor Type" name="vendorType">
+              <Select
+                options={vendorTypeList}
+                placeholder="Select vendor type"
+                allowClear
+                onChange={(value) => handleGeneralData(value ?? null, "vendorType")}
+                value={generalDetails.vendorType}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="Status" name="status">
+              <Select
+                options={vendorStatusList}
+                onChange={(value) => handleGeneralData(value, "status")}
+                value={generalDetails.status}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={25}>
+          <Col span={12}>
+            <Form.Item label="Payment Terms" name="paymentTerms">
+              <Select
+                options={paymentTermsList}
+                placeholder="Select payment terms"
+                allowClear
+                onChange={(value) => handleGeneralData(value ?? null, "paymentTerms")}
+                value={generalDetails.paymentTerms}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Col span={24}>
+          <Form.Item label="Payment Policy" name="paymentPolicy">
+            <Input.TextArea
+              rows={3}
+              placeholder="Payment Policy"
+              onChange={(e) => handleGeneralData(e.target.value, "paymentPolicy")}
+              value={generalDetails.paymentPolicy}
+            />
+          </Form.Item>
+        </Col>
+
         <h3>Address</h3>
         <Col span={24}>
           <Form.Item label="Street Address" name="streetAddress">

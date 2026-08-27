@@ -179,6 +179,7 @@ const BillingDetails = ({ url, isCollapsed, onRefresh }) => {
     overflow: "hidden",
   }}
 >
+ 
   <div className="ag-theme-alpine workforce-container">
     <div className="workforce-search-container">
       <Button
