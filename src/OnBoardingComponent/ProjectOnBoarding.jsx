@@ -12,7 +12,10 @@ import {
   DatePicker,
   Select,
   Spin,
+  Upload,
+  message,
 } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import { validateEmail } from "../utils";
 import { INVOICE_TERM_OPTIONS, WEEK_START_DAY_OPTIONS, DEFAULT_WEEK_START_DAY } from "../Utils/invoiceTerm";
 //import Sidebar from '../../Commons/Sidebar/Sidebar';
@@ -31,6 +34,12 @@ const ProjectOnBoardingForm = ({ onClose }) => {
   const [employees, setEmployeesData] = useState();
   const [customers, setCustomersData] = useState();
   const [loading, setLoading] = useState(true);
+  // Held locally and uploaded only after the project itself is saved and
+  // has a real projectId — DocumentsPanel's presign/confirm flow (same one
+  // used for COI) needs an existing entityId, which doesn't exist yet
+  // while this form is still being filled out.
+  const [poFile, setPoFile] = useState(null);
+  const [uploadingPo, setUploadingPo] = useState(false);
 
   const fetchEmployeesAndCustomers = async () => {
     try {
@@ -96,6 +105,33 @@ const ProjectOnBoardingForm = ({ onClose }) => {
     total: 0,
   });
 
+  // Same 3-step presign/PUT-to-S3/confirm dance as DocumentsPanel (used for
+  // COI) — reimplemented here rather than reused because DocumentsPanel is
+  // a self-fetching list+uploader that needs an existing entityId; this
+  // form only has one to give it after the project save below resolves.
+  const uploadPurchaseOrder = async (projectId, file) => {
+    const presign = await axios.post(API_ENDPOINTS.presignDocumentUpload, {
+      entityType: "ProjectPO",
+      entityId: projectId,
+      fileName: file.name,
+      contentType: file.type || "application/octet-stream",
+    });
+    const { uploadUrl, s3Key } = presign.data;
+    await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type || "application/octet-stream" },
+      body: file,
+    });
+    await axios.post(API_ENDPOINTS.createDocument, {
+      entityType: "ProjectPO",
+      entityId: projectId,
+      fileName: file.name,
+      s3Key,
+      contentType: file.type || "application/octet-stream",
+      sizeBytes: file.size,
+    });
+  };
+
   const handleFormSubmit = (generalDetails) => {
     //api should be called here
 
@@ -109,9 +145,21 @@ const ProjectOnBoardingForm = ({ onClose }) => {
           },
         },
       )
-      .then((response) => {
+      .then(async (response) => {
         if (response && response.status === 200) {
-          console.log("response.data: " + response.data);
+          console.log("response.data: " + JSON.stringify(response.data));
+          const newProjectId = response.data?.projectId;
+          if (poFile && newProjectId) {
+            setUploadingPo(true);
+            try {
+              await uploadPurchaseOrder(newProjectId, poFile);
+            } catch (uploadError) {
+              console.error("Error uploading purchase order:", uploadError);
+              message.error("Project was saved, but the Purchase Order failed to upload.");
+            } finally {
+              setUploadingPo(false);
+            }
+          }
           Modal.success({
             content: "Data saved successfully",
             onOk: onClose,
@@ -142,6 +190,7 @@ const ProjectOnBoardingForm = ({ onClose }) => {
 
   const handleClear = () => {
     form.resetFields();
+    setPoFile(null);
     setGeneralDetails({
       projectId: null,
       projectName: "",
@@ -455,6 +504,23 @@ const ProjectOnBoardingForm = ({ onClose }) => {
                     </Option>
                   ))}
                 </Select>
+              </Form.Item>
+            </Col>
+            <Col span={8} className="form-row">
+              <Form.Item label="Purchase Order">
+                <Upload
+                  beforeUpload={(file) => {
+                    setPoFile(file);
+                    return false; // hold locally — actual upload happens after the project is saved
+                  }}
+                  onRemove={() => setPoFile(null)}
+                  fileList={poFile ? [{ uid: "po", name: poFile.name }] : []}
+                  maxCount={1}
+                >
+                  <Button icon={<UploadOutlined />} loading={uploadingPo}>
+                    Select File
+                  </Button>
+                </Upload>
               </Form.Item>
             </Col>
           </Row>
