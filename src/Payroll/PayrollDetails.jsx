@@ -52,7 +52,6 @@ const PayrollDetails = ({ rowData: externalRowData, onRefresh, employeeId, isCol
         minWidth: 180,
         pinned: "left",
         enableRowGroup: true,
-        rowGroup: !employeeId,
       },
       {
         headerName: "Year",
