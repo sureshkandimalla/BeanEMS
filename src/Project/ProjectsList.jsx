@@ -2,7 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Modal, message } from "antd";
-import { ReloadOutlined, SaveOutlined, CloseOutlined, DeleteOutlined, ExclamationCircleFilled } from "@ant-design/icons";
+import {
+  ReloadOutlined,
+  SaveOutlined,
+  CloseOutlined,
+  DeleteOutlined,
+  ExclamationCircleFilled,
+  FilePdfOutlined,
+  PlusCircleOutlined,
+} from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
@@ -15,6 +23,7 @@ import {
   invoiceTermLabel,
   invoiceTermCode,
 } from "../Utils/invoiceTerm";
+import DocumentsPanel from "../Documents/DocumentsPanel";
 
 const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   console.log(projectsList);
@@ -24,6 +33,19 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
   const [pinnedTopRowData, setPinnedTopRowData] = useState([]);
   const [modifiedRows, setModifiedRows] = useState({});
+  // Which projects already have a Purchase Order — one call for every row
+  // (see DocumentController#list, entityId omitted) instead of one per row.
+  const [projectIdsWithPo, setProjectIdsWithPo] = useState(new Set());
+  const [poModalProjectId, setPoModalProjectId] = useState(null);
+
+  const fetchPoDocuments = () => {
+    axios
+      .get(API_ENDPOINTS.getAllDocumentsForType("ProjectPO"))
+      .then(({ data }) => setProjectIdsWithPo(new Set((data || []).map((doc) => doc.entityId))))
+      .catch(() => setProjectIdsWithPo(new Set()));
+  };
+
+  useEffect(fetchPoDocuments, []);
 
   const onCellValueChanged = (params) => {
     const projectId = params.data?.projectId;
@@ -354,6 +376,25 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
           );
         },
       },
+      {
+        headerName: "PO",
+        field: "purchaseOrder",
+        sortable: false,
+        filter: false,
+        editable: false,
+        cellRenderer: (params) => {
+          if (!params.data || params.node.rowPinned) return null;
+          const hasPo = projectIdsWithPo.has(params.data.projectId);
+          return (
+            <Button
+              type="text"
+              icon={hasPo ? <FilePdfOutlined style={{ color: "#e64a3b" }} /> : <PlusCircleOutlined />}
+              title={hasPo ? "View Purchase Order" : "Add Purchase Order"}
+              onClick={() => setPoModalProjectId(params.data.projectId)}
+            />
+          );
+        },
+      },
     ];
     return columns;
   };
@@ -476,6 +517,19 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
           popupParent={document.body}
         />
       </div>
+      <Modal
+        title="Purchase Order"
+        open={poModalProjectId !== null}
+        onCancel={() => {
+          setPoModalProjectId(null);
+          fetchPoDocuments();
+        }}
+        footer={null}
+      >
+        {poModalProjectId !== null && (
+          <DocumentsPanel entityType="ProjectPO" entityId={poModalProjectId} />
+        )}
+      </Modal>
     </div>
   );
 };
