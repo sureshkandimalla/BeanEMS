@@ -14,7 +14,22 @@ import {
   Select,
   Space,
 } from "antd";
-import { workAuthorizationList } from "../config";
+import {
+  workAuthorizationList,
+  employementTypeList,
+  taxTermsList,
+  departmentList,
+} from "../config";
+
+// No fixed wage-cycle list exists elsewhere in the app to stay consistent
+// with (invoice terms are a separate, project-billing concept) — this is a
+// standard payroll cadence set specific to this field.
+const wageCycleList = [
+  { value: "Weekly", label: "Weekly" },
+  { value: "Biweekly", label: "Biweekly" },
+  { value: "Semi-Monthly", label: "Semi-Monthly" },
+  { value: "Monthly", label: "Monthly" },
+];
 const onBoardingTabs = [
   {
     label: "Personal Details",
@@ -205,7 +220,9 @@ const EmployeeOnboard = () => {
               </Col>
               <Col span={8}>
                 <Form.Item label="Designation" name="designation">
-                  <Select options="" />
+                  {/* Job title is free text everywhere else in the app
+                      (e.g. Newemployee.jsx) — no fixed list exists. */}
+                  <Input placeholder="Designation" />
                 </Form.Item>
               </Col>
             </Row>
@@ -224,7 +241,7 @@ const EmployeeOnboard = () => {
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Item label="Country" name="country">
-                  <Select defaultValue="us" options="" />
+                  <Select defaultValue="us" options={usCountryTelList} />
                 </Form.Item>
               </Col>
               <Col span={8}>
@@ -270,7 +287,7 @@ const EmployeeOnboard = () => {
                     },
                   ]}
                 >
-                  <Select options="" />
+                  <Select options={employementTypeList} />
                 </Form.Item>
               </Col>
               <Col span={6}>
@@ -284,7 +301,7 @@ const EmployeeOnboard = () => {
                     },
                   ]}
                 >
-                  <Select options="" />
+                  <Select options={taxTermsList} />
                 </Form.Item>
               </Col>
               <Col span={6}>
@@ -331,17 +348,17 @@ const EmployeeOnboard = () => {
               </Col>
               <Col span={6}>
                 <Form.Item label="Wage Cycle" name="wageCycle">
-                  <Select options="" />
+                  <Select options={wageCycleList} />
                 </Form.Item>
               </Col>
               <Col span={6}>
                 <Form.Item label="Department" name="department">
-                  <Select options="" />
+                  <Select options={departmentList} />
                 </Form.Item>
               </Col>
               <Col span={6}>
                 <Form.Item label="Department" name="depaetmwnt1">
-                  <Select options="" />
+                  <Select options={departmentList} />
                 </Form.Item>
               </Col>
             </Row>
