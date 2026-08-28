@@ -10,7 +10,7 @@ Elastic Beanstalk environment, backed by a private RDS MySQL instance — all in
 flowchart TB
     User["Browser"]
     Google["Google OAuth\n(accounts.google.com)"]
-    GitHub["GitHub\nsureshkandimalla/BeanEMS (frontend)\nsureshkandimalla/BeanEMSServices (backend)"]
+    GitHub["GitHub\nsureshkandimalla/EmployeeHub (frontend)\nsureshkandimalla/EmployeeHubServices (backend)"]
 
     subgraph Vercel["Vercel"]
         FE["Frontend — beanems.vercel.app\nCRA static build\nProject: intellan/beanems"]
@@ -53,7 +53,7 @@ flowchart TB
 
 | Component | Detail |
 |---|---|
-| Frontend | Vercel project `intellan/beanems`, auto-deploys from `BeanEMS` `master` branch |
+| Frontend | Vercel project `intellan/beanems`, auto-deploys from `EmployeeHub` `master` branch |
 | Frontend URL | https://beanems.vercel.app |
 | Backend URL (public) | https://d3bakmjfonjh6u.cloudfront.net/api/v1 |
 | Backend URL (internal, HTTP only) | http://beanems-env.eba-bn4jy2vi.us-east-2.elasticbeanstalk.com |
