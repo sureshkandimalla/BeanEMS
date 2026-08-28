@@ -408,11 +408,14 @@ const InvoiceDetails = ({ employeeId, projectId, customerId, statusFilter, isCol
         // no identity meaning — the row's real identity (used for the
         // save PUT below) is the server-assigned `id`, which is never
         // shown as an editable cell so it can't be typo'd into colliding
-        // with another invoice's number.
+        // with another invoice's number. Being purely cosmetic (unlike
+        // Hours/Discounts/InvoiceMonth, which feed financial totals), it
+        // stays editable even on an otherwise-locked Paid row — same
+        // reasoning as Status/Invoice PaidDate below.
         headerName: "Invoice #",
         field: "invoiceNumber",
         sortable: isSortable,
-        editable: editableUnlessPaid,
+        editable: true,
         valueFormatter: (params) => {
           // Check if this row is the pinned bottom row and show "Total"
           return params.node.rowPinned === "bottom" ? "Total" : params.value;
