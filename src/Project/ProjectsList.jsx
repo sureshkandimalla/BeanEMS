@@ -13,7 +13,7 @@ import {
 } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import API_ENDPOINTS from "../config";
+import API_ENDPOINTS, { paymentTermsList } from "../config";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -237,6 +237,25 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         filter: "agSetColumnFilter",
       },
       {
+        headerName: "Project Name",
+        field: "projectName",
+        cellRenderer: (params) => {
+          // Group rows (e.g. when grouped by another column) have no
+          // params.data — just show nothing rather than crashing.
+          if (!params.data) return null;
+          const rowData = params.data;
+          return (
+            <Link to="/projectFullDetails" state={{ rowData }}>
+              {" "}
+              {rowData.projectName}
+            </Link>
+          );
+        },
+        sortable: isSortable,
+        editable: true,
+        filter: "agSetColumnFilter",
+      },
+      {
         headerName: "Customer Name",
         field: "customerName",
         sortable: isSortable,
@@ -252,6 +271,17 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         cellEditor: "agSelectCellEditor",
         cellEditorParams: {
           values: ["Active", "Yet to Start", "Closed", "Inactive"],
+        },
+      },
+      {
+        headerName: "Payment Term",
+        field: "paymentTerm",
+        sortable: isSortable,
+        editable: true,
+        filter: "agSetColumnFilter",
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: {
+          values: paymentTermsList.map((option) => option.value),
         },
       },
       {
@@ -349,25 +379,6 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         cellEditorParams: {
           values: INVOICE_TERM_OPTIONS.map((option) => option.label),
         },
-      },
-      {
-        headerName: "Project Name",
-        field: "projectName",
-        cellRenderer: (params) => {
-          // Group rows (e.g. when grouped by another column) have no
-          // params.data — just show nothing rather than crashing.
-          if (!params.data) return null;
-          const rowData = params.data;
-          return (
-            <Link to="/projectFullDetails" state={{ rowData }}>
-              {" "}
-              {rowData.projectName}
-            </Link>
-          );
-        },
-        sortable: isSortable,
-        editable: true,
-        filter: "agSetColumnFilter",
       },
       {
         headerName: "Company",
