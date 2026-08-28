@@ -14,7 +14,7 @@ import {
 } from "antd";
 import "./Newemployee.css";
 import axios from "axios";
-import API_ENDPOINTS, { companyList } from "../config";
+import API_ENDPOINTS, { companyList, workAuthorizationList } from "../config";
 
 const onFinish = (values) => {
   console.log("Success:", values);
@@ -75,33 +75,6 @@ const workingStatusList = [
     label: "New Hires",
   },
 ];
-const workAuthorizationList = [
-  {
-    value: "Citizen",
-    label: "Citizen",
-  },
-  {
-    value: "GC",
-    label: "GC",
-  },
-  {
-    value: "H1B",
-    label: "H1B",
-  },
-  {
-    value: "L1",
-    label: "L1",
-  },
-  {
-    value: "E3",
-    label: "E3",
-  },
-  {
-    value: "OPT",
-    label: "OPT",
-  },
-];
-
 const Newemployee = ({ onClose }) => {
   const [form] = Form.useForm();
   const [vendors, setVendors] = useState([]);
