@@ -14,6 +14,7 @@ import {
   Select,
   Space,
 } from "antd";
+import { workAuthorizationList } from "../config";
 const onBoardingTabs = [
   {
     label: "Personal Details",
@@ -307,7 +308,10 @@ const EmployeeOnboard = () => {
                     },
                   ]}
                 >
-                  <Select options="" />
+                  {/* Same list the Visa dropdown (WorkForceList/ImmigrationIntake)
+                      uses, so a value picked here always matches what those
+                      show/filter on. */}
+                  <Select options={workAuthorizationList} />
                 </Form.Item>
               </Col>
               <Col span={10}>
