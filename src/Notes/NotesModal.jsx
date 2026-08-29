@@ -4,6 +4,19 @@ import axios from "axios";
 import dayjs from "dayjs";
 import API_ENDPOINTS from "../config";
 
+// Same trust level as the rest of the app's "who did this" fields (e.g.
+// Document.uploadedBy) — read from the locally-stored login response
+// rather than a server-verified claim, since the JWT itself carries no
+// name/email claim to check it against.
+const getLoggedInUserName = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    return user?.name || user?.email || "Unknown";
+  } catch {
+    return "Unknown";
+  }
+};
+
 // Generic notes history + add-note popup — backed by the Note module
 // (type/entityId, mirrors Document's entityType/entityId). Any grid can
 // reuse this: pass the entity's own `type` string (e.g. "Employee",
@@ -39,7 +52,12 @@ const NotesModal = ({ open, entityType, entityId, title, onClose }) => {
     if (!noteText.trim()) return;
     setSaving(true);
     axios
-      .post(API_ENDPOINTS.createNote, { type: entityType, entityId, description: noteText })
+      .post(API_ENDPOINTS.createNote, {
+        type: entityType,
+        entityId,
+        description: noteText,
+        addedBy: getLoggedInUserName(),
+      })
       .then(() => {
         setNoteText("");
         fetchNotes();
@@ -65,7 +83,8 @@ const NotesModal = ({ open, entityType, entityId, title, onClose }) => {
             <div key={note.noteId} style={{ padding: "8px 0", borderBottom: "1px solid #f0f0f0" }}>
               <div>{note.description}</div>
               <div style={{ fontSize: 12, color: "#999" }}>
-                {note.date ? dayjs(note.date).format("MMM D, YYYY h:mm A") : ""}
+                {note.addedBy || "Unknown"}
+                {note.date ? ` · ${dayjs(note.date).format("MMM D, YYYY h:mm A")}` : ""}
               </div>
             </div>
           ))
