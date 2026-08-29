@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Card, Dropdown, Form, Input, Modal, message } from "antd";
-import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
+import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined, DownOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
@@ -307,6 +307,7 @@ const LCADetails = () => {
           <Dropdown.Button
             type="link"
             trigger={["click"]}
+            icon={<DownOutlined />}
             onClick={() => handleRowAction(primaryAction.key, params.data)}
             menu={{
               items: restActions,
