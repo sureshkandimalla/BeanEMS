@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
 import { Button, Card, Dropdown, Form, Input, Modal, message } from "antd";
-import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined, DownOutlined } from "@ant-design/icons";
+import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
@@ -298,18 +298,23 @@ const LCADetails = () => {
       cellClassRules,
       cellRenderer: (params) => {
         if (!params.data) return null;
+        // Split button: clicking the label runs the first configured
+        // action (LCA_ROW_ACTIONS[0], e.g. "Add Note") directly; the
+        // arrow opens the rest. Reordering LCA_ROW_ACTIONS changes which
+        // action is the one-click default.
+        const [primaryAction, ...restActions] = LCA_ROW_ACTIONS;
         return (
-          <Dropdown
+          <Dropdown.Button
+            type="link"
             trigger={["click"]}
+            onClick={() => handleRowAction(primaryAction.key, params.data)}
             menu={{
-              items: LCA_ROW_ACTIONS,
+              items: restActions,
               onClick: ({ key }) => handleRowAction(key, params.data),
             }}
           >
-            <Button type="link" onClick={(e) => e.preventDefault()}>
-              Action <DownOutlined />
-            </Button>
-          </Dropdown>
+            {primaryAction.label}
+          </Dropdown.Button>
         );
       },
     },
