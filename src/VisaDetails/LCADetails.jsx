@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Card, Dropdown, Form, Input, Modal, message } from "antd";
-import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined, DownOutlined } from "@ant-design/icons";
+import { Button, Card, Form, Modal, message } from "antd";
+import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
@@ -12,6 +12,8 @@ import LcaFormModal from "./LcaFormModal";
 import { LCA_FIELD_LABELS, LCA_STATUS_OPTIONS, LCA_ROW_ACTIONS } from "./visaConstants";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
 
 const LCADetails = () => {
   const gridRef = useRef(null);
@@ -158,27 +160,13 @@ const LCADetails = () => {
     fetchData();
   };
 
-  // Row-level "Action" dropdown — Delete / Add Note / Archive (config in
-  // visaConstants.LCA_ROW_ACTIONS). Archive has no dedicated backend
+  // Row-level Notes button (+ Archive/Delete in its dropdown arrow, config
+  // in visaConstants.LCA_ROW_ACTIONS). Archive has no dedicated backend
   // concept, so it's implemented as setting status="Archived" through the
-  // same save endpoint the grid's inline edits already use. Notes are the
-  // generic Note module (type="LCA", entityId=lcaId) — same
-  // entityType/entityId shape as Document, shared across Employee/Visa/
-  // LCA/Invoice rather than a field on LCA itself.
+  // same save endpoint the grid's inline edits already use. Notes itself
+  // is the shared NotesActionButton/NotesModal pair (generic Note module,
+  // type="LCA", entityId=lcaId) — reused as-is by other grids.
   const [noteModalRow, setNoteModalRow] = useState(null);
-  const [noteText, setNoteText] = useState("");
-  const [noteList, setNoteList] = useState([]);
-  const [noteListLoading, setNoteListLoading] = useState(false);
-  const [noteSaving, setNoteSaving] = useState(false);
-
-  const fetchNotesForRow = (row) => {
-    setNoteListLoading(true);
-    axios
-      .get(API_ENDPOINTS.getNotesForEntity("LCA", row.lcaId))
-      .then((response) => setNoteList(Array.isArray(response.data) ? response.data : []))
-      .catch(() => setNoteList([]))
-      .finally(() => setNoteListLoading(false));
-  };
 
   const handleDeleteRow = (row) => {
     Modal.confirm({
@@ -208,30 +196,8 @@ const LCADetails = () => {
       .catch(() => message.error("Failed to archive LCA. Please try again."));
   };
 
-  const openAddNoteModal = (row) => {
-    setNoteText("");
-    setNoteModalRow(row);
-    fetchNotesForRow(row);
-  };
-
-  const handleSaveNote = () => {
-    if (!noteText.trim()) return;
-    setNoteSaving(true);
-    axios
-      .post(API_ENDPOINTS.createNote, { type: "LCA", entityId: noteModalRow.lcaId, description: noteText })
-      .then(() => {
-        setNoteText("");
-        fetchNotesForRow(noteModalRow);
-      })
-      .catch(() => message.error("Failed to save note. Please try again."))
-      .finally(() => setNoteSaving(false));
-  };
-
-  const handleRowAction = (key, row) => {
-    if (key === "delete") handleDeleteRow(row);
-    else if (key === "archive") handleArchiveRow(row);
-    else if (key === "addNote") openAddNoteModal(row);
-  };
+  // Maps each LCA_ROW_ACTIONS key to its handler.
+  const rowActionHandlers = { archive: handleArchiveRow, delete: handleDeleteRow };
 
   const cellClassRules = {
     darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
@@ -298,24 +264,16 @@ const LCADetails = () => {
       cellClassRules,
       cellRenderer: (params) => {
         if (!params.data) return null;
-        // Split button: clicking the label runs the first configured
-        // action (LCA_ROW_ACTIONS[0], e.g. "Add Note") directly; the
-        // arrow opens the rest. Reordering LCA_ROW_ACTIONS changes which
-        // action is the one-click default.
-        const [primaryAction, ...restActions] = LCA_ROW_ACTIONS;
+        const row = params.data;
+        const extraActions = LCA_ROW_ACTIONS.map((action) => ({
+          ...action,
+          onClick: () => rowActionHandlers[action.key](row),
+        }));
         return (
-          <Dropdown.Button
-            type="link"
-            trigger={["click"]}
-            icon={<DownOutlined />}
-            onClick={() => handleRowAction(primaryAction.key, params.data)}
-            menu={{
-              items: restActions,
-              onClick: ({ key }) => handleRowAction(key, params.data),
-            }}
-          >
-            {primaryAction.label}
-          </Dropdown.Button>
+          <NotesActionButton
+            onOpenNotes={() => setNoteModalRow(row)}
+            extraActions={extraActions}
+          />
         );
       },
     },
@@ -448,44 +406,13 @@ const LCADetails = () => {
         onSave={handleLcaSave}
       />
 
-      <Modal
-        title={`Notes — ${noteModalRow?.lcaNumber || noteModalRow?.lcaCaseNumber || ""}`}
+      <NotesModal
         open={!!noteModalRow}
-        onCancel={() => { setNoteModalRow(null); setNoteText(""); setNoteList([]); }}
-        footer={null}
-      >
-        <div style={{ maxHeight: 260, overflowY: "auto", marginBottom: 12 }}>
-          {noteListLoading ? (
-            <p>Loading...</p>
-          ) : noteList.length === 0 ? (
-            <p style={{ color: "#999" }}>No notes yet.</p>
-          ) : (
-            noteList.map((note) => (
-              <div key={note.noteId} style={{ padding: "8px 0", borderBottom: "1px solid #f0f0f0" }}>
-                <div>{note.description}</div>
-                <div style={{ fontSize: 12, color: "#999" }}>
-                  {note.date ? dayjs(note.date).format("MMM D, YYYY h:mm A") : ""}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-        <Input.TextArea
-          rows={3}
-          value={noteText}
-          onChange={(e) => setNoteText(e.target.value)}
-          placeholder="Add a note for this LCA..."
-        />
-        <Button
-          type="primary"
-          onClick={handleSaveNote}
-          loading={noteSaving}
-          disabled={!noteText.trim()}
-          style={{ marginTop: 8 }}
-        >
-          Add Note
-        </Button>
-      </Modal>
+        entityType="LCA"
+        entityId={noteModalRow?.lcaId}
+        title={noteModalRow?.lcaNumber || noteModalRow?.lcaCaseNumber}
+        onClose={() => setNoteModalRow(null)}
+      />
     </div>
   );
 };

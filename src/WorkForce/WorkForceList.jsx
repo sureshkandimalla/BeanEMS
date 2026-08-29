@@ -11,6 +11,8 @@ import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { FileExcelOutlined, SaveOutlined, ReloadOutlined } from "@ant-design/icons";
 import API_ENDPOINTS, { workingStatusList, workAuthorizationList, companyList } from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
 
 const employmentTypeOptions = ["Full-Time", "Part-Time", "Hourly", "W2", "C2C", "1099"];
 const i9EverifyStatusOptions = ["Completed", "In Progress", "Failed"];
@@ -22,6 +24,7 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
   const [modifiedRows, setModifiedRows] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [vendors, setVendors] = useState([]);
+  const [noteModalRow, setNoteModalRow] = useState(null);
 
   useEffect(() => {
     axios
@@ -318,6 +321,22 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
       },
       ...getColumnsDefList(columnsList, true, false),
       vendorColumnDef,
+      {
+        colId: "action",
+        headerName: "Action",
+        pinned: "right",
+        sortable: false,
+        filter: false,
+        editable: false,
+        suppressSizeToFit: true,
+        cellClassRules: {
+          darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+        },
+        cellRenderer: (params) => {
+          if (!params.data) return null;
+          return <NotesActionButton onOpenNotes={() => setNoteModalRow(params.data)} />;
+        },
+      },
     ];
   }, [rowData, vendors]);
 
@@ -475,9 +494,16 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
           domLayout="normal"            
           enableBrowserTooltips={true} 
           popupParent={document.body} 
-          excelStyles={excelStyles}                 
+          excelStyles={excelStyles}
         />
       </div>
+      <NotesModal
+        open={!!noteModalRow}
+        entityType="Employee"
+        entityId={noteModalRow?.employeeId}
+        title={noteModalRow ? `${noteModalRow.firstName || ""} ${noteModalRow.lastName || ""}`.trim() : ""}
+        onClose={() => setNoteModalRow(null)}
+      />
     </div>
   );
 };

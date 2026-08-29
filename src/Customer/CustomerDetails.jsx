@@ -16,6 +16,8 @@ import API_ENDPOINTS, {
   paymentTermsList,
 } from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
 
 const columnsList = [
   { headerName: "Customer Id", field: "customerId", type: "number" },
@@ -72,6 +74,7 @@ const CustomerDetails = () => {
   const [open, setOpen] = useState(false);
   const [modifiedRows, setModifiedRows] = useState({});
   const [dashboardFilter, setDashboardFilter] = useState(location.state?.dashboardFilter || null);
+  const [noteModalRow, setNoteModalRow] = useState(null);
 
   // Re-syncs if the user navigates here again with a different card's
   // filter while the component is already mounted (e.g. via back/forward).
@@ -260,6 +263,23 @@ const CustomerDetails = () => {
         },
       },
       ...getColumnsDefList(columnsList, true),
+      {
+        colId: "action",
+        headerName: "Action",
+        pinned: "right",
+        sortable: false,
+        filter: false,
+        editable: false,
+        suppressSizeToFit: true,
+        cellClassRules: {
+          darkGreyBackground: (params) =>
+            params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+        },
+        cellRenderer: (params) => {
+          if (!params.data) return null;
+          return <NotesActionButton onOpenNotes={() => setNoteModalRow(params.data)} />;
+        },
+      },
     ];
   }, [rowData]);
 
@@ -438,6 +458,13 @@ const CustomerDetails = () => {
         </div>
       </Card>
       </div>
+      <NotesModal
+        open={!!noteModalRow}
+        entityType="Customer"
+        entityId={noteModalRow?.customerId}
+        title={noteModalRow?.customerCompanyName}
+        onClose={() => setNoteModalRow(null)}
+      />
     </div>
   );
 };
