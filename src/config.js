@@ -164,6 +164,12 @@ export const API_ENDPOINTS = {
   getAllDocumentsForType: (entityType) => `${API_BASE_URL}/documents?entityType=${entityType}`,
   documentDownloadUrl: (id) => `${API_BASE_URL}/documents/${id}/downloadUrl`,
   documentById: (id) => `${API_BASE_URL}/documents/${id}`,
+  // Generic notes (Employee, Visa, LCA, Invoice, ...) — type/entityId
+  // scoped, see NoteController. entityId matches that type's own primary
+  // key (e.g. Employee.employeeId for type="Employee").
+  createNote: `${API_BASE_URL}/notes`,
+  getNotesForEntity: (type, entityId) => `${API_BASE_URL}/notes?type=${type}&entityId=${entityId}`,
+  noteById: (noteId) => `${API_BASE_URL}/notes/${noteId}`,
   assignments: `${API_BASE_URL}/assignments`,
   assignmentsById: (assignmentId) => `${API_BASE_URL}/assignments/${assignmentId}`,
   saveOnBoardProject: `${API_BASE_URL}/saveOnBoardProject`,

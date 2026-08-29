@@ -169,6 +169,16 @@ export const LCA_STATUS_OPTIONS = [
   { value: "In Process" },
   { value: "Withdrawn" },
   { value: "Expired" },
+  { value: "Archived" },
+];
+
+// The LCA grid's row-level "Action" dropdown (LCADetails.jsx) — a single
+// place to add/remove/rename actions without touching the grid itself.
+// `danger` renders the item in red (destructive actions only).
+export const LCA_ROW_ACTIONS = [
+  { key: "addNote", label: "Add Note" },
+  { key: "archive", label: "Archive" },
+  { key: "delete", label: "Delete", danger: true },
 ];
 
 // ─────────────────────────────────────────────
