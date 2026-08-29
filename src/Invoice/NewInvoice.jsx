@@ -138,7 +138,7 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
         body: JSON.stringify(updatedDataToSave),
       },
     )
-      .then((response) => {
+      .then(async (response) => {
         if (response && response.status === 201) {
           Modal.success({
             content: "Data saved successfully",
@@ -148,8 +148,17 @@ const NewInvoice = ({ onClose, employeeId, open }) => {
             },
           });
         } else {
-          // Handle other cases
-          console.log("Response data does not have expected value");
+          // fetch() only rejects on a network-level failure — an HTTP error
+          // status (400/500/etc.) still resolves here, so a non-201 must be
+          // surfaced too or a failed save looks identical to a successful
+          // one (this previously only logged to the console, invisible in
+          // production — confirmed as the cause of an invoice silently
+          // failing to save with no visible error).
+          const bodyText = await response.text().catch(() => "");
+          console.error("Invoice save failed:", response.status, bodyText);
+          Modal.error({
+            content: `Failed to save invoice (server returned ${response.status}). Please try again or contact support.`,
+          });
         }
       })
       .catch((error) => {
