@@ -176,7 +176,7 @@ export const LCA_STATUS_OPTIONS = [
 // place to add/remove/rename actions without touching the grid itself.
 // `danger` renders the item in red (destructive actions only).
 export const LCA_ROW_ACTIONS = [
-  { key: "addNote", label: "Add Note" },
+  { key: "addNote", label: "Notes" },
   { key: "archive", label: "Archive" },
   { key: "delete", label: "Delete", danger: true },
 ];
