@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import API_ENDPOINTS, { expenseStatusList, expenseTypeList } from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Card, Drawer } from "antd";
+import { Button, Card, Drawer, Modal, message } from "antd";
 import { PlusOutlined, ReloadOutlined, FileExcelOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -13,6 +13,9 @@ import NewExpense from "./NewExpense";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatDate } from "../Utils/dateFormat";
 import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
+import { buildRowActions } from "../Notes/rowActions";
 
 const editableUnlessReimbursed = (params) => params.data?.status !== "Reimbursed";
 
@@ -28,6 +31,35 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
   const [pinnedBottomRowData, setPinnedBottomRowData] = useState([]);
   const [modifiedRows, setModifiedRows] = useState({});
   const [open, setOpen] = useState(false);
+  const [noteModalRow, setNoteModalRow] = useState(null);
+
+  const handleArchiveExpense = (row) => {
+    axios
+      .put(API_ENDPOINTS.expenseById(row.expenseId), { ...row, status: "Archived" })
+      .then(() => {
+        message.success("Expense archived");
+        fetchData();
+      })
+      .catch(() => message.error("Failed to archive expense. Please try again."));
+  };
+
+  const handleDeleteExpense = (row) => {
+    Modal.confirm({
+      title: `Delete this expense record?`,
+      content: "This permanently removes this expense record. This can't be undone.",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: () =>
+        axios
+          .delete(API_ENDPOINTS.deleteExpense(row.expenseId))
+          .then(() => {
+            message.success("Expense deleted");
+            fetchData();
+          })
+          .catch(() => message.error("Failed to delete expense. Please try again.")),
+    });
+  };
 
   useEffect(() => {
     fetchData();
@@ -205,6 +237,26 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
       cellEditorParams: { values: expenseStatusList.map((s) => s.value) },
       enableRowGroup: true,
     },
+    {
+      colId: "action",
+      headerName: "Action",
+      pinned: "right",
+      sortable: false,
+      filter: false,
+      editable: false,
+      cellRenderer: (params) => {
+        if (!params.data || params.node.rowPinned) return null;
+        return (
+          <NotesActionButton
+            onOpenNotes={() => setNoteModalRow(params.data)}
+            extraActions={buildRowActions({
+              onArchive: () => handleArchiveExpense(params.data),
+              onDelete: () => handleDeleteExpense(params.data),
+            })}
+          />
+        );
+      },
+    },
   ];
 
   const getRowStyle = (params) => {
@@ -340,6 +392,13 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
           </div>
         </Card>
       </div>
+      <NotesModal
+        open={!!noteModalRow}
+        entityType="Expense"
+        entityId={noteModalRow?.expenseId}
+        title={noteModalRow?.description}
+        onClose={() => setNoteModalRow(null)}
+      />
     </div>
   );
 };

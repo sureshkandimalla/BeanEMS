@@ -66,6 +66,7 @@ export const expenseStatusList = [
   { value: "Approved", label: "Approved" },
   { value: "Rejected", label: "Rejected" },
   { value: "Reimbursed", label: "Reimbursed" },
+  { value: "Archived", label: "Archived" },
 ];
 
 export const expenseTypeList = [
@@ -84,6 +85,7 @@ export const visaStatusList = [
   { value: "In Progress", label: "In Progress" },
   { value: "Expired",     label: "Expired" },
   { value: "Revoked",     label: "Revoked" },
+  { value: "Archived",    label: "Archived" },
 ];
 // src/config.js
 // Centralized config for API endpoints
@@ -132,6 +134,7 @@ export const API_ENDPOINTS = {
   projectsByCustomerId: (customerId) => `${API_BASE_URL}/projects?customerId=${customerId}`,
   getAllPotentialEmployees: `${API_BASE_URL}/visa/getAllPotentialEmployees`,
   savePotentialEmployees: `${API_BASE_URL}/visa/savePotentialEmployees`,
+  deletePotentialEmployee: (peId) => `${API_BASE_URL}/visa/potentialEmployees/${peId}`,
   addInvoices: `${API_BASE_URL}/invoice/addInvoices`,
   getAllInvoices: `${API_BASE_URL}/invoice/getAllInvoices`,
   getAllBills: `${API_BASE_URL}/bills/getAllBills`,
@@ -142,6 +145,7 @@ export const API_ENDPOINTS = {
   authLogin: `${API_BASE_URL}/auth/login`,
   getAllVendors: `${API_BASE_URL}/vendors/getAllVendors`,
   vendorsById: (vendorId) => `${API_BASE_URL}/vendors/vendors/${vendorId}`,
+  deleteVendor: (vendorId) => `${API_BASE_URL}/vendors/vendors/${vendorId}`,
   saveOnBoardDetailsVendor: `${API_BASE_URL}/vendors/saveOnBoardDetails`,
   getInvoicesForProject: (projectId) => `${API_BASE_URL}/invoice/getInvoicesForProject?projectId=${projectId}`,
   getInvoicesForCustomer: (customerId) => `${API_BASE_URL}/invoice/getInvoicesForCustomer?customerId=${customerId}`,
@@ -149,6 +153,7 @@ export const API_ENDPOINTS = {
   addExpense: `${API_BASE_URL}/expense/addExpense`,
   getAllExpenses: `${API_BASE_URL}/expense/getAllExpenses`,
   expenseById: (expenseId) => `${API_BASE_URL}/expense/expenses/${expenseId}`,
+  deleteExpense: (expenseId) => `${API_BASE_URL}/expense/expenses/${expenseId}`,
   getExpensesForEmployee: (employeeId) => `${API_BASE_URL}/expense/getExpensesForEmployee?employeeId=${employeeId}`,
   expensesCountByStatus: `${API_BASE_URL}/expense/expensesCountByStatus`,
   getBillsForProject: (projectId) => `${API_BASE_URL}/bills/getBillsForProject?projectId=${projectId}`,
@@ -191,6 +196,7 @@ export const API_ENDPOINTS = {
   getAllVisas: `${API_BASE_URL}/visa/getAllVisas`,
   createVisa: `${API_BASE_URL}/visa/createVisa`,
   updateVisa: (visaId) => `${API_BASE_URL}/visa/${visaId}`,
+  deleteVisa: (visaId) => `${API_BASE_URL}/visa/${visaId}`,
   getVisaById: (visaId) => `${API_BASE_URL}/visa/${visaId}`,
   getAllEmployeesImmigration: `${API_BASE_URL}/immigration/getAllEmployeesImmigration`,
   // Passport endpoints
@@ -288,6 +294,7 @@ export const vendorStatusList = [
   { value: "Active", label: "Active" },
   { value: "On Hold", label: "On Hold" },
   { value: "Inactive", label: "Inactive" },
+  { value: "Archived", label: "Archived" },
 ];
 
 // Backwards-compatible alias

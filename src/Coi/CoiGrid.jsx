@@ -7,11 +7,14 @@ import axios from "axios";
 import API_ENDPOINTS from "../config";
 import DocumentsPanel from "../Documents/DocumentsPanel";
 import { openDocumentInNewTab } from "../Documents/openDocument";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
+import { buildRowActions } from "../Notes/rowActions";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
-const STATUS_OPTIONS = ["Active", "Expired", "InActive", "Invalid"];
+const STATUS_OPTIONS = ["Active", "Expired", "InActive", "Invalid", "Archived"];
 
 // Self-fetching, scoped by either customerId or vendorId — mirrors the
 // InvoiceDetails/ProjectGrid convention of accepting an optional scoping
@@ -26,6 +29,15 @@ const CoiGrid = ({ customerId, vendorId, isCollapsed }) => {
   const [loading, setLoading] = useState(true);
   const [documentsForRow, setDocumentsForRow] = useState(null);
   const [docsByEntityId, setDocsByEntityId] = useState({});
+  const [noteModalRow, setNoteModalRow] = useState(null);
+
+  const handleArchive = (row) => {
+    const { rowKey, ...payload } = row;
+    axios
+      .put(API_ENDPOINTS.coiById(row.id), { ...payload, status: "Archived" })
+      .then(fetchData)
+      .catch(() => {});
+  };
 
   const fetchDocumentIndicators = () => {
     axios
@@ -195,20 +207,34 @@ const CoiGrid = ({ customerId, vendorId, isCollapsed }) => {
     },
     {
       colId: "actions",
-      headerName: "",
-      width: 60,
-      minWidth: 60,
-      maxWidth: 60,
+      headerName: "Action",
       sortable: false,
       filter: false,
       editable: false,
-      cellRenderer: (params) =>
-        params.data ? (
-          <DeleteOutlined
-            style={{ color: "#cf1322", cursor: "pointer" }}
-            onClick={() => handleDelete(params.data)}
+      cellRenderer: (params) => {
+        if (!params.data) return null;
+        const row = params.data;
+        // Notes/Archive need a saved row (real id) to attach to — an
+        // unsaved (still-being-added) row only gets the plain remove-icon
+        // it already had, same gating the Document column uses.
+        if (!row.id) {
+          return (
+            <DeleteOutlined
+              style={{ color: "#cf1322", cursor: "pointer" }}
+              onClick={() => handleDelete(row)}
+            />
+          );
+        }
+        return (
+          <NotesActionButton
+            onOpenNotes={() => setNoteModalRow(row)}
+            extraActions={buildRowActions({
+              onArchive: () => handleArchive(row),
+              onDelete: () => handleDelete(row),
+            })}
           />
-        ) : null,
+        );
+      },
     },
     {
       colId: "documents",
@@ -313,6 +339,13 @@ const CoiGrid = ({ customerId, vendorId, isCollapsed }) => {
           <DocumentsPanel entityType="COI" entityId={documentsForRow.id} />
         )}
       </Modal>
+      <NotesModal
+        open={!!noteModalRow}
+        entityType="COI"
+        entityId={noteModalRow?.id}
+        title={vendorNameById[noteModalRow?.vendorId] || customerNameById[noteModalRow?.customerId]}
+        onClose={() => setNoteModalRow(null)}
+      />
     </div>
   );
 };

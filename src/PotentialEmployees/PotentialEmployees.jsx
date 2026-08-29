@@ -1,14 +1,18 @@
 import React, { useState, useEffect,useCallback, useRef } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Drawer,Card, notification } from "antd";
+import { Button, Drawer, Card, Modal, message, notification } from "antd";
 import { PlusOutlined, SaveOutlined, FileExcelOutlined, ReloadOutlined  } from "@ant-design/icons";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import NewPotentialEmployee from "./NewPotentialEmployee";
 import "./PotentialEmployees.css";
+import axios from "axios";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
+import { buildRowActions } from "../Notes/rowActions";
 
 const PotentialEmployees = () => {
   const [searchText, setSearchText] = useState("");
@@ -16,6 +20,35 @@ const PotentialEmployees = () => {
   const [open, setOpen] = useState(false);
   const gridRef = useRef(null); // Reference for Ag-Grid
   const [updatedRows, setUpdatedRows] = useState([]); // Store edited rows
+  const [noteModalRow, setNoteModalRow] = useState(null);
+
+  const handleArchivePotentialEmployee = (row) => {
+    axios
+      .post(API_ENDPOINTS.savePotentialEmployees, [{ ...row, status: "Archived" }])
+      .then(() => {
+        message.success("Record archived");
+        fetchPotentialEmployees();
+      })
+      .catch(() => message.error("Failed to archive record. Please try again."));
+  };
+
+  const handleDeletePotentialEmployee = (row) => {
+    Modal.confirm({
+      title: `Delete "${row.firstName || ""} ${row.lastName || ""}"?`,
+      content: "This permanently removes this record. This can't be undone.",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: () =>
+        axios
+          .delete(API_ENDPOINTS.deletePotentialEmployee(row.peId))
+          .then(() => {
+            message.success("Record deleted");
+            fetchPotentialEmployees();
+          })
+          .catch(() => message.error("Failed to delete record. Please try again.")),
+    });
+  };
 
   // Fetch employee data
   useEffect(() => {
@@ -114,7 +147,7 @@ const PotentialEmployees = () => {
         cellEditor: "agSelectCellEditor", // Enables dropdown selection
         cellEditorParams: {
           values: ["Submitted","Waiting on 129 Approval","Petition Approved",
-            "Yet to Book Slot"," Visa Slot Booked", "221G","In USA","Visa Not Needed","Visa Approved"] // Dropdown options
+            "Yet to Book Slot"," Visa Slot Booked", "221G","In USA","Visa Not Needed","Visa Approved","Archived"] // Dropdown options
         }
       },
       { 
@@ -177,11 +210,31 @@ const PotentialEmployees = () => {
         editable: true, 
         filter: "agSetColumnFilter" 
       },
-      { 
-        headerName: "End Date", 
-        field: "endDate", 
-        editable: true, 
-        filter: "agSetColumnFilter" 
+      {
+        headerName: "End Date",
+        field: "endDate",
+        editable: true,
+        filter: "agSetColumnFilter"
+      },
+      {
+        colId: "action",
+        headerName: "Action",
+        pinned: "right",
+        sortable: false,
+        filter: false,
+        editable: false,
+        cellRenderer: (params) => {
+          if (!params.data) return null;
+          return (
+            <NotesActionButton
+              onOpenNotes={() => setNoteModalRow(params.data)}
+              extraActions={buildRowActions({
+                onArchive: () => handleArchivePotentialEmployee(params.data),
+                onDelete: () => handleDeletePotentialEmployee(params.data),
+              })}
+            />
+          );
+        },
       },
     ];
     return columns;
@@ -360,6 +413,13 @@ const PotentialEmployees = () => {
       </div>
     </Card>
     </div>
+    <NotesModal
+      open={!!noteModalRow}
+      entityType="PotentialEmployee"
+      entityId={noteModalRow?.peId}
+      title={noteModalRow ? `${noteModalRow.firstName || ""} ${noteModalRow.lastName || ""}`.trim() : ""}
+      onClose={() => setNoteModalRow(null)}
+    />
     </div>
   );
 };

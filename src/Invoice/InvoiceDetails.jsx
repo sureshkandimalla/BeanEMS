@@ -19,6 +19,9 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
+import { buildRowActions } from "../Notes/rowActions";
 import { formatMonthYear, formatDate } from "../Utils/dateFormat";
 import ChartOverviewPanel from "../Utils/ChartOverviewPanel";
 import { GLOBAL_CHARTS } from "../Charts/globalChartRegistry";
@@ -360,6 +363,38 @@ const InvoiceDetails = ({ employeeId, projectId, customerId, statusFilter, isCol
       });
   };
 
+  const [noteModalRow, setNoteModalRow] = useState(null);
+
+  const handleArchiveInvoice = (row) => {
+    axios
+      .put(API_ENDPOINTS.invoiceById(row.id), { ...row, status: "Archived" })
+      .then(() => {
+        message.success("Invoice archived");
+        fetchData();
+        onRefresh?.();
+      })
+      .catch(() => message.error("Failed to archive invoice. Please try again."));
+  };
+
+  const handleDeleteInvoice = (row) => {
+    Modal.confirm({
+      title: `Delete invoice "${row.invoiceNumber || row.id}"?`,
+      content: "This permanently removes this invoice record. This can't be undone.",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: () =>
+        axios
+          .delete(API_ENDPOINTS.invoiceById(row.id))
+          .then(() => {
+            message.success("Invoice deleted");
+            fetchData();
+            onRefresh?.();
+          })
+          .catch(() => message.error("Failed to delete invoice. It may still be referenced elsewhere (bills, etc.).")),
+    });
+  };
+
   const handleCancelChanges = () => {
     // Discard local edits by simply refetching clean data from the server.
     setModifiedRows({});
@@ -504,11 +539,31 @@ const InvoiceDetails = ({ employeeId, projectId, customerId, statusFilter, isCol
         editable: true,
         cellEditor: "agSelectCellEditor",
         cellEditorParams: {
-          values: ["Created", "Paid", "Partially Paid"],
+          values: ["Created", "Paid", "Partially Paid", "Archived"],
         },
       },
       { headerName: "Project Id", field: "projectId", sortable: isSortable },
       { headerName: "Project Name", field: "projectName", sortable: isSortable },
+      {
+        colId: "action",
+        headerName: "Action",
+        pinned: "right",
+        sortable: false,
+        filter: false,
+        editable: false,
+        cellRenderer: (params) => {
+          if (!params.data || params.node.rowPinned) return null;
+          return (
+            <NotesActionButton
+              onOpenNotes={() => setNoteModalRow(params.data)}
+              extraActions={buildRowActions({
+                onArchive: () => handleArchiveInvoice(params.data),
+                onDelete: () => handleDeleteInvoice(params.data),
+              })}
+            />
+          );
+        },
+      },
     ];
     return columns;
   };
@@ -870,6 +925,13 @@ const InvoiceDetails = ({ employeeId, projectId, customerId, statusFilter, isCol
       )}
       </div>
     </Card>
+    <NotesModal
+      open={!!noteModalRow}
+      entityType="Invoice"
+      entityId={noteModalRow?.id}
+      title={noteModalRow?.invoiceNumber}
+      onClose={() => setNoteModalRow(null)}
+    />
     </div>
     </div>
   );

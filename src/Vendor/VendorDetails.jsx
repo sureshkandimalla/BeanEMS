@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Card, Button, Drawer } from "antd";
+import { Card, Button, Drawer, Modal, message } from "antd";
 import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { Link, useLocation } from "react-router-dom";
@@ -11,6 +11,9 @@ import "./Vendor.css";
 import NewVendor from "./NewVendor";
 import API_ENDPOINTS, { vendorTypeList, vendorStatusList, paymentTermsList } from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
+import { buildRowActions } from "../Notes/rowActions";
 
 const columnsList = [
   { headerName: "Vendor Id", field: "vendorId", type: "number" },
@@ -60,6 +63,7 @@ const VendorDetails = () => {
   }, [location.state]);
   const [open, setOpen] = useState(false);
   const [modifiedRows, setModifiedRows] = useState({});
+  const [noteModalRow, setNoteModalRow] = useState(null);
 
   const onCellValueChanged = (params) => {
     const vendorId = params.data?.vendorId;
@@ -92,6 +96,34 @@ const VendorDetails = () => {
         setRowData(getFlattenedData(data));
       })
       .catch((error) => console.error("Error fetching data:", error));
+  };
+
+  const handleArchiveVendor = (row) => {
+    axios
+      .put(API_ENDPOINTS.vendorsById(row.vendorId), { ...row, vendorStatus: "Archived" })
+      .then(() => {
+        message.success("Vendor archived");
+        fetchData();
+      })
+      .catch(() => message.error("Failed to archive vendor. Please try again."));
+  };
+
+  const handleDeleteVendor = (row) => {
+    Modal.confirm({
+      title: `Delete "${row.vendorCompanyName || row.vendorId}"?`,
+      content: "This permanently removes this vendor record. This can't be undone.",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: () =>
+        axios
+          .delete(API_ENDPOINTS.deleteVendor(row.vendorId))
+          .then(() => {
+            message.success("Vendor deleted");
+            fetchData();
+          })
+          .catch(() => message.error("Failed to delete vendor. It may still be referenced elsewhere (assignments, etc.).")),
+    });
   };
 
   useEffect(() => {
@@ -242,6 +274,31 @@ const VendorDetails = () => {
         },
       },
       ...getColumnsDefList(columnsList, true),
+      {
+        colId: "action",
+        headerName: "Action",
+        pinned: "right",
+        sortable: false,
+        filter: false,
+        editable: false,
+        suppressSizeToFit: true,
+        cellClassRules: {
+          darkGreyBackground: (params) =>
+            params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
+        },
+        cellRenderer: (params) => {
+          if (!params.data) return null;
+          return (
+            <NotesActionButton
+              onOpenNotes={() => setNoteModalRow(params.data)}
+              extraActions={buildRowActions({
+                onArchive: () => handleArchiveVendor(params.data),
+                onDelete: () => handleDeleteVendor(params.data),
+              })}
+            />
+          );
+        },
+      },
     ];
   }, [rowData]);
 
@@ -420,6 +477,13 @@ const VendorDetails = () => {
         </div>
       </Card>
       </div>
+      <NotesModal
+        open={!!noteModalRow}
+        entityType="Vendor"
+        entityId={noteModalRow?.vendorId}
+        title={noteModalRow?.vendorCompanyName}
+        onClose={() => setNoteModalRow(null)}
+      />
     </div>
   );
 };

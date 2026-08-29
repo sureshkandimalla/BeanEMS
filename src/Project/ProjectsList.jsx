@@ -6,7 +6,6 @@ import {
   ReloadOutlined,
   SaveOutlined,
   CloseOutlined,
-  DeleteOutlined,
   ExclamationCircleFilled,
   FilePdfOutlined,
   PlusCircleOutlined,
@@ -25,6 +24,9 @@ import {
 } from "../Utils/invoiceTerm";
 import DocumentsPanel from "../Documents/DocumentsPanel";
 import { openDocumentInNewTab } from "../Documents/openDocument";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
+import { buildRowActions } from "../Notes/rowActions";
 
 const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   console.log(projectsList);
@@ -40,6 +42,17 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   // (WorkOrderDetails.jsx) shows every work order's own PO individually.
   const [poDocByWageId, setPoDocByWageId] = useState({});
   const [poModalWageId, setPoModalWageId] = useState(null);
+  const [noteModalRow, setNoteModalRow] = useState(null);
+
+  const handleArchiveProject = (row) => {
+    axios
+      .put(API_ENDPOINTS.projectsById(row.projectId), { ...row, status: "Archived" })
+      .then(() => {
+        message.success("Project archived");
+        onRefresh?.();
+      })
+      .catch(() => message.error("Failed to archive project. Please try again."));
+  };
 
   const fetchPoDocuments = () => {
     axios
@@ -270,7 +283,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         filter: "agSetColumnFilter",
         cellEditor: "agSelectCellEditor",
         cellEditorParams: {
-          values: ["Active", "Yet to Start", "Closed", "Inactive"],
+          values: ["Active", "Yet to Start", "Closed", "Inactive", "Archived"],
         },
       },
       {
@@ -395,8 +408,8 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
         filter: "agSetColumnFilter",
       },
       {
-        headerName: "Actions",
-        field: "actions",
+        headerName: "Action",
+        field: "action",
         sortable: false,
         filter: false,
         editable: false,
@@ -404,11 +417,16 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
           // Pinned total rows and group rows have no params.data.
           if (!params.data || params.node.rowPinned) return null;
           return (
-            <Button
-              danger
-              type="text"
-              icon={<DeleteOutlined />}
-              onClick={() => handleDeleteProject(params.data)}
+            <NotesActionButton
+              onOpenNotes={() => setNoteModalRow(params.data)}
+              extraActions={buildRowActions({
+                onArchive: () => handleArchiveProject(params.data),
+                // Keeps the richer deletion-impact-preview confirm dialog
+                // (invoices/bills/assignments counts) instead of the plain
+                // "are you sure" other grids use — Projects cascade-delete
+                // real financial records, so it warrants the extra detail.
+                onDelete: () => handleDeleteProject(params.data),
+              })}
             />
           );
         },
@@ -571,6 +589,13 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
           <DocumentsPanel entityType="WorkOrderPO" entityId={poModalWageId} />
         )}
       </Modal>
+      <NotesModal
+        open={!!noteModalRow}
+        entityType="Project"
+        entityId={noteModalRow?.projectId}
+        title={noteModalRow?.projectName}
+        onClose={() => setNoteModalRow(null)}
+      />
     </div>
   );
 };

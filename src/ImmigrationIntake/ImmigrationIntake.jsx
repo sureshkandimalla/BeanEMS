@@ -9,6 +9,9 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import API_ENDPOINTS, { workAuthorizationList } from "../config";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
+import { buildRowActions } from "../Notes/rowActions";
 
 const MODAL_HEADER_COLOR = "#1677ff";
 
@@ -26,6 +29,7 @@ const APPLICATION_STATUS_VALUES = [
   "Approved",
   "Denied",
   "Withdrawn",
+  "Archived",
 ];
 const CASE_ASSIGNED_TO_VALUES = ["Attorney", "Internal"];
 const FILED_ON_VALUES = ["Online", "Mail", "In-Person"];
@@ -100,6 +104,36 @@ export default function ImmigrationIntake() {
       setOpen(true);
     }
   }, []);
+
+  const [noteModalRow, setNoteModalRow] = useState(null);
+
+  const handleArchiveIntake = (row) => {
+    axios
+      .put(API_ENDPOINTS.updateImmiIntake(row.intakeId), { ...row, applicationStatus: "Archived" })
+      .then(() => {
+        message.success("Intake record archived");
+        fetchData();
+      })
+      .catch(() => message.error("Failed to archive record. Please try again."));
+  };
+
+  const handleDeleteIntake = (row) => {
+    Modal.confirm({
+      title: `Delete intake record "${row.caseId || row.intakeId}"?`,
+      content: "This permanently removes this record. This can't be undone.",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: () =>
+        axios
+          .delete(API_ENDPOINTS.deleteImmiIntake(row.intakeId))
+          .then(() => {
+            message.success("Intake record deleted");
+            fetchData();
+          })
+          .catch(() => message.error("Failed to delete record. Please try again.")),
+    });
+  };
 
   const employeeOptions = useMemo(
     () => employees.map((e) => ({ value: e.employeeId, label: e.name })),
@@ -288,6 +322,28 @@ export default function ImmigrationIntake() {
       { field: "workLocation2", headerName: FIELD_LABELS.workLocation2, filter: "agSetColumnFilter", editable: true, cellClassRules },
       { field: "caseFiledDate", headerName: FIELD_LABELS.caseFiledDate, filter: "agSetColumnFilter", editable: true, cellClassRules },
       { field: "caseRank", headerName: FIELD_LABELS.caseRank, filter: "agNumberColumnFilter", editable: true, cellClassRules },
+      {
+        colId: "action",
+        headerName: "Action",
+        pinned: "right",
+        sortable: false,
+        filter: false,
+        editable: false,
+        cellClassRules,
+        cellRenderer: (params) => {
+          if (!params.data) return null;
+          const row = params.data;
+          return (
+            <NotesActionButton
+              onOpenNotes={() => setNoteModalRow(row)}
+              extraActions={buildRowActions({
+                onArchive: () => handleArchiveIntake(row),
+                onDelete: () => handleDeleteIntake(row),
+              })}
+            />
+          );
+        },
+      },
     ],
     [],
   );
@@ -542,6 +598,13 @@ export default function ImmigrationIntake() {
           </Row>
         </Form>
       </Modal>
+      <NotesModal
+        open={!!noteModalRow}
+        entityType="ImmigrationIntake"
+        entityId={noteModalRow?.intakeId}
+        title={noteModalRow?.caseId}
+        onClose={() => setNoteModalRow(null)}
+      />
     </div>
   );
 }

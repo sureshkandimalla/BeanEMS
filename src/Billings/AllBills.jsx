@@ -11,6 +11,8 @@ import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatMonthYear } from "../Utils/dateFormat";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
 
 // Standalone "All Bills" list — every bill across every employee, grouped by
 // Employee Name (AG Grid row grouping, which also gives free per-employee
@@ -25,6 +27,7 @@ export default function AllBills() {
   const [vendors, setVendors] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(false);
+  const [noteModalRow, setNoteModalRow] = useState(null);
 
   const fetchData = () => {
     setLoading(true);
@@ -157,6 +160,25 @@ export default function AllBills() {
       { headerName: "Payment Date", field: "paymentDate", filter: "agSetColumnFilter", cellClassRules },
       { headerName: "Status", field: "status", filter: "agSetColumnFilter", cellClassRules },
       { headerName: "Project Id", field: "projectId", filter: "agSetColumnFilter", cellClassRules },
+      {
+        colId: "action",
+        headerName: "Action",
+        pinned: "right",
+        sortable: false,
+        filter: false,
+        cellClassRules,
+        cellRenderer: (params) => {
+          if (!params.data) return null;
+          // Notes only, deliberately no Archive/Delete here — bills are
+          // auto-synced from their invoice (see InvoiceService's
+          // syncBillsForInvoice/validateBillStatusForAllInvoices), so
+          // editing a bill's own status or removing it independently of
+          // its invoice risks reintroducing exactly the invoice/bill
+          // desync this app already has a dedicated reconciliation system
+          // for. That needs a product decision, not a default action.
+          return <NotesActionButton onOpenNotes={() => setNoteModalRow(params.data)} extraActions={[]} />;
+        },
+      },
     ],
     [],
   );
@@ -242,6 +264,13 @@ export default function AllBills() {
           />
         </div>
       </div>
+      <NotesModal
+        open={!!noteModalRow}
+        entityType="Bill"
+        entityId={noteModalRow?.billId}
+        title={noteModalRow?.employeeName}
+        onClose={() => setNoteModalRow(null)}
+      />
     </div>
   );
 }

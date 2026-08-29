@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, Card, Form, message } from "antd";
+import { Button, Card, Form, Modal, message } from "antd";
 import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
 import dayjs from "dayjs";
@@ -19,6 +19,9 @@ import {
 } from "./visaConstants";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import NotesActionButton from "../Notes/NotesActionButton";
+import NotesModal from "../Notes/NotesModal";
+import { buildRowActions } from "../Notes/rowActions";
 
 // Mirrors the exact predicates ImmigrationDashboard.jsx uses to compute its
 // feed card counts, so "Review all" always lands on a grid whose row count
@@ -114,6 +117,36 @@ const VisaMasterList = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const [noteModalRow, setNoteModalRow] = useState(null);
+
+  const handleArchiveVisa = (row) => {
+    axios
+      .put(API_ENDPOINTS.updateVisa(row.visaId), { ...row, status: "Archived" })
+      .then(() => {
+        message.success("Visa archived");
+        fetchData();
+      })
+      .catch(() => message.error("Failed to archive visa. Please try again."));
+  };
+
+  const handleDeleteVisa = (row) => {
+    Modal.confirm({
+      title: `Delete visa "${row.lcaNumber || row.visaId}"?`,
+      content: "This permanently removes this visa record. This can't be undone.",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: () =>
+        axios
+          .delete(API_ENDPOINTS.deleteVisa(row.visaId))
+          .then(() => {
+            message.success("Visa deleted");
+            fetchData();
+          })
+          .catch(() => message.error("Failed to delete visa. Please try again.")),
+    });
+  };
 
   const handleSearchInputChange = (event) => {
     setSearchText(event.target.value);
@@ -302,6 +335,28 @@ const VisaMasterList = () => {
     { colId: "endDate", field: "endDate", headerName: DETAIL_FIELD_LABELS.endDate, filter: "agSetColumnFilter", cellClassRules },
     { colId: "approvedDate", field: "approvedDate", headerName: DETAIL_FIELD_LABELS.approvedDate, filter: "agSetColumnFilter", cellClassRules },
     { colId: "lastUpdated", field: "lastUpdated", headerName: DETAIL_FIELD_LABELS.lastUpdated, filter: "agSetColumnFilter", cellClassRules, editable: false },
+    {
+      colId: "action",
+      headerName: "Action",
+      pinned: "right",
+      sortable: false,
+      filter: false,
+      editable: false,
+      cellClassRules,
+      cellRenderer: (params) => {
+        if (!params.data) return null;
+        const row = params.data;
+        return (
+          <NotesActionButton
+            onOpenNotes={() => setNoteModalRow(row)}
+            extraActions={buildRowActions({
+              onArchive: () => handleArchiveVisa(row),
+              onDelete: () => handleDeleteVisa(row),
+            })}
+          />
+        );
+      },
+    },
   ];
 
   const columnDefsSized = sizeColumnsForHeader(columnDefs);
@@ -466,6 +521,13 @@ const VisaMasterList = () => {
             jobTitle: lca?.jobTitle ?? null,
           });
         }}
+      />
+      <NotesModal
+        open={!!noteModalRow}
+        entityType="Visa"
+        entityId={noteModalRow?.visaId}
+        title={noteModalRow?.lcaNumber}
+        onClose={() => setNoteModalRow(null)}
       />
     </div>
   );
