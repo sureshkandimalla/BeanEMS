@@ -1,21 +1,13 @@
 import React from "react";
-import { Button, Dropdown } from "antd";
+import { Dropdown } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 
 // The clickable "Notes" cell for a grid row — always opens the notes
-// popup on click. `extraActions` is optional: pass grid-specific actions
-// (e.g. LCA's Archive/Delete) as [{ key, label, danger?, onClick }] to get
-// a split button (arrow opens the rest); omit it for a plain button when
-// a grid only needs Notes.
+// popup on click, and always shows the dropdown arrow (even with just the
+// shared Archive/Delete — see rowActions.js) so the control looks the same
+// on every grid whether or not a given row has extra type-specific
+// actions. `extraActions`: [{ key, label, danger?, onClick }].
 const NotesActionButton = ({ onOpenNotes, extraActions = [] }) => {
-  if (extraActions.length === 0) {
-    return (
-      <Button type="link" onClick={onOpenNotes}>
-        Notes
-      </Button>
-    );
-  }
-
   return (
     <Dropdown.Button
       type="link"

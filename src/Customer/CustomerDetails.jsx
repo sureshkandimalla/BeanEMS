@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Card, Button, Drawer } from "antd";
+import { Card, Button, Drawer, Modal, message } from "antd";
 import { PlusOutlined, FileExcelOutlined, ReloadOutlined, SaveOutlined, CloseOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { Link, useLocation } from "react-router-dom";
@@ -18,6 +18,7 @@ import API_ENDPOINTS, {
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
+import { buildRowActions } from "../Notes/rowActions";
 
 const columnsList = [
   { headerName: "Customer Id", field: "customerId", type: "number" },
@@ -113,6 +114,34 @@ const CustomerDetails = () => {
         setRowData(getFlattenedData(data));
       })
       .catch((error) => console.error("Error fetching data:", error));
+  };
+
+  const handleArchiveCustomer = (row) => {
+    axios
+      .put(API_ENDPOINTS.customersById(row.customerId), { ...row, customerStatus: "Archived" })
+      .then(() => {
+        message.success("Customer archived");
+        fetchData();
+      })
+      .catch(() => message.error("Failed to archive customer. Please try again."));
+  };
+
+  const handleDeleteCustomer = (row) => {
+    Modal.confirm({
+      title: `Delete "${row.customerCompanyName || row.customerId}"?`,
+      content: "This permanently removes this customer record. This can't be undone.",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: () =>
+        axios
+          .delete(API_ENDPOINTS.deleteCustomer(row.customerId))
+          .then(() => {
+            message.success("Customer deleted");
+            fetchData();
+          })
+          .catch(() => message.error("Failed to delete customer. It may still be referenced elsewhere (projects, invoices, etc.).")),
+    });
   };
 
   useEffect(() => {
@@ -277,7 +306,15 @@ const CustomerDetails = () => {
         },
         cellRenderer: (params) => {
           if (!params.data) return null;
-          return <NotesActionButton onOpenNotes={() => setNoteModalRow(params.data)} />;
+          return (
+            <NotesActionButton
+              onOpenNotes={() => setNoteModalRow(params.data)}
+              extraActions={buildRowActions({
+                onArchive: () => handleArchiveCustomer(params.data),
+                onDelete: () => handleDeleteCustomer(params.data),
+              })}
+            />
+          );
         },
       },
     ];

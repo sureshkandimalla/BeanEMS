@@ -9,11 +9,12 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import axios from "axios";
 import API_ENDPOINTS from "../config";
 import LcaFormModal from "./LcaFormModal";
-import { LCA_FIELD_LABELS, LCA_STATUS_OPTIONS, LCA_ROW_ACTIONS } from "./visaConstants";
+import { LCA_FIELD_LABELS, LCA_STATUS_OPTIONS } from "./visaConstants";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
+import { buildRowActions } from "../Notes/rowActions";
 
 const LCADetails = () => {
   const gridRef = useRef(null);
@@ -196,8 +197,6 @@ const LCADetails = () => {
       .catch(() => message.error("Failed to archive LCA. Please try again."));
   };
 
-  // Maps each LCA_ROW_ACTIONS key to its handler.
-  const rowActionHandlers = { archive: handleArchiveRow, delete: handleDeleteRow };
 
   const cellClassRules = {
     darkGreyBackground: (params) => params.node?.rowIndex !== undefined && params.node.rowIndex % 2 === 1,
@@ -265,14 +264,13 @@ const LCADetails = () => {
       cellRenderer: (params) => {
         if (!params.data) return null;
         const row = params.data;
-        const extraActions = LCA_ROW_ACTIONS.map((action) => ({
-          ...action,
-          onClick: () => rowActionHandlers[action.key](row),
-        }));
         return (
           <NotesActionButton
             onOpenNotes={() => setNoteModalRow(row)}
-            extraActions={extraActions}
+            extraActions={buildRowActions({
+              onArchive: () => handleArchiveRow(row),
+              onDelete: () => handleDeleteRow(row),
+            })}
           />
         );
       },

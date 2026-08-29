@@ -1,6 +1,6 @@
 import React, { useState, useEffect , useCallback, useRef, useMemo} from "react";
 import { AgGridReact } from "@ag-grid-community/react";
-import { Button, message } from "antd";
+import { Button, Modal, message } from "antd";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import "ag-grid-enterprise";
@@ -13,6 +13,7 @@ import API_ENDPOINTS, { workingStatusList, workAuthorizationList, companyList } 
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
+import { buildRowActions } from "../Notes/rowActions";
 
 const employmentTypeOptions = ["Full-Time", "Part-Time", "Hourly", "W2", "C2C", "1099"];
 const i9EverifyStatusOptions = ["Completed", "In Progress", "Failed"];
@@ -25,6 +26,34 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [vendors, setVendors] = useState([]);
   const [noteModalRow, setNoteModalRow] = useState(null);
+
+  const handleArchiveEmployee = (row) => {
+    axios
+      .put(API_ENDPOINTS.updateEmployee(row.employeeId), { ...row, status: "Archived" })
+      .then(() => {
+        message.success("Employee archived");
+        if (onRefresh) onRefresh();
+      })
+      .catch(() => message.error("Failed to archive employee. Please try again."));
+  };
+
+  const handleDeleteEmployee = (row) => {
+    Modal.confirm({
+      title: `Delete "${`${row.firstName || ""} ${row.lastName || ""}`.trim()}"?`,
+      content: "This permanently removes this employee record. This can't be undone.",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: () =>
+        axios
+          .delete(API_ENDPOINTS.deleteEmployee(row.employeeId))
+          .then(() => {
+            message.success("Employee deleted");
+            if (onRefresh) onRefresh();
+          })
+          .catch(() => message.error("Failed to delete employee. It may still be referenced elsewhere (projects, assignments, etc.).")),
+    });
+  };
 
   useEffect(() => {
     axios
@@ -334,7 +363,15 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
         },
         cellRenderer: (params) => {
           if (!params.data) return null;
-          return <NotesActionButton onOpenNotes={() => setNoteModalRow(params.data)} />;
+          return (
+            <NotesActionButton
+              onOpenNotes={() => setNoteModalRow(params.data)}
+              extraActions={buildRowActions({
+                onArchive: () => handleArchiveEmployee(params.data),
+                onDelete: () => handleDeleteEmployee(params.data),
+              })}
+            />
+          );
         },
       },
     ];

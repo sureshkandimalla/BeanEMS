@@ -172,17 +172,6 @@ export const LCA_STATUS_OPTIONS = [
   { value: "Archived" },
 ];
 
-// The LCA grid's row-level Notes button (LCADetails.jsx) also carries
-// these extra actions in its dropdown arrow — a single place to
-// add/remove/rename them without touching the grid itself. `danger`
-// renders the item in red (destructive actions only). Notes itself isn't
-// listed here — it's always the button's primary click, handled by the
-// shared NotesActionButton component.
-export const LCA_ROW_ACTIONS = [
-  { key: "archive", label: "Archive" },
-  { key: "delete", label: "Delete", danger: true },
-];
-
 // ─────────────────────────────────────────────
 // LCA fields that belong to the LCA sub-object
 // (used in onCellValueChanged to route saves)

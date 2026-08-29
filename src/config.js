@@ -25,6 +25,7 @@ export const workingStatusList = [
   { value: "Bench", label: "Bench" },
   { value: "OnBoarding", label: "On-Boarding" },
   { value: "NewHires", label: "New Hires" },
+  { value: "Archived", label: "Archived" },
 ];
 export const workAuthorizationList = [
   { value: "H1B", label: "H1B" },
@@ -100,6 +101,8 @@ export const API_ENDPOINTS = {
   getAllEmployees: `${API_BASE_URL}/employees/getAllEmployees`,
   getAllCustomers: `${API_BASE_URL}/customers/getAllCustomers`,
   customersById: (customerId) => `${API_BASE_URL}/customers/customers/${customerId}`,
+  deleteEmployee: (employeeId) => `${API_BASE_URL}/employees/${employeeId}`,
+  deleteCustomer: (customerId) => `${API_BASE_URL}/customers/customers/${customerId}`,
   assignmentsForProject: (projectId) => `${API_BASE_URL}/assignmentsForProject?projectId=${projectId}`,
   assignmentsForEmployee: (employeeId) => `${API_BASE_URL}/assignmentsForEmployee?employeeId=${employeeId}`,
   getTimesheetByAssignmentAndMonth: (assignmentId, yearMonth) => `${API_BASE_URL}/timesheets/getByAssignmentAndMonth?assignmentId=${assignmentId}&yearMonth=${yearMonth}`,
