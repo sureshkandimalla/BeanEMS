@@ -252,6 +252,9 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
             extraActions={buildRowActions({
               onArchive: () => handleArchiveExpense(params.data),
               onDelete: () => handleDeleteExpense(params.data),
+              entityType: "Expense",
+              entityId: params.data.expenseId,
+              entityLabel: params.data.description,
             })}
           />
         );

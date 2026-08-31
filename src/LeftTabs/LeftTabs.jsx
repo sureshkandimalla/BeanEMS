@@ -97,6 +97,7 @@ const CREATE_MENU = [
       { label: "Dashboard", to: "/dashboard" },
       { label: "Master Data Load", to: "/masterdataload" },
       { label: "User Access", to: "/userAccess" },
+      { label: "Pending Requests", to: "/pendingRequests" },
     ],
   },
 ];

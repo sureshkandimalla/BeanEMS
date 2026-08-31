@@ -178,6 +178,11 @@ export const API_ENDPOINTS = {
   createNote: `${API_BASE_URL}/notes`,
   getNotesForEntity: (type, entityId) => `${API_BASE_URL}/notes?type=${type}&entityId=${entityId}`,
   noteById: (noteId) => `${API_BASE_URL}/notes/${noteId}`,
+  // Non-admin "please Archive/Delete this" requests, for an admin to review
+  // on the Pending Requests page — see ActionRequestController.
+  createActionRequest: `${API_BASE_URL}/actionRequests`,
+  getActionRequests: (status) => `${API_BASE_URL}/actionRequests${status ? `?status=${status}` : ""}`,
+  resolveActionRequest: (requestId) => `${API_BASE_URL}/actionRequests/${requestId}/resolve`,
   assignments: `${API_BASE_URL}/assignments`,
   assignmentsById: (assignmentId) => `${API_BASE_URL}/assignments/${assignmentId}`,
   saveOnBoardProject: `${API_BASE_URL}/saveOnBoardProject`,

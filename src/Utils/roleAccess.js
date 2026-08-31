@@ -59,6 +59,7 @@ export const ROUTE_ROLES = {
 
   "/masterdataload": [], // Admin only
   "/userAccess": [], // Admin only
+  "/pendingRequests": [], // Admin only
 };
 
 export function canAccess(userRole, path) {

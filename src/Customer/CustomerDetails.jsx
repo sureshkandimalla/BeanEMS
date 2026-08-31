@@ -312,6 +312,9 @@ const CustomerDetails = () => {
               extraActions={buildRowActions({
                 onArchive: () => handleArchiveCustomer(params.data),
                 onDelete: () => handleDeleteCustomer(params.data),
+                entityType: "Customer",
+                entityId: params.data.customerId,
+                entityLabel: params.data.customerCompanyName,
               })}
             />
           );

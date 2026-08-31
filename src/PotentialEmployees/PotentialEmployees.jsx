@@ -231,6 +231,9 @@ const PotentialEmployees = () => {
               extraActions={buildRowActions({
                 onArchive: () => handleArchivePotentialEmployee(params.data),
                 onDelete: () => handleDeletePotentialEmployee(params.data),
+                entityType: "PotentialEmployee",
+                entityId: params.data.peId,
+                entityLabel: `${params.data.firstName || ""} ${params.data.lastName || ""}`.trim(),
               })}
             />
           );

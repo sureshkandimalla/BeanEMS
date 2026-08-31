@@ -426,6 +426,9 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
                 // "are you sure" other grids use — Projects cascade-delete
                 // real financial records, so it warrants the extra detail.
                 onDelete: () => handleDeleteProject(params.data),
+                entityType: "Project",
+                entityId: params.data.projectId,
+                entityLabel: params.data.projectName,
               })}
             />
           );

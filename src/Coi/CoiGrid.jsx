@@ -231,6 +231,9 @@ const CoiGrid = ({ customerId, vendorId, isCollapsed }) => {
             extraActions={buildRowActions({
               onArchive: () => handleArchive(row),
               onDelete: () => handleDelete(row),
+              entityType: "COI",
+              entityId: row.id,
+              entityLabel: vendorNameById[row.vendorId] || customerNameById[row.customerId],
             })}
           />
         );

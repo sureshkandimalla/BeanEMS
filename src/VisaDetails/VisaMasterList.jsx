@@ -352,6 +352,9 @@ const VisaMasterList = () => {
             extraActions={buildRowActions({
               onArchive: () => handleArchiveVisa(row),
               onDelete: () => handleDeleteVisa(row),
+              entityType: "Visa",
+              entityId: row.visaId,
+              entityLabel: row.lcaNumber,
             })}
           />
         );

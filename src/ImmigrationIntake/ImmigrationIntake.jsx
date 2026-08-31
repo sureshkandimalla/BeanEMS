@@ -339,6 +339,9 @@ export default function ImmigrationIntake() {
               extraActions={buildRowActions({
                 onArchive: () => handleArchiveIntake(row),
                 onDelete: () => handleDeleteIntake(row),
+                entityType: "ImmigrationIntake",
+                entityId: row.intakeId,
+                entityLabel: row.caseId,
               })}
             />
           );

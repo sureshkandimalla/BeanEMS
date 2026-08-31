@@ -369,6 +369,9 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
               extraActions={buildRowActions({
                 onArchive: () => handleArchiveEmployee(params.data),
                 onDelete: () => handleDeleteEmployee(params.data),
+                entityType: "Employee",
+                entityId: params.data.employeeId,
+                entityLabel: `${params.data.firstName || ""} ${params.data.lastName || ""}`.trim(),
               })}
             />
           );

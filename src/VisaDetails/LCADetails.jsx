@@ -270,6 +270,9 @@ const LCADetails = () => {
             extraActions={buildRowActions({
               onArchive: () => handleArchiveRow(row),
               onDelete: () => handleDeleteRow(row),
+              entityType: "LCA",
+              entityId: row.lcaId,
+              entityLabel: row.lcaNumber || row.lcaCaseNumber,
             })}
           />
         );

@@ -559,6 +559,9 @@ const InvoiceDetails = ({ employeeId, projectId, customerId, statusFilter, isCol
               extraActions={buildRowActions({
                 onArchive: () => handleArchiveInvoice(params.data),
                 onDelete: () => handleDeleteInvoice(params.data),
+                entityType: "Invoice",
+                entityId: params.data.id,
+                entityLabel: params.data.invoiceNumber,
               })}
             />
           );

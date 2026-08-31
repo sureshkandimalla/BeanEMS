@@ -294,6 +294,9 @@ const VendorDetails = () => {
               extraActions={buildRowActions({
                 onArchive: () => handleArchiveVendor(params.data),
                 onDelete: () => handleDeleteVendor(params.data),
+                entityType: "Vendor",
+                entityId: params.data.vendorId,
+                entityLabel: params.data.vendorCompanyName,
               })}
             />
           );

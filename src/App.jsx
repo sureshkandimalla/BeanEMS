@@ -52,6 +52,7 @@ import ProjectInvoiceSummary from "./ProjectInvoiceSummary/ProjectInvoiceSummary
 import ImmigrationIntake from "./ImmigrationIntake/ImmigrationIntake";
 import AllBills from "./Billings/AllBills";
 import UserRoles from "./Admin/UserRoles";
+import PendingRequests from "./Admin/PendingRequests";
 const clientId = '34277343649-4552ljfqc3ccsipco8jbf7jr3mu279j0.apps.googleusercontent.com';
 const { Content } = Layout;
 
@@ -95,6 +96,7 @@ const App = () => {
               <Route path="/expensedetails" element={<ExpenseDetails />} />
               <Route path="/companyreport" element={<CompanyFinalReportDetails />} />
               <Route path="/masterdataload" element={<MasterDataLoad />} />
+              <Route path="/pendingRequests" element={<PendingRequests />} />
               <Route path="/userAccess" element={<UserRoles />} />
               <Route path="/payrollsummary" element={<PayrollSummary />} />
               <Route path="/payrolleligibility" element={<PayrollEligibility />} />
