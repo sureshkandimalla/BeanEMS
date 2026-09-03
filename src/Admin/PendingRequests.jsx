@@ -137,6 +137,13 @@ const PendingRequests = () => {
       headerName: "Review",
       sortable: false,
       filter: false,
+      minWidth: 260,
+      width: 260,
+      // ag-theme-alpine's default .ag-cell-value styling (overflow:
+      // hidden + text-overflow: ellipsis, meant for truncating long text)
+      // was clipping the second button — override it here so two buttons
+      // in a row render in full instead of getting ellipsis-truncated.
+      cellStyle: { overflow: "visible", textOverflow: "clip", display: "flex", alignItems: "center" },
       cellClassRules,
       cellRenderer: (params) => {
         if (!params.data) return null;
@@ -145,6 +152,7 @@ const PendingRequests = () => {
           <>
             <Button
               type="link"
+              size="small"
               icon={<CheckOutlined />}
               loading={busy}
               onClick={() => handleApprove(params.data)}
@@ -153,6 +161,7 @@ const PendingRequests = () => {
             </Button>
             <Button
               type="link"
+              size="small"
               danger
               icon={<CloseOutlined />}
               disabled={busy}
