@@ -143,4 +143,28 @@
   .ag-theme-alpine {
     min-height: 200px;
   }
+
+  /* ── Pagination footer, every grid ──
+     AG Grid's paging panel is a single-row flex container with a fixed
+     height and no wrap; at phone widths its three groups ("Page Size:
+     [dropdown]", "x to y of z", "Page a of b  |< < > >|") don't fit on
+     one line, so the browser breaks their own text apart mid-phrase
+     inside a footer that's too short to show it — the ragged, cut-off
+     mess this rule fixes. Instead: keep each group's own text intact
+     (white-space: nowrap) and let only whole groups wrap onto their own
+     line, with the panel free to grow past its normal fixed height to
+     fit however many rows that takes. */
+  .ag-theme-alpine .ag-paging-panel {
+    height: auto;
+    min-height: var(--ag-header-height, 48px);
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 6px;
+    padding: 8px 4px;
+    font-size: 12.5px;
+  }
+  .ag-theme-alpine .ag-paging-panel > * {
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
 }

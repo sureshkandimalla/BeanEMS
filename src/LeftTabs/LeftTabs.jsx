@@ -213,16 +213,12 @@ const REPORTS_MENU = [
   },
 ];
 
-const LeftTabs = () => {
-  const location = useLocation();
+// All the rail's derived, role-filtered menu data — shared between the
+// desktop hover-flyout rail (LeftTabs, below) and the touch-friendly
+// accordion drawer (MobileNav.jsx) so the two never drift out of sync.
+// Pure data computation, no rendering — safe to call from either.
+export function useLeftNavData() {
   const { user } = useContext(AuthContext);
-  // Which rail item's flyout is open ("create" | "reports" | null) —
-  // generalized so any rail item with hasFlyout:true can own a
-  // portal-rendered panel, not just Create.
-  const [activeFlyout, setActiveFlyout] = useState(null);
-  const [flyoutPos, setFlyoutPos] = useState({ top: 0, left: 0 });
-  const closeTimer = useRef(null);
-  const itemRefs = useRef({});
 
   // Home always points at each role's own landing page (e.g. Immigration's
   // is /immigrationDashboard, not the shared HR/Accounting /home) — same
@@ -277,6 +273,41 @@ const LeftTabs = () => {
     ...section,
     items: section.items.filter((it) => canAccess(user?.role, it.to)),
   })).filter((section) => section.items.length > 0);
+
+  return {
+    railItemsTop,
+    railItemsPinned,
+    visibleCreateColumns,
+    visibleAccountingColumns,
+    visibleImmigrationSections,
+    visibleTeamItems,
+    visibleCustomersSections,
+    visibleVendorsSections,
+    visibleReportsSections,
+  };
+}
+
+const LeftTabs = () => {
+  const location = useLocation();
+  // Which rail item's flyout is open ("create" | "reports" | null) —
+  // generalized so any rail item with hasFlyout:true can own a
+  // portal-rendered panel, not just Create.
+  const [activeFlyout, setActiveFlyout] = useState(null);
+  const [flyoutPos, setFlyoutPos] = useState({ top: 0, left: 0 });
+  const closeTimer = useRef(null);
+  const itemRefs = useRef({});
+
+  const {
+    railItemsTop,
+    railItemsPinned,
+    visibleCreateColumns,
+    visibleAccountingColumns,
+    visibleImmigrationSections,
+    visibleTeamItems,
+    visibleCustomersSections,
+    visibleVendorsSections,
+    visibleReportsSections,
+  } = useLeftNavData();
 
   // Anchored via the rail icon's actual screen position (not CSS
   // relative-to-rail) so the flyout can be portaled straight to <body> and

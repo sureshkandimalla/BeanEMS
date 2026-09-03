@@ -45,6 +45,45 @@ html, body, #root {
 .headerDiv .ant-btn.ant-btn-icon-only .anticon {
   font-size: 20px;
 }
+
+/* Sits next to the logo on the LIGHT end of .headerDiv's gradient, not
+   the dark-blue end the other header icon buttons live on — white would
+   be invisible here, unlike .headerDiv's default white-icon rule. */
+.header-menu-btn {
+  color: #1f2937 !important;
+  font-size: 18px;
+}
+.header-menu-btn:hover {
+  color: #4338ca !important;
+}
+
+/* The logo column reserves a fixed 400px on desktop (see Header.jsx's
+   flex="400px") — plenty of room there. Below phone/small-tablet widths
+   that reservation alone exceeds the viewport and squeezes the action
+   buttons into a sliver (the header shown in a QA screenshot at 390px),
+   so let it shrink to its actual content there instead. */
+@media (max-width: 767px) {
+  .header-logo-col {
+    flex: 0 1 auto !important;
+    max-width: 48% !important;
+  }
+  .headerLogo img {
+    height: 18px;
+  }
+  /* Icon-only Back button + tighter gaps between the 4 action buttons —
+     at 400px wide even one extra icon (the hamburger) was enough to wrap
+     the last button onto its own row (see the same QA screenshot). */
+  .header-back-btn-label {
+    display: none !important;
+  }
+  .header-actions {
+    gap: 4px !important;
+  }
+  .headerDiv .header-actions button.ant-btn.ant-btn-default {
+    margin-right: 4px !important;
+    margin-top: 4px !important;
+  }
+}
 .ant-card {
   border-radius: 24px;
   margin-bottom: 15px;
