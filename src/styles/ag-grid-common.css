@@ -167,4 +167,23 @@
     white-space: nowrap;
     flex: 0 0 auto;
   }
+
+  /* ── Toolbar row above every grid (Refresh / Search / Export / Add
+     New) ── .workforce-search-container is independently redefined,
+     nearly identically, in WorkForceList.css, Customer.css, Vendor.css
+     and VisaDetailsList.css — none of them wrap, so on a phone the row
+     just runs off the right edge instead (see QA screenshot on
+     /customerdetails). !important reaches every grid's toolbar here
+     regardless of which of those files' rule wins the normal cascade,
+     without having to touch or de-duplicate all four of them. */
+  .workforce-search-container {
+    flex-wrap: wrap !important;
+    row-gap: 8px !important;
+    column-gap: 8px !important;
+  }
+  .workforce-search-container input {
+    flex: 1 1 200px !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
 }
