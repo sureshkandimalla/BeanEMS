@@ -11,6 +11,7 @@ import ProjectList from "./ProjectsList";
 import API_ENDPOINTS from "../config";
 import AuthContext from "../Authentication/Context/AuthContext";
 import { canAccessEntity } from "../Utils/roleAccess";
+import { useNudgeResize } from "../Utils/useNudgeResize";
 
 const { Panel } = Collapse;
 
@@ -20,6 +21,7 @@ const ProjectDashboard = () => {
   const [activeKey, setActiveKey] = useState("0"); // State for active tab
   const [isEmployeesLoading, setEmployeeLoading] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  useNudgeResize();
 
   const addNewProject = () => {
     setOpen(true);

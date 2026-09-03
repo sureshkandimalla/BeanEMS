@@ -12,6 +12,7 @@ import "./EmployeeDetailDashboard.css";
 import WorkForceList from "../WorkForce/WorkForceList";
 import AuthContext from "../Authentication/Context/AuthContext";
 import { canAccessEntity } from "../Utils/roleAccess";
+import { useNudgeResize } from "../Utils/useNudgeResize";
 
 const { Panel } = Collapse;
 
@@ -27,6 +28,7 @@ const DASHBOARD_CHART_KEYS = ["totalActiveProjects", "revenueTrend", "invoiceSta
 
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
+  useNudgeResize();
   //addedchangesstart
   const visibleOverviewCharts = GLOBAL_CHARTS.filter(
     (c) => DASHBOARD_CHART_KEYS.includes(c.key) && canAccessEntity(user?.role, CHART_ENTITY[c.key]),

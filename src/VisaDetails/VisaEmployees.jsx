@@ -9,10 +9,12 @@ import LcaFormModal from "./LcaFormModal";
 import VisaFormModal from "./VisaFormModal";
 import API_ENDPOINTS from "../config";
 import "./VisaEmployees.css";
+import { useNudgeResize } from "../Utils/useNudgeResize";
 
 const { Panel } = Collapse;
 
 const VisaEmployees = () => {
+  useNudgeResize();
   const [isChartsOpen, setIsChartsOpen] = useState(false);
   const [rowData, setRowData] = useState([]);
   const [showNewHires, setShowNewHires] = useState(false);

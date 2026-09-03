@@ -13,6 +13,7 @@ import "../WorkForce/WorkForce.css"
 import AuthContext from "../Authentication/Context/AuthContext";
 import { canAccessEntity } from "../Utils/roleAccess";
 import API_ENDPOINTS from "../config";
+import { useNudgeResize } from "../Utils/useNudgeResize";
 
 const fetchEmployees = async () => {
   const response = await fetch(API_ENDPOINTS.getAllEmployees);
@@ -30,6 +31,7 @@ const WorkForceContent = () => {
   const [open, setOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showNewHires, setShowNewHires] = useState(false);
+  useNudgeResize();
 
   const {
     data: reconcileData,
