@@ -22,6 +22,7 @@ import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
 import { buildRowActions } from "../Notes/rowActions";
+import GridToolbar from "../Utils/GridToolbar";
 
 // Mirrors the exact predicates ImmigrationDashboard.jsx uses to compute its
 // feed card counts, so "Review all" always lands on a grid whose row count
@@ -368,7 +369,7 @@ const VisaMasterList = () => {
     <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div className="ag-theme-alpine workforce-container">
         <Card className="employeeTableCard" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-          <div className="workforce-search-container">
+          <GridToolbar className="workforce-search-container">
             <Button
               type="default"
               icon={<ReloadOutlined />}
@@ -435,7 +436,7 @@ const VisaMasterList = () => {
                 </Button>
               </>
             )}
-          </div>
+          </GridToolbar>
           <div className="workforce-grid-wrapper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
             <AgGridReact
               enableCellTextSelection={true}

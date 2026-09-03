@@ -8,6 +8,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import API_ENDPOINTS from "../config";
 import { ACTION_REQUEST_CONFIG } from "../Notes/actionRequestConfig";
+import GridToolbar from "../Utils/GridToolbar";
 
 const getLoggedInUserName = () => {
   try {
@@ -179,11 +180,11 @@ const PendingRequests = () => {
     <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div className="ag-theme-alpine employee-List-grid">
         <Card className="employeeTableCard" style={{ height: "100%" }}>
-          <div className="workforce-search-container">
+          <GridToolbar className="workforce-search-container">
             <Button type="default" icon={<ReloadOutlined />} onClick={fetchData} style={{ marginRight: "10px" }}>
               Refresh
             </Button>
-          </div>
+          </GridToolbar>
           <div style={{ height: "calc(100vh - 220px)" }}>
             <AgGridReact
               enableCellTextSelection={true}

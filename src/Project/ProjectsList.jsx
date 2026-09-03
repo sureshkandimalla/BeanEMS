@@ -27,6 +27,7 @@ import { openDocumentInNewTab } from "../Documents/openDocument";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
 import { buildRowActions } from "../Notes/rowActions";
+import GridToolbar from "../Utils/GridToolbar";
 
 const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   console.log(projectsList);
@@ -479,7 +480,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
   };
   return (
     <div className="ag-theme-alpine project-List-grid">
-      <div className="workforce-search-container">
+      <GridToolbar className="workforce-search-container">
         <Button
           type="default"
           icon={<ReloadOutlined />}
@@ -513,7 +514,7 @@ const ProjectList = ({ projectsList, isCollapsed, onRefresh }) => {
             </Button>
           </>
         )}
-      </div>
+      </GridToolbar>
       <div className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           ref={gridRef}

@@ -13,6 +13,7 @@ import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
+import GridToolbar from "../Utils/GridToolbar";
 
 // Standalone "All Bills" list — every bill across every employee, grouped by
 // Employee Name (AG Grid row grouping, which also gives free per-employee
@@ -186,7 +187,7 @@ export default function AllBills() {
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div className="ag-theme-alpine project-List-grid">
-        <div className="workforce-search-container">
+        <GridToolbar className="workforce-search-container">
           <Button type="default" icon={<ReloadOutlined />} onClick={fetchData} loading={loading} style={{ marginRight: "10px" }}>
             Refresh
           </Button>
@@ -199,7 +200,7 @@ export default function AllBills() {
           <Button type="default" icon={<FileExcelOutlined />} onClick={onBtnExportDataAsExcel} style={{ marginLeft: "10px" }}>
             Export to Excel
           </Button>
-        </div>
+        </GridToolbar>
         <div className="project-grid-wrapper">
           <AgGridReact
             enableCellTextSelection={true}

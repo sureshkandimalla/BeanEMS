@@ -11,6 +11,7 @@ import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatMonthYear } from "../Utils/dateFormat";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
+import GridToolbar from "../Utils/GridToolbar";
 
 // One row per Project — Total Invoice/Invoice Paid/Discounts/Pending are
 // aggregated across every invoice billed against that project, and Last
@@ -231,7 +232,7 @@ export default function ProjectInvoiceSummary() {
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div className="ag-theme-alpine project-List-grid">
-        <div className="workforce-search-container">
+        <GridToolbar className="workforce-search-container">
           <Button
             type="default"
             icon={<ReloadOutlined />}
@@ -255,7 +256,7 @@ export default function ProjectInvoiceSummary() {
           >
             Export to Excel
           </Button>
-        </div>
+        </GridToolbar>
         <div className="project-grid-wrapper">
           <AgGridReact
             enableCellTextSelection={true}

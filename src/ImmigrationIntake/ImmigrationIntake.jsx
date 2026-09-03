@@ -12,6 +12,7 @@ import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
 import { buildRowActions } from "../Notes/rowActions";
+import GridToolbar from "../Utils/GridToolbar";
 
 const MODAL_HEADER_COLOR = "#1677ff";
 
@@ -354,7 +355,7 @@ export default function ImmigrationIntake() {
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div className="ag-theme-alpine workforce-container">
-        <div className="workforce-search-container">
+        <GridToolbar className="workforce-search-container">
           <Button type="default" icon={<ReloadOutlined />} onClick={fetchData} style={{ marginRight: "10px" }}>
             Refresh
           </Button>
@@ -382,7 +383,7 @@ export default function ImmigrationIntake() {
           <Button type="primary" icon={<PlusOutlined />} onClick={openAddForm} style={{ marginLeft: "10px" }}>
             Add New Immigration Intake
           </Button>
-        </div>
+        </GridToolbar>
         <div className="workforce-grid-wrapper ag-grid-expanded" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
           <AgGridReact
             enableCellTextSelection={true}

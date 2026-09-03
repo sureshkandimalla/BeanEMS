@@ -10,6 +10,7 @@ import "./ProjectGrid.css";
 import { invoiceTermLabel } from "../Utils/invoiceTerm";
 import ProjectOnBoardingForm from "../OnBoardingComponent/ProjectOnBoarding";
 import NewCustomer from "../Customer/NewCustomer";
+import GridToolbar from "../Utils/GridToolbar";
 
 const ProjectGrid = ({ employeeId, customerId, isCollapsed }) => {
   const [searchText, setSearchText] = useState("");
@@ -149,7 +150,7 @@ const ProjectGrid = ({ employeeId, customerId, isCollapsed }) => {
       >
         <NewCustomer />
       </Drawer>
-      <div className="workforce-search-container">
+      <GridToolbar className="workforce-search-container">
         <Button
           type="default"
           icon={<ReloadOutlined />}
@@ -180,7 +181,7 @@ const ProjectGrid = ({ employeeId, customerId, isCollapsed }) => {
         >
           <PlusOutlined /> Add New Customer
         </Button>
-      </div>
+      </GridToolbar>
       <div  className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
         enableCellTextSelection={true}

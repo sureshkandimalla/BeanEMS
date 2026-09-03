@@ -11,6 +11,7 @@ import "./ProjectGrid.css";
 import "@ag-grid-community/styles/ag-theme-alpine.css";
 import AssignmentForm from "./AssignmentForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import GridToolbar from "../Utils/GridToolbar";
 import "./AssignmentDetails.css"
 
 const AssignmentDetails = ({ projectId, isCollapsed }) => {
@@ -168,7 +169,7 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
         }}
       >
       <div className="ag-theme-alpine workforce-container">
-      <div className="workforce-search-container">
+      <GridToolbar className="workforce-search-container">
           <Button
             type="default"
             icon={<ReloadOutlined />}
@@ -220,7 +221,7 @@ const AssignmentDetails = ({ projectId, isCollapsed }) => {
               </Button>
             </>
           )}
-        </div>
+        </GridToolbar>
         <div  className={`assignment-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           enableCellTextSelection={true}

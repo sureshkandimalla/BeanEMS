@@ -14,6 +14,7 @@ import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
 import { buildRowActions } from "../Notes/rowActions";
+import GridToolbar from "../Utils/GridToolbar";
 
 const columnsList = [
   { headerName: "Vendor Id", field: "vendorId", type: "number" },
@@ -355,7 +356,7 @@ const VendorDetails = () => {
         >
           <NewVendor />
         </Drawer>
-        <div className="workforce-search-container">
+        <GridToolbar className="workforce-search-container">
           <Button
             type="default"
             icon={<ReloadOutlined />}
@@ -423,7 +424,7 @@ const VendorDetails = () => {
               </Button>
             </>
           )}
-        </div>
+        </GridToolbar>
         <div className="vendor-grid-wrapper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
           <AgGridReact
             enableCellTextSelection={true}

@@ -13,6 +13,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import AdjustmentForm from "./AdjustmentForm";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
+import GridToolbar from "../Utils/GridToolbar";
 
 const AdjustementDetails = ({ employeeId, isCollapsed }) => {
   const gridRef = useRef(null);
@@ -173,7 +174,7 @@ const AdjustementDetails = ({ employeeId, isCollapsed }) => {
       >
         <AdjustmentForm onClose={onClose} />
       </Drawer>
-      <div className="workforce-search-container">
+      <GridToolbar className="workforce-search-container">
         <Button
           type="default"
           icon={<ReloadOutlined />}
@@ -196,7 +197,7 @@ const AdjustementDetails = ({ employeeId, isCollapsed }) => {
         >
           <PlusOutlined /> Add New Adjustment
         </Button>
-      </div>
+      </GridToolbar>
       <div  className={`assignment-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
         enableCellTextSelection={true}

@@ -24,6 +24,7 @@ import {
 } from "./visaConstants";
 import "./VisaDetailsList.css";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import GridToolbar from "../Utils/GridToolbar";
 
 export default function VisaDetailsList({ preloadedData }) {
   const [rowData, setRowData] = useState([]);
@@ -719,7 +720,7 @@ export default function VisaDetailsList({ preloadedData }) {
     <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <Card className="employeeTableCard" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
         <div className="ag-theme-alpine workforce-container">
-          <div className="workforce-search-container">
+          <GridToolbar className="workforce-search-container">
             <Button
               type="default"
               icon={<ReloadOutlined />}
@@ -751,7 +752,7 @@ export default function VisaDetailsList({ preloadedData }) {
                 💾 Save Changes
               </Button>
             )}
-          </div>
+          </GridToolbar>
           <div className="ag-grid-wrapper">
             <AgGridReact
               enableCellTextSelection={true}

@@ -10,6 +10,7 @@ import { openDocumentInNewTab } from "../Documents/openDocument";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
 import { buildRowActions } from "../Notes/rowActions";
+import GridToolbar from "../Utils/GridToolbar";
 import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -279,7 +280,7 @@ const CoiGrid = ({ customerId, vendorId, isCollapsed }) => {
 
   return (
     <div className="ag-theme-alpine">
-      <div className="workforce-search-container">
+      <GridToolbar className="workforce-search-container">
         <Button type="default" icon={<ReloadOutlined />} onClick={fetchData} style={{ marginRight: 10 }}>
           Refresh
         </Button>
@@ -296,7 +297,7 @@ const CoiGrid = ({ customerId, vendorId, isCollapsed }) => {
             </Button>
           </>
         )}
-      </div>
+      </GridToolbar>
       <div className={`project-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           ref={gridRef}

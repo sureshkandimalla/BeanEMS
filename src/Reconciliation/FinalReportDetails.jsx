@@ -10,6 +10,7 @@ import API_ENDPOINTS from "../config";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { formatMonthYear, formatDate } from "../Utils/dateFormat";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import GridToolbar from "../Utils/GridToolbar";
 
 // One grid, two categories ("Projects" and "Payments"), grouped/collapsed
 // under a single "Category" column. Not every column applies to every
@@ -494,7 +495,7 @@ export default function FinalReportDetails({ employeeId }) {
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div className="ag-theme-alpine project-List-grid">
-        <div className="workforce-search-container">
+        <GridToolbar className="workforce-search-container">
           <Button
             type="default"
             icon={<ReloadOutlined />}
@@ -526,7 +527,7 @@ export default function FinalReportDetails({ employeeId }) {
             onChange={(value) => setInvoiceCutoffDate(value || null)}
             options={invoiceDateOptions.map((date) => ({ value: date, label: formatDate(date) }))}
           />
-        </div>
+        </GridToolbar>
         <div className="project-grid-wrapper">
           <AgGridReact
             enableCellTextSelection={true}

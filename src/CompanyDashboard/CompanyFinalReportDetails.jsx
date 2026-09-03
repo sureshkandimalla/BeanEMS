@@ -11,6 +11,7 @@ import API_ENDPOINTS from "../config";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
+import GridToolbar from "../Utils/GridToolbar";
 
 // Accounting-style negative display: (1,234.56) instead of -1,234.56, in red.
 const formatSignedCurrency = (value) => {
@@ -321,7 +322,7 @@ export default function CompanyFinalReportDetails() {
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div className="ag-theme-alpine project-List-grid">
-        <div className="workforce-search-container">
+        <GridToolbar className="workforce-search-container">
           <Button
             type="default"
             icon={<ReloadOutlined />}
@@ -352,7 +353,7 @@ export default function CompanyFinalReportDetails() {
           >
             Show New Hires
           </Checkbox>
-        </div>
+        </GridToolbar>
         <div className="project-grid-wrapper">
           <AgGridReact
             enableCellTextSelection={true}

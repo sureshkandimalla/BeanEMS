@@ -13,6 +13,7 @@ import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
 import { buildRowActions } from "../Notes/rowActions";
+import GridToolbar from "../Utils/GridToolbar";
 
 const PotentialEmployees = () => {
   const [searchText, setSearchText] = useState("");
@@ -319,7 +320,7 @@ const PotentialEmployees = () => {
         <NewPotentialEmployee onClose={handleCloseDrawer} />
       </Drawer>
 
-      <div className="workforce-search-container">
+      <GridToolbar className="workforce-search-container">
         <Button
           type="default"
           icon={<ReloadOutlined />}
@@ -334,26 +335,23 @@ const PotentialEmployees = () => {
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
         />
-
-        <div>
-        <Button 
-      type="default" 
-      icon={<FileExcelOutlined />} 
+        <Button
+      type="default"
+      icon={<FileExcelOutlined />}
       onClick={onBtnExportDataAsExcel}
       style={{ marginRight: "10px" }}
     >
       Export to Excel
     </Button>
-          <Button type="primary" onClick={() => setOpen(true)} style={{ marginRight: "10px" }}>
-            <PlusOutlined /> Add New Employee
+        <Button type="primary" onClick={() => setOpen(true)} style={{ marginRight: "10px" }}>
+          <PlusOutlined /> Add New Employee
+        </Button>
+        {updatedRows.length > 0 && (
+          <Button type="primary" ghost icon={<SaveOutlined />} onClick={saveUpdatedRows}>
+            Save Changes
           </Button>
-          {updatedRows.length > 0 && (
-            <Button type="primary" ghost icon={<SaveOutlined />} onClick={saveUpdatedRows}>
-              Save Changes
-            </Button>
-          )}
-        </div>
-      </div>
+        )}
+      </GridToolbar>
       <div className= "pemployee-grid-wrapper">
       <AgGridReact
         enableCellTextSelection={true}

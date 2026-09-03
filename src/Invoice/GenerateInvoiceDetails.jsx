@@ -18,6 +18,7 @@ import { formatMonthYear } from "../Utils/dateFormat";
 import { computeInvoicePeriod } from "../Utils/invoiceTerm";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
+import GridToolbar from "../Utils/GridToolbar";
 
 const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {}) => {
   const location = useLocation();
@@ -511,48 +512,46 @@ const GenerateInvoiceDetails = ({ url: propUrl, month: propMonth, onBack } = {})
           <div>Loading...</div> // Display loading indicator
         ) : (
           <>
-            <div className="workforce-search-container">
-              <div style={{ display: "flex", alignItems: "center" }}>
-                {onBack && (
-                  <>
-                    <Button
-                      type="default"
-                      icon={<ArrowLeftOutlined />}
-                      onClick={onBack}
-                      style={{ marginRight: "10px" }}
-                    >
-                      Back
-                    </Button>
-                    <Button
-                      icon={<CloseOutlined />}
-                      onClick={onBack}
-                      style={{ marginRight: "10px" }}
-                    >
-                      Cancel
-                    </Button>
-                  </>
-                )}
-                <Button
-                  type="default"
-                  icon={<ReloadOutlined />}
-                  onClick={fetchData}
-                  style={{ marginRight: "10px" }}
-                >
-                  Refresh
-                </Button>
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchText}
-                  onChange={handleSearchInputChange}
-                />
-              </div>
+            <GridToolbar className="workforce-search-container">
+              {onBack && (
+                <>
+                  <Button
+                    type="default"
+                    icon={<ArrowLeftOutlined />}
+                    onClick={onBack}
+                    style={{ marginRight: "10px" }}
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    icon={<CloseOutlined />}
+                    onClick={onBack}
+                    style={{ marginRight: "10px" }}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
+              <Button
+                type="default"
+                icon={<ReloadOutlined />}
+                onClick={fetchData}
+                style={{ marginRight: "10px" }}
+              >
+                Refresh
+              </Button>
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchText}
+                onChange={handleSearchInputChange}
+              />
               {!isUpToDate && (
                 <Button key="save" type="primary" onClick={handleSave} disabled={!hasUnsavedChanges}>
                   Save
                 </Button>
               )}
-            </div>
+            </GridToolbar>
 
             {isUpToDate ? (
               <Alert

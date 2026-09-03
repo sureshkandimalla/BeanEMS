@@ -16,6 +16,7 @@ import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
 import { buildRowActions } from "../Notes/rowActions";
+import GridToolbar from "../Utils/GridToolbar";
 
 const editableUnlessReimbursed = (params) => params.data?.status !== "Reimbursed";
 
@@ -276,55 +277,53 @@ const ExpenseDetails = ({ employeeId, statusFilter, gridHeight } = {}) => {
           <Drawer title="Add New Expense" placement="right" size="large" onClose={onClose} open={open}>
             <NewExpense onClose={() => { onClose(); fetchData(); }} employeeId={employeeId} />
           </Drawer>
-          <div className="workforce-search-container" style={{ gap: "32px" }}>
-            <div style={{ display: "flex", alignItems: "center" }}>
-              <Button
-                type="default"
-                icon={<ReloadOutlined />}
-                onClick={fetchData}
-                style={{ marginRight: "10px" }}
-              >
-                Refresh
-              </Button>
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchText}
-                onChange={handleSearchInputChange}
-              />
-              <Button
-                type="default"
-                icon={<FileExcelOutlined />}
-                onClick={onBtnExportDataAsExcel}
-                style={{ marginLeft: "10px" }}
-              >
-                Export to Excel
-              </Button>
-              {Object.keys(modifiedRows).length > 0 && (
-                <>
-                  <Button
-                    type="primary"
-                    icon={<SaveOutlined />}
-                    onClick={handleSaveChanges}
-                    style={{ marginLeft: "10px" }}
-                  >
-                    Save
-                  </Button>
-                  <Button icon={<CloseOutlined />} onClick={handleCancelChanges} style={{ marginLeft: "10px" }}>
-                    Cancel
-                  </Button>
-                </>
-              )}
-              <Button
-                style={{ marginLeft: "20px" }}
-                type="primary"
-                className="button-customer"
-                onClick={addNewExpense}
-              >
-                <PlusOutlined /> Add New Expense
-              </Button>
-            </div>
-          </div>
+          <GridToolbar className="workforce-search-container" gap={32}>
+            <Button
+              type="default"
+              icon={<ReloadOutlined />}
+              onClick={fetchData}
+              style={{ marginRight: "10px" }}
+            >
+              Refresh
+            </Button>
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchText}
+              onChange={handleSearchInputChange}
+            />
+            <Button
+              type="default"
+              icon={<FileExcelOutlined />}
+              onClick={onBtnExportDataAsExcel}
+              style={{ marginLeft: "10px" }}
+            >
+              Export to Excel
+            </Button>
+            {Object.keys(modifiedRows).length > 0 && (
+              <>
+                <Button
+                  type="primary"
+                  icon={<SaveOutlined />}
+                  onClick={handleSaveChanges}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Save
+                </Button>
+                <Button icon={<CloseOutlined />} onClick={handleCancelChanges} style={{ marginLeft: "10px" }}>
+                  Cancel
+                </Button>
+              </>
+            )}
+            <Button
+              style={{ marginLeft: "20px" }}
+              type="primary"
+              className="button-customer"
+              onClick={addNewExpense}
+            >
+              <PlusOutlined /> Add New Expense
+            </Button>
+          </GridToolbar>
           <div
             className="invoice1-grid-wrapper"
             style={gridHeight ? { height: gridHeight, maxHeight: gridHeight } : undefined}

@@ -10,6 +10,7 @@ import { formatCurrency } from "../Utils/CurrencyFormatter";
 import API_ENDPOINTS from "../config";
 import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
+import GridToolbar from "../Utils/GridToolbar";
 import "./ReconciliationDetails.css"
 
 export default function ReconciliationDetails({ employeeId }) {
@@ -181,7 +182,7 @@ export default function ReconciliationDetails({ employeeId }) {
       overflow: "hidden",
     }}>
     <div className="ag-theme-alpine project-List-grid">
-      <div className="workforce-search-container">
+      <GridToolbar className="workforce-search-container">
         <Button
           type="default"
           icon={<ReloadOutlined />}
@@ -190,7 +191,7 @@ export default function ReconciliationDetails({ employeeId }) {
         >
           Refresh
         </Button>
-      </div>
+      </GridToolbar>
       <div className= "project-grid-wrapper">
       <AgGridReact
         enableCellTextSelection={true}

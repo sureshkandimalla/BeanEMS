@@ -9,6 +9,7 @@ import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./WorkForceList.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
+import GridToolbar from "../Utils/GridToolbar";
 
 const WorkForceReconcileList = ({ employees, isCollapsed, onRefresh }) => {
   const gridRef = useRef(null);
@@ -174,7 +175,7 @@ const WorkForceReconcileList = ({ employees, isCollapsed, onRefresh }) => {
 
   return (
     <div className="ag-theme-alpine workforce-container">
-      <div className="workforce-search-container">
+      <GridToolbar className="workforce-search-container">
         <Button
           type="default"
           icon={<ReloadOutlined />}
@@ -189,7 +190,7 @@ const WorkForceReconcileList = ({ employees, isCollapsed, onRefresh }) => {
           value={searchText}
           onChange={handleSearchInputChange}
         />
-      </div>
+      </GridToolbar>
       <div  className={`ag-workforce-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           enableCellTextSelection={true}

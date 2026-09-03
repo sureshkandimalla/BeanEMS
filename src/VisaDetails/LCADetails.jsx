@@ -15,6 +15,7 @@ import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
 import { buildRowActions } from "../Notes/rowActions";
+import GridToolbar from "../Utils/GridToolbar";
 
 const LCADetails = () => {
   const gridRef = useRef(null);
@@ -286,7 +287,7 @@ const LCADetails = () => {
     <div style={{ height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div className="ag-theme-alpine workforce-container">
         <Card className="employeeTableCard" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-          <div className="workforce-search-container">
+          <GridToolbar className="workforce-search-container">
             <Button
               type="default"
               icon={<ReloadOutlined />}
@@ -335,7 +336,7 @@ const LCADetails = () => {
                 </Button>
               </>
             )}
-          </div>
+          </GridToolbar>
           <div className="workforce-grid-wrapper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
             <AgGridReact
               enableCellTextSelection={true}

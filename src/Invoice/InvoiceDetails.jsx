@@ -23,6 +23,7 @@ import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
 import { buildRowActions } from "../Notes/rowActions";
 import { formatMonthYear, formatDate } from "../Utils/dateFormat";
+import GridToolbar from "../Utils/GridToolbar";
 import ChartOverviewPanel from "../Utils/ChartOverviewPanel";
 import { GLOBAL_CHARTS } from "../Charts/globalChartRegistry";
 import AuthContext from "../Authentication/Context/AuthContext";
@@ -769,65 +770,66 @@ const InvoiceDetails = ({ employeeId, projectId, customerId, statusFilter, isCol
           onChange={setPromptPaidDate}
         />
       </Modal>
-      <div className="workforce-search-container" style={{ gap: "32px" }}>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <Button
-            type="default"
-            icon={<ReloadOutlined />}
-            onClick={() => {
-              fetchData();
-              // When embedded (e.g. Project Full Details' "Invoices" tab),
-              // also refreshes the host page's own totals/chart — otherwise
-              // those go stale after a save made right here.
-              onRefresh?.();
-            }}
-            style={{ marginRight: "10px" }}
-          >
-            Refresh
-          </Button>
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchText}
-            onChange={handleSearchInputChange}
-          />
-          <Button
-            type="default"
-            icon={<FileExcelOutlined />}
-            onClick={onBtnExportDataAsExcel}
-            style={{ marginLeft: "10px" }}
-          >
-            Export to Excel
-          </Button>
-          {Object.keys(modifiedRows).length > 0 && (
-            <>
-              <Button
-                type="primary"
-                icon={<SaveOutlined />}
-                onClick={handleSaveChanges}
-                style={{ marginLeft: "10px" }}
-              >
-                Save
-              </Button>
-              <Button
-                icon={<CloseOutlined />}
-                onClick={handleCancelChanges}
-                style={{ marginLeft: "10px" }}
-              >
-                Cancel
-              </Button>
-            </>
-          )}
-          <Button
-            style={{ marginLeft: "20px" }}
-            type="primary"
-            className="button-customer"
-            onClick={addNewInvoice}
-          >
-            <PlusOutlined /> Add New Invoice
-          </Button>
-        </div>
-        <div style={{ display: "flex", alignItems: "center" }}>
+      <GridToolbar className="workforce-search-container" gap={32}>
+        <Button
+          type="default"
+          icon={<ReloadOutlined />}
+          onClick={() => {
+            fetchData();
+            // When embedded (e.g. Project Full Details' "Invoices" tab),
+            // also refreshes the host page's own totals/chart — otherwise
+            // those go stale after a save made right here.
+            onRefresh?.();
+          }}
+          style={{ marginRight: "10px" }}
+        >
+          Refresh
+        </Button>
+        <input
+          type="text"
+          placeholder="Search..."
+          value={searchText}
+          onChange={handleSearchInputChange}
+        />
+        <Button
+          type="default"
+          icon={<FileExcelOutlined />}
+          onClick={onBtnExportDataAsExcel}
+          style={{ marginLeft: "10px" }}
+        >
+          Export to Excel
+        </Button>
+        {Object.keys(modifiedRows).length > 0 && (
+          <>
+            <Button
+              type="primary"
+              icon={<SaveOutlined />}
+              onClick={handleSaveChanges}
+              style={{ marginLeft: "10px" }}
+            >
+              Save
+            </Button>
+            <Button
+              icon={<CloseOutlined />}
+              onClick={handleCancelChanges}
+              style={{ marginLeft: "10px" }}
+            >
+              Cancel
+            </Button>
+          </>
+        )}
+        <Button
+          style={{ marginLeft: "20px" }}
+          type="primary"
+          className="button-customer"
+          onClick={addNewInvoice}
+        >
+          <PlusOutlined /> Add New Invoice
+        </Button>
+        {/* Label + picker stay paired as one collapsible unit — either
+            both show or both collapse together, since one without the
+            other wouldn't make sense. */}
+        <span style={{ display: "flex", alignItems: "center" }}>
           <label style={{ marginBottom: 0 }}>Invoice Date:&nbsp;</label>
           <DatePicker
             className="left-panel"
@@ -838,20 +840,20 @@ const InvoiceDetails = ({ employeeId, projectId, customerId, statusFilter, isCol
             showMonthYearPicker
             style={{ width: "150px" }} // Add a fixed width
           />
-          <Button
-            type="primary"
-            style={{ marginLeft: "10px" }}
-            className="button-customer"
-            // Scoped to an employee (e.g. the employeeFullDetails Invoices
-            // tab), generateInvoice() doesn't need a month — it's only
-            // required for the generic/bulk (no employeeId) path below.
-            disabled={!employeeId && !selectedDate}
-            onClick={generateInvoice}
-          >
-            <PlusOutlined /> Generate Invoice
-          </Button>
-        </div>
-      </div>
+        </span>
+        <Button
+          type="primary"
+          style={{ marginLeft: "10px" }}
+          className="button-customer"
+          // Scoped to an employee (e.g. the employeeFullDetails Invoices
+          // tab), generateInvoice() doesn't need a month — it's only
+          // required for the generic/bulk (no employeeId) path below.
+          disabled={!employeeId && !selectedDate}
+          onClick={generateInvoice}
+        >
+          <PlusOutlined /> Generate Invoice
+        </Button>
+      </GridToolbar>
       <div
         className="invoice1-grid-wrapper"
         style={gridHeight ? { height: gridHeight, maxHeight: gridHeight } : undefined}

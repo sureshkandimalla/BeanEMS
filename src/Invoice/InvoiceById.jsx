@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "antd";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
+import GridToolbar from "../Utils/GridToolbar";
 import "./InvoiceById.css";
 
 const InvoiceById = ({ url, employeeId, isCollapsed }) => {
@@ -182,7 +183,7 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
         }}
       >
     <div className="ag-theme-alpine workforce-container">
-      <div className="workforce-search-container">
+      <GridToolbar className="workforce-search-container">
         <Button
           type="default"
           icon={<ReloadOutlined />}
@@ -205,7 +206,7 @@ const InvoiceById = ({ url, employeeId, isCollapsed }) => {
         >
           <PlusOutlined /> Generate Invoice
         </Button>
-      </div>
+      </GridToolbar>
       <div  className={`invoice-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
       <AgGridReact
         enableCellTextSelection={true}

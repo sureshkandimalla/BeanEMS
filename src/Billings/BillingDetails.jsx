@@ -13,6 +13,7 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { formatCurrency } from "../Utils/CurrencyFormatter";
 import { useFilteredTotalsRow } from "../Utils/useFilteredTotalsRow";
+import GridToolbar from "../Utils/GridToolbar";
 import "./BillingDetails.css"
 
 const BillingDetails = ({ url, isCollapsed, onRefresh }) => {
@@ -181,7 +182,7 @@ const BillingDetails = ({ url, isCollapsed, onRefresh }) => {
 >
  
   <div className="ag-theme-alpine workforce-container">
-    <div className="workforce-search-container">
+    <GridToolbar className="workforce-search-container">
       <Button
         type="default"
         icon={<ReloadOutlined />}
@@ -209,7 +210,7 @@ const BillingDetails = ({ url, isCollapsed, onRefresh }) => {
       >
         Export to Excel
       </Button>
-    </div>
+    </GridToolbar>
 
     <div
       className={`billing-grid-wrapper ${

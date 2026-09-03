@@ -14,6 +14,7 @@ import { sizeColumnsForHeader } from "../Utils/agGridColumnSizing";
 import NotesActionButton from "../Notes/NotesActionButton";
 import NotesModal from "../Notes/NotesModal";
 import { buildRowActions } from "../Notes/rowActions";
+import GridToolbar from "../Utils/GridToolbar";
 
 const employmentTypeOptions = ["Full-Time", "Part-Time", "Hourly", "W2", "C2C", "1099"];
 const i9EverifyStatusOptions = ["Completed", "In Progress", "Failed"];
@@ -441,7 +442,7 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
 
   return (
     <div className="ag-theme-alpine workforce-container">
-      <div className="workforce-search-container">
+      <GridToolbar className="workforce-search-container">
         <Button
           type="default"
           icon={<ReloadOutlined />}
@@ -476,8 +477,8 @@ const WorkForceList = ({ employees, isCollapsed, onRefresh }) => {
         Save Changes
       </Button>
     )}
-      </div>
-      
+      </GridToolbar>
+
       <div  className={`workforce-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
         <AgGridReact
           enableCellTextSelection={true}

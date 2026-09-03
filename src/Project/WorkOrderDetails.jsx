@@ -13,6 +13,7 @@ import { formatCurrency } from "../Utils/CurrencyFormatter";
 import "./WorkOrderDetails.css";
 import DocumentsPanel from "../Documents/DocumentsPanel";
 import { openDocumentInNewTab } from "../Documents/openDocument";
+import GridToolbar from "../Utils/GridToolbar";
 const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
   console.log(rowData);
   //  const [rowData, setRowData] = useState();
@@ -186,7 +187,7 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
         }}
       >
     <div className="ag-theme-alpine workforce-container">
-      <div className="workforce-search-container">
+      <GridToolbar className="workforce-search-container">
           <Button
             type="default"
             icon={<ReloadOutlined />}
@@ -236,7 +237,7 @@ const WorkOrderDetails = ({ rowData, isCollapsed, onRefresh }) => {
               </Button>
             </>
           )}
-        </div>
+        </GridToolbar>
         <div  className={`workOrder-grid-wrapper ${!isCollapsed ? "ag-grid-collapsed" : "ag-grid-expanded"}`}>
         <AgGridReact
           enableCellTextSelection={true}
