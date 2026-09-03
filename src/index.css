@@ -83,6 +83,45 @@ html, body, #root {
     margin-right: 4px !important;
     margin-top: 4px !important;
   }
+
+  /* ── Tabs with tabBarExtraContent (WorkForce, ProjectDashboard,
+     VisaEmployees, EmployeeDetailDashboard) ── AntD's Tabs nav is one
+     flex row: the tab labels (.ant-tabs-nav-wrap) share it with
+     whatever tabBarExtraContent renders (.ant-tabs-extra-content),
+     which always gets its full natural width. On a phone that alone
+     can exceed the row's width, squeezing the tab labels down to 0px —
+     confirmed via a live DOM check on /workforce (10 tabs vs. a
+     checkbox+button extra) — not just visually cramped, actually
+     invisible. Give each its own full-width row instead of fighting
+     over one. */
+  .ant-tabs-nav {
+    flex-wrap: wrap !important;
+    height: auto !important;
+    row-gap: 8px;
+  }
+  /* Only extra-content needs forcing onto its own row — leave the tab
+     list and its native "more" overflow button (.ant-tabs-nav-operations)
+     sharing row 1 exactly as AntD already lays them out by default, now
+     with the full row width to themselves instead of whatever extra
+     content didn't take. */
+  .ant-tabs-nav .ant-tabs-extra-content {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    order: 2;
+  }
+  /* The tab list's default flex-basis is "auto", so the browser's
+     line-wrapping decision uses its full unwrapped content width (994px
+     across 10 tabs, confirmed via a live DOM check) as its hypothetical
+     size — before any shrinking is considered — which alone exceeds the
+     row and pushes the "more tabs" button (.ant-tabs-nav-operations)
+     onto an orphan line of its own. flex-basis: 0 makes shrinking apply
+     before that wrap decision instead of after, so both share row 1 as
+     AntD intends; the tab list's own internal horizontal scroll still
+     handles whatever doesn't fit within its now-correct width. */
+  .ant-tabs-nav .ant-tabs-nav-wrap {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+  }
 }
 .ant-card {
   border-radius: 24px;

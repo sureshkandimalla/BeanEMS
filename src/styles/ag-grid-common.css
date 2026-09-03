@@ -178,11 +178,17 @@
      without having to touch or de-duplicate all four of them. */
   .workforce-search-container {
     flex-wrap: wrap !important;
+    /* Only a row-gap, not column-gap — every button in these rows
+       already carries its own inline marginLeft/marginRight (see
+       CustomerDetails.jsx, WorkForceList.jsx, etc.), and adding a
+       column-gap on top of that was enough extra width, combined with
+       the Search input's 200px minimum, to push "Refresh" + Search off
+       one line by only ~5px on /workforce (confirmed via computed
+       styles) even though there was visibly room for both. */
     row-gap: 8px !important;
-    column-gap: 8px !important;
   }
   .workforce-search-container input {
-    flex: 1 1 200px !important;
+    flex: 1 1 140px !important;
     width: auto !important;
     max-width: 100% !important;
   }
